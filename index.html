@@ -647,6 +647,28 @@ body.viewer .pdf-btn,body.viewer [onclick*="openExportCalModal"],body.viewer [on
 #modal-admin-login .modal{max-width:340px}
 #admin-pw-err{color:var(--red);font-size:12px;margin-top:6px;display:none}
 
+/* ═══ STILE VETRO (come il menu mobile) — scelta: vetro della proposta 1,
+   ticker giallo pieno, titoli con lineetta gialla. Solo aspetto: misure,
+   spaziature e impaginazione restano quelle di prima. ═══ */
+body:not(.light){background:#000 radial-gradient(130% 460px at 50% -80px,rgba(232,255,0,.13),transparent 70%) no-repeat;}
+body:not(.light) .pcrd:not(.foil),body:not(.light) .rcard,body:not(.light) .cmc,body:not(.light) .torneo-card,body:not(.light) .albo-card,
+body:not(.light) .srch-pill,body:not(.light) .sort-sel,body:not(.light) .hdr-chip,body:not(.light) .hdr-players-mobile{
+  background:linear-gradient(180deg,rgba(255,255,255,.11) 0%,rgba(255,255,255,.045) 32%,rgba(255,255,255,.035) 100%)!important;
+  border:.5px solid rgba(255,255,255,.2)!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.25)!important;}
+body:not(.light) .sort-sel option{background:#141414;color:#fff;}
+body:not(.light) .pcrd:not(.foil){border-radius:24px;}
+body:not(.light) .rcard{border-radius:22px;}
+body:not(.light) .cmc{border-radius:18px;}
+body:not(.light) .torneo-card{border-radius:22px;clip-path:none;}
+body:not(.light) .torneo-card::before{display:none;}
+body:not(.light) .albo-card{border-radius:22px;}
+body:not(.light) .srch-pill:focus-within{border-color:rgba(232,255,0,.6)!important;}
+/* Titoli di pagina: testo pieno con lineetta gialla (niente bandierina gialla) */
+.pg-title{background:none;color:var(--text);clip-path:none;padding:2px 0;gap:10px;}
+.pg-title::before{content:'';width:4px;height:20px;border-radius:4px;background:var(--accent);flex-shrink:0;}
+/* Card giocatore: bandiera/nome allineati a sinistra con le statistiche sotto */
+.pcrd-row{align-items:flex-start;text-align:left;}
 </style>
 </head>
 <body class="viewer">
