@@ -17,8 +17,8 @@
 <link rel="preconnect" href="https://firestore.googleapis.com">
 <!-- Niente "salto" di font all'apertura: la pagina appare quando i font sono pronti (max 1,5 s) -->
 <style>html.fw body{opacity:0}body{transition:opacity .18s ease}</style>
-<script>window.__fwDone=function(){document.documentElement.classList.remove("fw")};document.documentElement.classList.add("fw");setTimeout(window.__fwDone,1500);</script>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Exo+2:wght@700;900&family=Nunito:wght@700;900&display=swap" rel="stylesheet" onload="try{Promise.all([document.fonts.load('400 16px DM Sans'),document.fonts.load('16px Bebas Neue')]).then(window.__fwDone,window.__fwDone)}catch(e){window.__fwDone()}" onerror="window.__fwDone()">
+<script>window.__fwDone=function(){document.documentElement.classList.remove("fw")};document.documentElement.classList.add("fw");setTimeout(window.__fwDone,3000);</script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Exo+2:wght@700;900&family=Nunito:wght@700;900&display=block" rel="stylesheet" onload="try{Promise.all(['400','500','600','700'].map(function(w){return document.fonts.load(w+' 16px DM Sans')}).concat([document.fonts.load('16px Bebas Neue')])).then(window.__fwDone,window.__fwDone)}catch(e){window.__fwDone()}" onerror="window.__fwDone()">
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -637,6 +637,9 @@ body.viewer .tab[data-tab="fanta"]{display:none!important;}
 /* Non-admin: Tornei e Ranking nascosti (restano per l'admin) */
 body.viewer .tab[data-tab="tornei"],body.viewer .tab[data-tab="classifiche-torneo"]{display:none!important;}
 body.light{--ov:0,0,0;}
+/* Non-admin: niente "+ Risultato", matita e clic di modifica sulle partite del calendario */
+body.viewer .add-res-btn,body.viewer .cmc-edit{display:none!important;}
+body.viewer .cmc{cursor:default;}body.viewer .cmc:hover{transform:none;}
 body.viewer #settings-gear-btn{display:none!important;}
 body.viewer .adm-hint{display:none!important;}
 /* Non-admin: niente livello sulle card, anello avatar giallo (colore app) invece del colore-livello.
