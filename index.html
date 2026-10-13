@@ -722,6 +722,36 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
 }
 @media(max-width:430px){.logo-img{max-width:calc(100vw - 196px)!important;height:auto!important;max-height:56px;}}
 @media(max-width:359px){.pcrd-row{flex-direction:column;align-items:center;gap:1px;padding:4px 2px;}.pcrd .pcrd-name{font-size:17px;}}
+/* ═══ PC: BARRA UNICA DI VETRO (proposta 1) — logo, menu, info e lucchetto
+   in una pillola che galleggia in alto. Su telefono non cambia nulla. ═══ */
+.tab svg{width:19px;height:19px;flex-shrink:0;}
+@media(min-width:641px){
+  .header{background:linear-gradient(180deg,#000 72%,rgba(0,0,0,0));padding:12px 20px 6px;backdrop-filter:none;}
+  .hdr{max-width:1400px;margin:0 auto;gap:12px;padding:7px 8px 7px 22px;border-radius:999px;
+    background:rgba(18,18,18,.86);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);
+    border:.5px solid rgba(255,255,255,.2);box-shadow:0 10px 34px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.25);}
+  .logo-img{height:46px;max-width:170px;}
+  .hdr-center{display:none!important;}
+  .hdr .tabs{position:static;flex:1;min-width:0;background:none;border:none;backdrop-filter:none;overflow-x:auto;}
+  body .hdr .tabs-inner{justify-content:center;gap:4px;max-width:none;padding:0;}
+  .hdr .tabs-inner .tab,body.viewer .hdr .tabs-inner .tab{display:flex;align-items:center;gap:7px;padding:9px 14px;font-size:13px;font-weight:700;letter-spacing:.4px;color:rgba(255,255,255,.62);background:none;border-radius:999px;}
+  .hdr .tabs-inner .tab:hover{color:#fff;background:rgba(255,255,255,.07);}
+  body .hdr .tabs-inner .tab.active,body.viewer .hdr .tabs-inner .tab.active{color:var(--accent);background:rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.25);}
+  .hdr-info{margin-left:0;gap:8px;}
+  .hdr-info-stack{flex-direction:row;align-items:center;gap:0;padding:4px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.035));border:.5px solid rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.14);}
+  body:not(.light) .hdr .hdr-chip{background:none!important;border:none!important;box-shadow:none!important;padding:6px 10px;font-size:12.5px;font-weight:700;}
+  .hdr .hdr-chip+.hdr-chip{border-left:.5px solid rgba(255,255,255,.14)!important;border-radius:0;}
+  .hdr .hdr-chip strong{display:none;}
+  .hdr-admin-col{flex-direction:row;}
+  #settings-gear-btn{display:none!important;}
+  #admin-lock-btn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:1;padding:0;
+    background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.035));border:.5px solid rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.14);}
+}
+/* PC non larghissimo: le voci del menu restano solo icone (nome nel suggerimento al passaggio del mouse) */
+@media(min-width:641px) and (max-width:1120px){.hdr .tabs-inner .tab span{display:none;}.hdr .tabs-inner .tab,body.viewer .hdr .tabs-inner .tab{padding:9px 11px;}}
+@media(min-width:641px) and (max-width:1560px){body:not(.viewer) .hdr .tabs-inner .tab span{display:none;}body:not(.viewer) .hdr .tabs-inner .tab{padding:9px 11px;}}
+@media(max-width:640px){.hdr .tabs{display:none!important;}}
+@media(min-width:641px) and (max-width:960px){.logo-img{height:38px;max-width:120px;}.hdr{padding-left:16px;gap:8px;}.hdr .hdr-chip:last-child{display:none!important;}body .hdr .tabs-inner .tab,body.viewer .hdr .tabs-inner .tab{padding:9px 8px;}body .hdr .tabs-inner{gap:0;}}
 </style>
 </head>
 <body class="viewer">
@@ -729,6 +759,18 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
   <div class="hdr">
     <div class="hdr-players-mobile" title="Giocatori registrati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0;color:var(--accent2)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span id="hdr-players2">—</span></div>
     <img src="https://www.laurera15a40.com/uploads/1/5/0/6/150685976/editor/logo-tipo-long-def.png?1725893045" class="logo-img" alt="Laurera 15A40" onerror="this.style.display='none'" onclick="switchTab('players')" style="cursor:pointer">
+    <!-- Menu PC: dentro la barra unica di vetro (proposta 1). Su telefono è nascosto: c'è il menu in basso. -->
+    <nav class="tabs"><div class="tabs-inner">
+      <div class="tab active" data-tab="players" onclick="switchTab('players')" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg><span>Home</span></div>
+      <div class="tab" data-tab="tornei" onclick="switchTab('tornei')" title="Tornei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4"/><path d="M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/><path d="M12 14v3"/><path d="M8.5 21h7"/><path d="M9.5 17h5v4h-5z"/></svg><span>Tornei</span></div>
+      <div class="tab" data-tab="calendario" onclick="switchTab('calendario')" title="Calendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Calendario</span></div>
+      <div class="tab" data-tab="risultati" onclick="switchTab('risultati')" title="Risultati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M5.5 6.5c3 2 4 5.5 3 11"/><path d="M18.5 17.5c-3-2-4-5.5-3-11"/></svg><span>Risultati</span></div>
+      <div class="tab" data-tab="classifiche-torneo" onclick="switchTab('classifiche-torneo')" title="Ranking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span>Ranking</span></div>
+      <div class="tab" data-tab="classifiche" onclick="switchTab('classifiche')" title="Classifiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V12"/><path d="M12 21V5"/><path d="M19 21v-6"/></svg><span>Classifiche</span></div>
+      <div class="tab" data-tab="albo" onclick="switchTab('albo')" title="Albo d'Oro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5L3 7Z"/><path d="M5 21h14"/></svg><span>Albo d'Oro</span></div>
+      <div class="tab" data-tab="fanta" onclick="switchTab('fanta')" title="Fantatennis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span>Fantatennis</span></div>
+      <div class="tab" data-tab="settings" onclick="switchTab('settings')" title="Impostazioni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg><span>Impostazioni</span></div>
+    </div></nav>
     <div class="hdr-center">
       <div class="hdr-title"><h1>CENTRO SPORTIVO · LAURERA15A40</h1><a class="hdr-addr" href="https://www.google.com/maps/place//data=!4m2!3m1!1s0x47881766c48bc33f:0xb7e99e2c09f32821?sa=X&ved=1t:8290&ictx=111" target="_blank" rel="noopener" style="font-size:16px;text-decoration:none;cursor:pointer">📍 Via Ugo Foscolo, 21, 10040 Volvera TO</a></div>
     </div>
@@ -745,18 +787,6 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
     </div>
   </div>
 </header>
-<nav class="tabs"><div class="tabs-inner">
-        <div class="tab active" data-tab="players" onclick="switchTab('players')">🏠 Home</div>
-        <div class="tab" data-tab="tornei" onclick="switchTab('tornei')">🏆 Tornei</div>
-        <div class="tab" data-tab="calendario" onclick="switchTab('calendario')">📅 Calendario</div>
-        <div class="tab" data-tab="risultati" onclick="switchTab('risultati')">🏅 Risultati</div>
-        <div class="tab" data-tab="classifiche-torneo" onclick="switchTab('classifiche-torneo')">📈 Ranking</div>
-        <div class="tab" data-tab="classifiche" onclick="switchTab('classifiche')">📊 Classifiche</div>
-        <div class="tab" data-tab="albo" onclick="switchTab('albo')">👑 Albo d'Oro</div>
-        <div class="tab" data-tab="fanta" onclick="switchTab('fanta')">🎯 FANTATENNIS</div>
-  <div class="tab" data-tab="settings" onclick="switchTab('settings')">⚙️ Impostazioni</div>
-      </div>
-      </nav>
 <div class="ticker-tape"><div class="ticker-tape-content" id="ticker-tape-content"></div></div>
 <!-- Menu mobile: stile itstracker (pillola vetro con icone + pillola profilo a destra) -->
 <div class="tabs-mobile2">
@@ -3898,7 +3928,8 @@ function fixNavTop(){
   var h=hdr.offsetHeight+'px';
   document.documentElement.style.setProperty('--header-h',h);
   var tabs=document.querySelector('.tabs');
-  document.documentElement.style.setProperty('--tabs-h',tabs?tabs.offsetHeight+'px':'0px');
+  // il menu ora sta dentro l'intestazione: niente altezza in più da sommare
+  document.documentElement.style.setProperty('--tabs-h',tabs&&!tabs.closest('.header')?tabs.offsetHeight+'px':'0px');
 }
 window.addEventListener('load',fixNavTop);
 window.addEventListener('resize',fixNavTop);
