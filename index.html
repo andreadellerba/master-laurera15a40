@@ -749,7 +749,11 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
 }
 /* PC non larghissimo: le voci del menu restano solo icone (nome nel suggerimento al passaggio del mouse) */
 @media(min-width:641px) and (max-width:1120px){.hdr .tabs-inner .tab span{display:none;}.hdr .tabs-inner .tab,body.viewer .hdr .tabs-inner .tab{padding:9px 11px;}}
-@media(min-width:641px) and (max-width:1560px){body:not(.viewer) .hdr .tabs-inner .tab span{display:none;}body:not(.viewer) .hdr .tabs-inner .tab{padding:9px 11px;}}
+/* Admin (9 voci): nomi visibili da 1480 px in su con voci più strette, sotto solo icone */
+@media(min-width:1121px){body:not(.viewer) .hdr .tabs-inner .tab{padding:8px 9px;gap:5px;font-size:12px;letter-spacing:.2px;}body:not(.viewer) .hdr .tabs-inner{gap:2px;}}
+@media(min-width:641px) and (max-width:1479px){body:not(.viewer) .hdr .tabs-inner .tab span{display:none;}body:not(.viewer) .hdr .tabs-inner .tab{padding:9px 11px;}}
+/* PC: barra, ticker, filtri e card tutti larghi uguale (margine 20 px ai lati) */
+@media(min-width:641px){.hdr{max-width:none!important;}.filters{max-width:none;padding-left:20px;padding-right:20px;}.wrap{max-width:none;padding-left:20px;padding-right:20px;}.cards-grid{padding:16px 20px 24px;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));}.cards-grid .pcrd{max-width:none;}}
 @media(max-width:640px){.hdr .tabs{display:none!important;}}
 @media(min-width:641px) and (max-width:960px){.logo-img{height:38px;max-width:120px;}.hdr{padding-left:16px;gap:8px;}.hdr .hdr-chip:last-child{display:none!important;}body .hdr .tabs-inner .tab,body.viewer .hdr .tabs-inner .tab{padding:9px 8px;}body .hdr .tabs-inner{gap:0;}}
 </style>
