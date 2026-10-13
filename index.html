@@ -728,6 +728,13 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
 .pcrd .pcrd-row-lbl{font-family:"Bebas Neue",sans-serif;font-size:14px!important;letter-spacing:.6px;line-height:1;}
 .pcrd .pcrd-row{align-items:center;}
 @media(min-width:641px){.pcrd .pcrd-row-lbl{font-size:15px!important;}}
+/* Numeri nello stesso font delle etichette: stessa altezza e stessa linea di base, centrati nella tessera */
+.pcrd .pcrd-row-val,.pcrd .pcrd-row-val *{font-family:"Bebas Neue",sans-serif!important;font-weight:400!important;line-height:1;}
+.pcrd .pcrd-row-val{font-size:15px!important;letter-spacing:.6px;}
+.pcrd .pcrd-row-lbl{font-size:15px!important;}
+.pcrd .pcrd-row{align-items:baseline!important;}
+@media(min-width:641px){.pcrd .pcrd-row-val,.pcrd .pcrd-row-lbl{font-size:16px!important;}}
+@media(max-width:359px){.pcrd .pcrd-row{align-items:center!important;}}
 /* PC: come sul telefono, nome grande e tessere su una riga ("MATCH 0") */
 @media(min-width:641px){.pcrd .pcrd-name{font-size:21px;}.pcrd-name-row{margin-bottom:7px;}.pcrd-row{flex-direction:row;justify-content:center;align-items:baseline;gap:5px;padding:7px 4px;}.pcrd .pcrd-row-val{font-size:15px;}.pcrd-row-lbl{font-size:10px;}.cards-grid{grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr))!important;}}
 @media(max-width:359px){.pcrd-row{flex-direction:column;align-items:center;gap:1px;padding:4px 2px;}.pcrd .pcrd-name{font-size:17px;}}
