@@ -720,7 +720,7 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
   .pcrd-row{flex-direction:row;justify-content:center;align-items:baseline;gap:4px;padding:5px 3px;}
   .pcrd .pcrd-row-val{font-size:14px;}
 }
-@media(max-width:430px){.logo-img{max-width:calc(100vw - 196px)!important;height:auto!important;max-height:56px;}}
+@media(max-width:430px){.logo-img{max-width:calc(100vw - 224px)!important;height:auto!important;max-height:56px;}}
 @media(max-width:359px){.pcrd-row{flex-direction:column;align-items:center;gap:1px;padding:4px 2px;}.pcrd .pcrd-name{font-size:17px;}}
 /* ═══ PC: BARRA UNICA DI VETRO (proposta 1) — logo, menu, info e lucchetto
    in una pillola che galleggia in alto. Su telefono non cambia nulla. ═══ */
@@ -756,6 +756,19 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
 @media(min-width:641px){.hdr{max-width:none!important;}.filters{max-width:none;padding-left:20px;padding-right:20px;}.wrap{max-width:none;padding-left:20px;padding-right:20px;}.cards-grid{padding:16px 20px 24px;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));}.cards-grid .pcrd{max-width:none;}}
 @media(max-width:640px){.hdr .tabs{display:none!important;}}
 @media(min-width:641px) and (max-width:960px){.logo-img{height:38px;max-width:120px;}.hdr{padding-left:16px;gap:8px;}.hdr .hdr-chip:last-child{display:none!important;}body .hdr .tabs-inner .tab,body.viewer .hdr .tabs-inner .tab{padding:9px 8px;}body .hdr .tabs-inner{gap:0;}}
+/* Lucchetto admin: icona a tratto gialla, minimal */
+#admin-lock-btn{color:var(--accent);opacity:1!important;}
+#admin-lock-btn svg{width:18px;height:18px;display:block;}
+/* Telefono: intestazione nella pillola di vetro (proposta 1) */
+@media(max-width:640px){
+  .header{background:linear-gradient(180deg,#000 75%,rgba(0,0,0,0));padding:10px 10px 4px;}
+  .hdr{border-radius:999px;padding:6px 12px;min-height:64px;
+    background:rgba(18,18,18,.86);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);
+    border:.5px solid rgba(255,255,255,.2);box-shadow:0 10px 30px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.25);}
+  .logo-img{height:48px;}
+  .hdr-players-mobile{left:8px!important;}
+  .hdr-info{right:8px!important;}
+}
 </style>
 </head>
 <body class="viewer">
@@ -785,7 +798,7 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
         <div class="hdr-chip" title="Meteo Volvera"><span id="hdr-meteo">—</span></div>
       </div>
       <div class="hdr-admin-col">
-        <button id="admin-lock-btn" onclick="openAdminModal()" title="Admin">🔐</button>
+        <button id="admin-lock-btn" onclick="openAdminModal()" title="Admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="11" width="15" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg></button>
         <button id="settings-gear-btn" onclick="switchTab('settings')" title="Impostazioni">⚙️</button>
       </div>
     </div>
@@ -1290,7 +1303,9 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
 
 // ═══ ADMIN / VIEWER ═══
 function _checkViewer(){return document.body.classList.contains('viewer');}
-function enableAdmin(){document.body.classList.remove('viewer');const btn=document.getElementById('admin-lock-btn');if(btn){btn.textContent='🔓';btn.title='Admin attivo — clicca per uscire';btn.classList.add('is-admin');btn.onclick=adminLogout;}flushOrphanPurge();}
+// Lucchetto minimal giallo: chiuso = ospite, aperto = admin
+function LOCK_SVG(open){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="11" width="15" height="10" rx="2.5"/><path d="'+(open?'M8 11V7.5a4 4 0 0 1 7.6-1.7':'M8 11V7.5a4 4 0 0 1 8 0V11')+'"/></svg>';}
+function enableAdmin(){document.body.classList.remove('viewer');const btn=document.getElementById('admin-lock-btn');if(btn){btn.innerHTML=LOCK_SVG(true);btn.title='Admin attivo — clicca per uscire';btn.classList.add('is-admin');btn.onclick=adminLogout;}flushOrphanPurge();}
 // Partite (calendario/risultati) di tornei eliminati: spariscono ovunque.
 // Si filtrano in memoria per tutti; il salvataggio su Firestore lo fa solo
 // un admin e solo con dati letti dal server (mai da cache locale).
@@ -1306,7 +1321,7 @@ function flushOrphanPurge(){
   if(!_orphanPurgePending||_checkViewer()||!_serverOK.main||!_serverOK.tornei)return;
   _orphanPurgePending=false;save();
 }
-function adminLogout(){_auth.signOut();document.body.classList.add('viewer');const btn=document.getElementById('admin-lock-btn');if(btn){btn.textContent='🔐';btn.title='Admin';btn.classList.remove('is-admin');btn.onclick=openAdminModal;}if(['settings','tornei','classifiche-torneo','fanta'].includes(currentTab))switchTab('players');toast('👋 Uscito dalla modalità admin');}
+function adminLogout(){_auth.signOut();document.body.classList.add('viewer');const btn=document.getElementById('admin-lock-btn');if(btn){btn.innerHTML=LOCK_SVG(false);btn.title='Admin';btn.classList.remove('is-admin');btn.onclick=openAdminModal;}if(['settings','tornei','classifiche-torneo','fanta'].includes(currentTab))switchTab('players');toast('👋 Uscito dalla modalità admin');}
 // Menu mobile, pillola profilo: non-admin -> accesso admin; admin -> Impostazioni.
 function mobileProfileTap(){if(_checkViewer())openAdminModal();else switchTab('settings');}
 function openAdminModal(){const ei=document.getElementById('admin-email-input');const pi=document.getElementById('admin-pw-input');if(ei)ei.value='';if(pi)pi.value='';document.getElementById('admin-pw-err').style.display='none';document.getElementById('modal-admin-login').classList.add('open');setTimeout(()=>{if(ei)ei.focus();else if(pi)pi.focus();},100);}
