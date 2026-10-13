@@ -4,7 +4,7 @@ Sito web del Centro Sportivo Laurera 15A40.
 
 ## Struttura
 
-- `laurera15a40_11.html` — pagina principale del sito
+- `index.html` — pagina principale del sito (pubblicata su https://andreadellerba.github.io/master-laurera15a40/)
 
 ## Dati e backend
 
