@@ -131,6 +131,8 @@ body:not(.viewer) .tabs-inner{justify-content:space-between;}
 
 /* PLAYER CARD — horizontal */
 .cards-grid{padding:16px 12px 24px;display:flex;flex-wrap:wrap;gap:18px;justify-content:center;align-items:flex-start;}
+/* Il contenitore di ogni card prende sempre la larghezza piena disponibile (max 440px): niente card ristrette al contenuto */
+.cards-grid>div{width:100%;max-width:440px;min-width:0;}
 .pcard{background:var(--bg3);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:var(--r);overflow:hidden;transition:.15s;}
 .pc-name-strip{padding:10px 12px;border-bottom:1px solid rgba(232,255,0,.2);font-size:16px;font-weight:700;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(232,255,0,.06);border-top:3px solid var(--accent);text-transform:uppercase;letter-spacing:.5px;}
 .pcard:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 32px rgba(232,255,0,.35)}
@@ -429,7 +431,8 @@ body:not(.viewer) .tabs-inner{justify-content:space-between;}
   .girone-table th,.girone-table td{padding:7px 6px;}
 
   /* PLAYER CARDS — layout orizzontale, 1 per riga, compatte */
-  .cards-grid{display:flex;flex-direction:column;padding:8px 8px 100px;gap:10px;}
+  .cards-grid{display:flex;flex-direction:column;align-items:stretch;padding:8px 8px 100px;gap:10px;}
+  .cards-grid>div{max-width:none;}
   .pcrd{max-width:100%;padding:10px 12px;gap:10px;}
   .pcrd-ring{width:52px;height:52px;}
   .pcrd-ring-inner{font-size:16px;}
