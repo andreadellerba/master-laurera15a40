@@ -12,7 +12,13 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Laurera 15A40">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Exo+2:wght@700;900&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com">
+<!-- Niente "salto" di font all'apertura: la pagina appare quando i font sono pronti (max 1,5 s) -->
+<style>html.fw body{opacity:0}body{transition:opacity .18s ease}</style>
+<script>window.__fwDone=function(){document.documentElement.classList.remove("fw")};document.documentElement.classList.add("fw");setTimeout(window.__fwDone,1500);</script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Exo+2:wght@700;900&family=Nunito:wght@700;900&display=swap" rel="stylesheet" onload="try{Promise.all([document.fonts.load('400 16px DM Sans'),document.fonts.load('16px Bebas Neue')]).then(window.__fwDone,window.__fwDone)}catch(e){window.__fwDone()}" onerror="window.__fwDone()">
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -651,13 +657,27 @@ body.viewer .pdf-btn,body.viewer [onclick*="openExportCalModal"],body.viewer [on
    ticker giallo pieno, titoli con lineetta gialla. Solo aspetto: misure,
    spaziature e impaginazione restano quelle di prima. ═══ */
 body:not(.light){background:#000 radial-gradient(130% 460px at 50% -80px,rgba(232,255,0,.13),transparent 70%) no-repeat;}
-body:not(.light) .pcrd:not(.foil),body:not(.light) .rcard,body:not(.light) .cmc,body:not(.light) .torneo-card,body:not(.light) .albo-card,
+body:not(.light) .pcrd,body:not(.light) .card,body:not(.light) .rcard,body:not(.light) .cmc,body:not(.light) .torneo-card,body:not(.light) .albo-card,
 body:not(.light) .srch-pill,body:not(.light) .sort-sel,body:not(.light) .hdr-chip,body:not(.light) .hdr-players-mobile{
   background:linear-gradient(180deg,rgba(255,255,255,.11) 0%,rgba(255,255,255,.045) 32%,rgba(255,255,255,.035) 100%)!important;
   border:.5px solid rgba(255,255,255,.2)!important;
   box-shadow:0 8px 28px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.25)!important;}
 body:not(.light) .sort-sel option{background:#141414;color:#fff;}
-body:not(.light) .pcrd:not(.foil){border-radius:24px;}
+body:not(.light) .pcrd{border-radius:24px;}
+body:not(.light) .card{border-radius:22px;}
+/* Calendario: giorni e frecce come pillole di vetro */
+body:not(.light) .cal-day,body:not(.light) .cal-nbtn{background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(255,255,255,.035));border:.5px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.12);}
+body:not(.light) .cal-day{border-radius:16px;}
+body:not(.light) .cal-nbtn{border-radius:50%;}
+body:not(.light) .cal-day.sel{background:rgba(232,255,0,.14);border-color:rgba(232,255,0,.7);}
+/* Partite in calendario: la lineetta di stato diventa una pillola arrotondata staccata dal bordo */
+.cmc::before{left:7px;top:10px;bottom:10px;width:3px;border-radius:3px;}
+.cmc{padding-left:16px;}
+/* Classifiche: righe più ariose, intestazione discreta, primi 3 in evidenza */
+body:not(.light) .rank-table th{border-bottom:.5px solid rgba(255,255,255,.12);}
+body:not(.light) .rank-table td{border-bottom:.5px solid rgba(255,255,255,.07);}
+body:not(.light) .rank-table tbody tr:nth-child(-n+3) td{background:rgba(232,255,0,.04);}
+body:not(.light) .rank-table tbody tr:hover td{background:rgba(255,255,255,.05);}
 body:not(.light) .rcard{border-radius:22px;}
 body:not(.light) .cmc{border-radius:18px;}
 body:not(.light) .torneo-card{border-radius:22px;clip-path:none;}
@@ -3498,6 +3518,14 @@ function migrateStorageNamespace(){
 migrateStorageNamespace();
 initTheme();initAdmin();fillNazList();
 (async()=>{
+  // Apertura veloce: si mostrano subito i giocatori dell'ultima visita (copia
+  // locale), poi arrivano i dati aggiornati da Firestore e si ridisegna tutto.
+  try{
+    _lsLoad();
+    const rt=localStorage.getItem('laurera_tornei');if(rt)tornei=JSON.parse(rt)||[];
+    _attachPhotos();pruneOrphanSched();
+    if(players.length){renderCards();renderTickerTape();updateHdrStats();}
+  }catch(e){}
   await Promise.all([loadTornei(),loadFanta(),loadAlbo(),load(),loadLog()]);
   pruneOrphanSched();
   migrateStoricoAll();
