@@ -130,9 +130,9 @@ body:not(.viewer) .tabs-inner{justify-content:space-between;}
 .sort-sel{background:var(--bg3);border:1.5px solid var(--border2);border-radius:999px;padding:6px 14px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:13px;outline:none;cursor:pointer;}.sort-sel:focus{border-color:var(--accent);}
 
 /* PLAYER CARD — horizontal */
-.cards-grid{padding:16px 12px 24px;display:flex;flex-wrap:wrap;gap:18px;justify-content:center;align-items:flex-start;}
+.cards-grid{padding:16px 12px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),440px));gap:18px;justify-content:center;align-items:start;}
 /* Il contenitore di ogni card prende sempre la larghezza piena disponibile (max 440px): niente card ristrette al contenuto */
-.cards-grid>div{width:100%;max-width:440px;min-width:0;}
+.cards-grid>div{width:100%;min-width:0;}
 .pcard{background:var(--bg3);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:var(--r);overflow:hidden;transition:.15s;}
 .pc-name-strip{padding:10px 12px;border-bottom:1px solid rgba(232,255,0,.2);font-size:16px;font-weight:700;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:rgba(232,255,0,.06);border-top:3px solid var(--accent);text-transform:uppercase;letter-spacing:.5px;}
 .pcard:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 32px rgba(232,255,0,.35)}
