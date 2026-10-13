@@ -2378,7 +2378,7 @@ function buildPlayerCardHTML(p,opts){
   const valC=(val,col)=>col?`<span style="color:${col}">${val}</span>`:`<span>${val}</span>`;
   const rowsHtml=
     rowItem('Match',valC(p.pg||0,'var(--accent)'))+
-    rowItem('V/P/S',storicoHtml(p.storico))+
+    rowItem('Esiti',storicoHtml(p.storico))+
     rowItem('Game',valC(p.gv||0,'#e620a0'));
   return`<div class="pcrd ${d.isFoil?'foil':''}">
     <div class="pcrd-ring" style="background:${ringBg};cursor:${opts.interactive?'pointer':'default'}"${ringClick}><div class="pcrd-ring-inner">${photoHtml}</div></div>
