@@ -766,8 +766,12 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
     background:rgba(18,18,18,.86);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);
     border:.5px solid rgba(255,255,255,.2);box-shadow:0 10px 30px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.25);}
   .logo-img{height:48px;}
-  .hdr-players-mobile{left:8px!important;}
-  .hdr-info{right:8px!important;}
+  /* dentro la pillola: contatore e lucchetto centrati in verticale e un po' più verso il centro */
+  .hdr-players-mobile{left:14px!important;top:50%!important;}
+  .hdr-info{right:14px!important;top:50%!important;}
+  /* citazione: stesso spazio sopra (ticker) e sotto (ricerca) */
+  #page-players .filters{padding-top:2px;}
+  .ticker-tape{margin-bottom:6px;}
 }
 </style>
 </head>
@@ -1382,8 +1386,9 @@ const mobileShortName=nome=>{
     return parts[0].charAt(0)+'. '+parts.slice(1).join(' ');
   }).join(' / ');
 };
-// Nome puntato + cognome ovunque (la Home mostra invece il nome completo)
-const dispName=nome=>mobileShortName(nome);
+// Telefono: nome puntato + cognome (Home esclusa). PC: nome completo. Esportazioni PDF: sempre puntato (pdfName).
+const dispName=nome=>isMobileView()?mobileShortName(nome):nome;
+const pdfName=nome=>mobileShortName(nome);
 const avc=id=>`av-${id%8}`;
 const caC={1:'#86efac',2:'#16a34a',3:'#eab308',4:'#f97316',5:'#ef4444'};
 const NAZIONALITA=['ITALIA','FRANCIA','SPAGNA','GERMANIA','SVIZZERA','REGNO UNITO','PORTOGALLO','BELGIO','OLANDA','AUSTRIA','SERBIA','CROAZIA','ARGENTINA','BRASILE','STATI UNITI','RUSSIA','POLONIA','ROMANIA','GRECIA','ALBANIA','TUNISIA','MAROCCO','ALTRO'];
@@ -1672,7 +1677,7 @@ function exportRankPDF(){
   else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0));
   const rows=list.map((p,i)=>`<tr>
       <td style="font-size:15px;font-weight:800;text-align:center;color:${i===0?'#f0c040':i===1?'#9ca3b0':i===2?'#cd7c3f':'#888888'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
-      <td style="font-size:15px;font-weight:700">${esc(p.nome)}</td>
+      <td style="font-size:15px;font-weight:700">${esc(pdfName(p.nome))}</td>
       <td style="font-size:13px;text-align:center">${p.pg||0}</td>
       <td style="font-size:13px;text-align:center">${storicoHtml(p.storico)}</td>
       <td style="font-size:13px;text-align:center;color:#b8860b;font-weight:700">${(p.mg||0).toFixed(2)}</td>
@@ -2043,7 +2048,7 @@ function saveCalMatch(){
 function deleteCalMatch(){if(!editSchedId)return;const m=sched.find(x=>x.id===editSchedId);undoMatchStats(m);sched=sched.filter(m=>m.id!==editSchedId);refreshAll();toast('🗑️ Eliminato — statistiche ripristinate');}
 function clearCalResult(){if(!editSchedId)return;const m=sched.find(x=>x.id===editSchedId);if(!m||!m.risultato){toast('ℹ️ Nessun risultato');return;}undoMatchStats(m);m.risultato='';m.winnerId=null;m.gv1=0;m.gv2=0;refreshAll();toast('✅ Risultato eliminato — statistiche aggiornate');}
 function openExportCalModal(){const dates=getWeekDates();document.getElementById('exp-from').value=fmtD(dates[0]);document.getElementById('exp-to').value=fmtD(dates[6]);document.getElementById('modal-exp-cal').classList.add('open');}
-function exportCalendarPDF(){const from=document.getElementById('exp-from').value,to=document.getElementById('exp-to').value;if(!from||!to){toast('❌ Seleziona le date');return;}const filtered=sched.filter(m=>m.data>=from&&m.data<=to).sort((a,b)=>a.data.localeCompare(b.data)||a.ora.localeCompare(b.ora));if(!filtered.length){toast('ℹ️ Nessun incontro nel periodo');return;}const byDate={};filtered.forEach(m=>{if(!byDate[m.data])byDate[m.data]=[];byDate[m.data].push(m);});const fmtD2=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const _gtn=(m,pid)=>{if(!pid)return'—';const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){const entries=[bm.p1,bm.p2];for(const e of entries){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(+pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / ');}}}}const p=players.find(x=>x.id===+pid);if(p)return p.nome;if(m.teamName1&&+pid===m.p1Id)return m.teamName1;if(m.teamName2&&+pid===m.p2Id)return m.teamName2;return'—';};const blocks=Object.keys(byDate).sort().map(date=>{const rows=byDate[date].map(m=>{const n1=_gtn(m,m.p1Id),n2=_gtn(m,m.p2Id);const win=m.winnerId&&m.winnerId!=='draw'?_gtn(m,m.winnerId):null;return`<tr><td style="color:#b8860b;font-weight:600">${m.ora||'—'}</td><td style="font-weight:700">${n1}</td><td style="color:#888888;text-align:center">vs</td><td style="font-weight:700">${n2}</td><td style="color:${m.risultato?'#15803d':'#666666'};font-weight:${m.risultato?700:400}">${m.risultato||'—'}</td><td style="color:#b8860b">${win?'🏆 '+win:''}</td></tr>`;}).join('');return`<div style="margin-bottom:22px;padding:0 24px"><h3 style="font-size:16px;margin:0 0 8px;color:#111111;border-bottom:2px solid #b8860b;padding-bottom:6px;text-transform:capitalize">${fmtD2(date)}</h3><table><thead><tr><th>Ora</th><th>G1</th><th></th><th>G2</th><th>Risultato</th><th>Vincitore</th></tr></thead><tbody>${rows}</tbody></table></div>`;}).join('');const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Calendario</title>${pdfFontsLink()}<style>${pdfDarkStyle()}</style></head><body>${pdfHeaderHtml('CALENDARIO PARTITE',filtered.length+' incontri')}${blocks}${pdfFooterHtml()}</body></html>`;pdfOpenAndPrint(html,()=>{document.getElementById('modal-exp-cal').classList.remove('open');});}
+function exportCalendarPDF(){const from=document.getElementById('exp-from').value,to=document.getElementById('exp-to').value;if(!from||!to){toast('❌ Seleziona le date');return;}const filtered=sched.filter(m=>m.data>=from&&m.data<=to).sort((a,b)=>a.data.localeCompare(b.data)||a.ora.localeCompare(b.ora));if(!filtered.length){toast('ℹ️ Nessun incontro nel periodo');return;}const byDate={};filtered.forEach(m=>{if(!byDate[m.data])byDate[m.data]=[];byDate[m.data].push(m);});const fmtD2=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const _gtn=(m,pid)=>{if(!pid)return'—';const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){const entries=[bm.p1,bm.p2];for(const e of entries){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(+pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?pdfName(p.nome):'?';}).join(' / ');}}}}const p=players.find(x=>x.id===+pid);if(p)return pdfName(p.nome);if(m.teamName1&&+pid===m.p1Id)return pdfName(m.teamName1);if(m.teamName2&&+pid===m.p2Id)return pdfName(m.teamName2);return'—';};const blocks=Object.keys(byDate).sort().map(date=>{const rows=byDate[date].map(m=>{const n1=_gtn(m,m.p1Id),n2=_gtn(m,m.p2Id);const win=m.winnerId&&m.winnerId!=='draw'?_gtn(m,m.winnerId):null;return`<tr><td style="color:#b8860b;font-weight:600">${m.ora||'—'}</td><td style="font-weight:700">${n1}</td><td style="color:#888888;text-align:center">vs</td><td style="font-weight:700">${n2}</td><td style="color:${m.risultato?'#15803d':'#666666'};font-weight:${m.risultato?700:400}">${m.risultato||'—'}</td><td style="color:#b8860b">${win?'🏆 '+win:''}</td></tr>`;}).join('');return`<div style="margin-bottom:22px;padding:0 24px"><h3 style="font-size:16px;margin:0 0 8px;color:#111111;border-bottom:2px solid #b8860b;padding-bottom:6px;text-transform:capitalize">${fmtD2(date)}</h3><table><thead><tr><th>Ora</th><th>G1</th><th></th><th>G2</th><th>Risultato</th><th>Vincitore</th></tr></thead><tbody>${rows}</tbody></table></div>`;}).join('');const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Calendario</title>${pdfFontsLink()}<style>${pdfDarkStyle()}</style></head><body>${pdfHeaderHtml('CALENDARIO PARTITE',filtered.length+' incontri')}${blocks}${pdfFooterHtml()}</body></html>`;pdfOpenAndPrint(html,()=>{document.getElementById('modal-exp-cal').classList.remove('open');});}
 // ═══ RISULTATI ═══
 function renderRisultati(){
   const cont=document.getElementById('ris-list');if(!cont)return;
@@ -3293,7 +3298,7 @@ function exportBracketPDF(torneoId){
   const rounds=t.bracket.rounds;
   const date=new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'long',year:'numeric'});
   const getRoundName=(i,total)=>{if(i===total-1)return'Finale';if(i===total-2)return'Semifinali';if(i===total-3)return'Quarti';return'Turno '+(i+1);};
-  const getName=e=>{if(!e)return'BYE';if(Array.isArray(e)){return e.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / ');}const p=players.find(x=>x.id===e);return p?p.nome:'?';};
+  const getName=e=>{if(!e)return'BYE';if(Array.isArray(e)){return e.map(id=>{const p=players.find(x=>x.id===id);return p?pdfName(p.nome):'?';}).join(' / ');}const p=players.find(x=>x.id===e);return p?pdfName(p.nome):'?';};
   const firstCount=rounds[0].length;
   const SLOT=Math.min(60,Math.floor(620/firstCount));
   const CARD_H=Math.round(SLOT*0.8);
@@ -4038,7 +4043,7 @@ function exportPlayersPDF(){
     return`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #e5e5e5;">
       <span style="font-size:11px;color:#999999;min-width:20px;font-weight:600;">${num}</span>
       ${ph}
-      <span style="font-size:15px;font-weight:700;color:#111111;letter-spacing:.3px;">${esc(p.nome)}</span>
+      <span style="font-size:15px;font-weight:700;color:#111111;letter-spacing:.3px;">${esc(pdfName(p.nome))}</span>
       <span style="margin-left:auto;font-family:'Bebas Neue',Arial,sans-serif;font-size:11px;color:#9b59b6;border:1px solid #9b59b6;border-radius:5px;padding:1px 7px;">LV${p.livello}</span>
     </div>`;
   }).join('');
@@ -4169,7 +4174,7 @@ function exportRankingPDF(){
     return '<tr style="border-bottom:1px solid #e5e5e5;'+(rank<=3?'background:#fdf6e3':'')+'">'
       +'<td style="padding:10px 14px;font-size:'+(rank<=3?20:15)+'px;font-weight:800;color:'+mc+';text-align:center;min-width:44px">'+medal+'</td>'
       +'<td style="padding:10px 8px;text-align:center;width:56px">'+av+'</td>'
-      +'<td style="padding:10px 14px;font-size:17px;font-weight:700;color:#111111">'+esc(p.nome)+'</td>'
+      +'<td style="padding:10px 14px;font-size:17px;font-weight:700;color:#111111">'+esc(pdfName(p.nome))+'</td>'
       +'<td style="padding:10px 20px;font-size:28px;font-weight:900;color:#111111;text-align:right;white-space:nowrap;font-family:\'Bebas Neue\',Arial,sans-serif">'+pts+' <span style="font-size:11px;color:#888888;font-weight:400;font-family:\'DM Sans\',Arial,sans-serif">pt</span></td>'
       +'</tr>';
   }).join('');
@@ -4201,7 +4206,7 @@ function exportAlboPDF(){
       return '<tr style="border-bottom:1px solid #e5e5e5">'
         +'<td style="padding:12px 8px;text-align:center;width:62px">'+av+'</td>'
         +'<td style="padding:12px 12px"><div style="font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px">Vincitore</div>'
-        +'<div style="font-size:18px;font-weight:900;color:#111111;font-family:\'Bebas Neue\',Arial,sans-serif;letter-spacing:1px">'+esc(a.vincitore)+'</div>'
+        +'<div style="font-size:18px;font-weight:900;color:#111111;font-family:\'Bebas Neue\',Arial,sans-serif;letter-spacing:1px">'+esc((a.vincitore||'').split('/').map(function(s){return pdfName(s.trim());}).join(' / '))+'</div>'
         +(a.torneo?'<div style="font-size:11px;color:#888888;margin-top:2px">'+esc(a.torneo)+'</div>':'')
         +'</td><td style="padding:12px 12px;font-size:13px">'+noteHtml+'</td></tr>';
     }).join('');
