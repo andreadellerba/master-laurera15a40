@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <title>LAURERA 15A40 — Centro Sportivo</title>
 <link rel="icon" href="logo-192.jpg">
-<link rel="apple-touch-icon" href="logo-192.jpg">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Laurera 15A40">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Exo+2:wght@700;900&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
@@ -15,6 +19,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
+  --ov:255,255,255;
   --bg:#000000;--bg2:#0a0a0a;--bg3:#141414;--bg4:#1e1e1e;
   --border:#2a2a2a;--border2:#383838;
   --text:#ffffff;--text2:#888888;
@@ -56,7 +61,9 @@ body.light .fg input,body.light .fg select,body.light .fg textarea{background:#f
 .ticker-tape-content{display:inline-flex;animation:tickerScroll 44s linear infinite;}
 .ticker-tape-content span{display:inline-block;padding:13px 0;font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:1px;color:#111111;font-weight:700;padding-right:46px;}
 @keyframes tickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.tabs-inner{display:flex;align-items:center;justify-content:center;gap:6px;max-width:1400px;margin:0 auto;padding:10px 20px;}
+.tabs-inner{display:flex;align-items:center;justify-content:space-evenly;gap:8px;max-width:1500px;margin:0 auto;padding:10px 24px;}
+body.viewer .tabs-inner .tab{padding:10px 26px;font-size:15px;}
+body:not(.viewer) .tabs-inner{justify-content:space-between;}
 .tabs::-webkit-scrollbar{display:none}
 
 
@@ -208,8 +215,10 @@ body.light .fg input,body.light .fg select,body.light .fg textarea{background:#f
 .pcrd-name{font-family:"Bebas Neue",sans-serif;font-size:17px;letter-spacing:.5px;display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .pcrd-name-actions{display:flex;align-items:center;gap:7px;flex-shrink:0;}
 .pcrd-lv{font-family:"Bebas Neue",sans-serif;font-size:10px;padding:3px 8px;border-radius:6px;letter-spacing:.5px;}
-.pcrd-rows{display:flex;flex-wrap:wrap;gap:2px 14px;}
-.pcrd-row{display:flex;align-items:baseline;gap:5px;font-size:12px;white-space:nowrap;}
+/* Statistiche su una riga sola: 5 colonne uguali, etichetta sopra e valore sotto */
+.pcrd-rows{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;}
+.pcrd-row{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:12px;white-space:nowrap;text-align:center;min-width:0;}
+.pcrd-row-val{font-size:14px;}
 .pcrd-row-lbl{color:var(--text2);}
 .pcrd-row-val{font-weight:700;color:var(--text);}
 .pcrd-dot{color:#ffffff;opacity:.35;font-weight:400;margin:0 1px;}
@@ -285,23 +294,36 @@ body.light .fg input,body.light .fg select,body.light .fg textarea{background:#f
   .hdr-meteo-mobile{display:none!important;}
   .hdr-players-mobile{display:flex;align-items:center;gap:5px;position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:700;color:var(--text);background:var(--bg3);border:1px solid var(--border2);border-radius:999px;padding:5px 11px;white-space:nowrap;}
 
-  /* TABS — barra flottante in basso, solo icone, vetro sfumato; la voce attiva è una pillola staccata */
+  /* TABS — menu mobile in stile itstracker: pillola di vetro con icone a tratto
+     (la voce attiva in giallo su una pillola chiara) + pillola profilo a destra */
   .tabs{border-top:none!important;border-bottom:none!important;background:transparent!important;}
   .tabs-inner{display:none!important;}
-  .tabs-mobile2{display:flex!important;position:fixed;left:10px;right:10px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:900;margin:0;
-    background:linear-gradient(150deg,rgba(30,30,30,.78),rgba(8,8,8,.62));
-    -webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);
-    border:1px solid rgba(255,255,255,.09);border-radius:999px;box-shadow:0 14px 36px rgba(0,0,0,.5);
-    padding:clamp(5px,1.6vw,10px) clamp(3px,1.2vw,7px);gap:clamp(1px,0.6vw,4px);overflow:hidden;justify-content:space-between;align-items:center;}
-  .tabs-mobile2::-webkit-scrollbar{display:none;}
-  /* Le voci si dividono equamente la larghezza disponibile: nessuno scroll, si adatta al telefono */
-  .bn-item{display:flex!important;align-items:center;justify-content:center;flex:1 1 0;min-width:0;max-width:50px;aspect-ratio:1/1;padding:0!important;border-radius:50%!important;color:var(--text2);background:transparent;}
-  .bn-icon{font-size:clamp(14px,5.2vw,24px);line-height:1;filter:grayscale(1) brightness(1.4) opacity(.7);transition:filter .2s,transform .2s;}
-  .bn-item.active{background:rgba(232,255,0,.16)!important;}
-  .bn-item.active .bn-icon{filter:none;transform:scale(1.1);}
+  .hdr-admin-col{display:none!important;}
+  .tabs-mobile2{display:flex!important;position:fixed;left:14px;right:14px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:900;margin:0 auto;max-width:452px;
+    flex-wrap:nowrap;gap:10px;align-items:stretch;justify-content:center;padding:0;background:none;border:none;}
+  .tabs-mobile2 .tbar{position:relative;display:flex;padding:0;overflow:hidden;
+    background:rgba(var(--ov),.08);-webkit-backdrop-filter:blur(38px) saturate(220%);backdrop-filter:blur(38px) saturate(220%);
+    border:.5px solid rgba(var(--ov),.22);border-radius:30px;
+    box-shadow:0 10px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(var(--ov),.15),inset 0 -1px 0 rgba(0,0,0,.2);}
+  .tabs-mobile2 .tbar::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+    background:linear-gradient(180deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.03) 22%,rgba(255,255,255,0) 45%);}
+  .tabs-mobile2 .pill-main{flex:1;min-width:0;}
+  .tabs-mobile2 .pill-side{flex:0 0 auto;}
+  .tabs-mobile2 .tbtn{position:relative;z-index:1;flex:1 1 0;min-width:0;display:flex!important;align-items:center;justify-content:center;
+    background:none!important;border:none;color:rgba(var(--ov),.45);font-family:inherit;padding:15px 0!important;border-radius:26px!important;
+    transition:color .2s,transform .12s ease;-webkit-appearance:none;appearance:none;cursor:pointer;}
+  .tabs-mobile2 .pill-side .tbtn{flex:0 0 auto;padding:15px 18px!important;}
+  .tabs-mobile2 .tbtn:active{transform:scale(.94);}
+  .tabs-mobile2 .tbtn.active{color:var(--accent);}
+  .tabs-mobile2 .tbtn.active::before{content:'';position:absolute;inset:0;z-index:-1;border-radius:30px;background:rgba(var(--ov),.14);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.25),inset 0 -1px 2px rgba(0,0,0,.15);}
+  .tabs-mobile2 .tbtn svg{width:clamp(22px,7vw,29px);height:clamp(22px,7vw,29px);shape-rendering:geometricPrecision;}
+  body:not(.viewer) .tabs-mobile2 .pill-main .tbtn svg{width:clamp(20px,6vw,26px);height:clamp(20px,6vw,26px);}
+  body.viewer .tabs-mobile2 .tab[data-tab="settings"]{display:flex!important;}
   .fab{bottom:calc(104px + env(safe-area-inset-bottom))!important;}
   #install-banner{bottom:calc(104px + env(safe-area-inset-bottom))!important;}
   .toast{bottom:calc(104px + env(safe-area-inset-bottom))!important;}
+
 
   /* TICKER */
   .ticker-tape{border-bottom-width:1px;}
@@ -414,7 +436,8 @@ body.light .fg input,body.light .fg select,body.light .fg textarea{background:#f
   .pcrd-name{font-size:15px;}
   .pcrd-name img{width:16px;height:12px;}
   .pcrd-lv{font-size:9px;padding:2px 6px;}
-  .pcrd-row{font-size:11px;}
+  .pcrd-row{font-size:10px;}
+  .pcrd-row-val{font-size:13px;}
   .pcrd-edit{font-size:12px;}
 
   /* TORNEO CARDS */
@@ -448,16 +471,6 @@ body.light .fg input,body.light .fg select,body.light .fg textarea{background:#f
   .stg-block{padding:12px}
 }
 
-/* SCHERMI PICCOLI — menu e emoji più compatti per stare comodi in larghezza */
-@media(max-width:380px){
-  .tabs-mobile2{left:6px;right:6px;padding:4px 3px;gap:1px;}
-  .bn-item{max-width:44px;}
-  .bn-icon{font-size:clamp(13px,5vw,20px);}
-}
-@media(max-width:330px){
-  .tabs-mobile2{left:4px;right:4px;}
-  .bn-icon{font-size:clamp(12px,4.6vw,18px);}
-}
 
 .cmc-right{margin-left:auto;display:flex;align-items:center;gap:5px;flex-shrink:0}
 .cmc-res{text-align:right}
@@ -609,6 +622,9 @@ body.viewer .btn-p:not(#modal-admin-login .btn-p),body.viewer .btn-d,body.viewer
 body.viewer .fab,body.viewer .mactions,body.viewer button[onclick*="savePlayer"],body.viewer button[onclick*="saveCalMatch"],body.viewer button[onclick*="saveTorneo"],body.viewer button[onclick*="saveManualBracket"],body.viewer button[onclick*="saveFantaPrediction"]{display:none!important;}
 body.viewer .tab[data-tab="settings"]{display:none!important;}
 body.viewer .tab[data-tab="fanta"]{display:none!important;}
+/* Non-admin: Tornei e Ranking nascosti (restano per l'admin) */
+body.viewer .tab[data-tab="tornei"],body.viewer .tab[data-tab="classifiche-torneo"]{display:none!important;}
+body.light{--ov:0,0,0;}
 body.viewer #settings-gear-btn{display:none!important;}
 body.viewer .adm-hint{display:none!important;}
 /* Non-admin: niente livello sulle card, anello avatar giallo (colore app) invece del colore-livello.
@@ -664,14 +680,20 @@ body.viewer .pdf-btn,body.viewer [onclick*="openExportCalModal"],body.viewer [on
       </div>
       </nav>
 <div class="ticker-tape"><div class="ticker-tape-content" id="ticker-tape-content"></div></div>
+<!-- Menu mobile: stile itstracker (pillola vetro con icone + pillola profilo a destra) -->
 <div class="tabs-mobile2">
-  <div class="tab bn-item" data-tab="players" onclick="switchTab('players')" title="Home"><span class="bn-icon">🏠</span></div>
-  <div class="tab bn-item" data-tab="tornei" onclick="switchTab('tornei')" title="Tornei"><span class="bn-icon">🏆</span></div>
-  <div class="tab bn-item" data-tab="calendario" onclick="switchTab('calendario')" title="Calendario"><span class="bn-icon">📅</span></div>
-  <div class="tab bn-item" data-tab="risultati" onclick="switchTab('risultati')" title="Risultati"><span class="bn-icon">🏅</span></div>
-  <div class="tab bn-item" data-tab="classifiche-torneo" onclick="switchTab('classifiche-torneo')" title="Ranking"><span class="bn-icon">📈</span></div>
-  <div class="tab bn-item" data-tab="classifiche" onclick="switchTab('classifiche')" title="Classifiche"><span class="bn-icon">📊</span></div>
-  <div class="tab bn-item" data-tab="albo" onclick="switchTab('albo')" title="Albo d'Oro"><span class="bn-icon">👑</span></div>
+  <div class="tbar pill-main">
+    <button type="button" class="tab tbtn" data-tab="players" onclick="switchTab('players')" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg></button>
+    <button type="button" class="tab tbtn" data-tab="tornei" onclick="switchTab('tornei')" title="Tornei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4"/><path d="M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/><path d="M12 14v3"/><path d="M8.5 21h7"/><path d="M9.5 17h5v4h-5z"/></svg></button>
+    <button type="button" class="tab tbtn" data-tab="calendario" onclick="switchTab('calendario')" title="Calendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg></button>
+    <button type="button" class="tab tbtn" data-tab="risultati" onclick="switchTab('risultati')" title="Risultati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M5.5 6.5c3 2 4 5.5 3 11"/><path d="M18.5 17.5c-3-2-4-5.5-3-11"/></svg></button>
+    <button type="button" class="tab tbtn" data-tab="classifiche-torneo" onclick="switchTab('classifiche-torneo')" title="Ranking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></button>
+    <button type="button" class="tab tbtn" data-tab="classifiche" onclick="switchTab('classifiche')" title="Classifiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V12"/><path d="M12 21V5"/><path d="M19 21v-6"/></svg></button>
+    <button type="button" class="tab tbtn" data-tab="albo" onclick="switchTab('albo')" title="Albo d'Oro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5L3 7Z"/><path d="M5 21h14"/></svg></button>
+  </div>
+  <div class="tbar pill-side">
+    <button type="button" class="tab tbtn" data-tab="settings" onclick="mobileProfileTap()" title="Admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="4"/><path d="M5 20.5a7 7 0 0 1 14 0"/></svg></button>
+  </div>
 </div>
 
 <div id="page-players" class="page active">
@@ -1159,8 +1181,25 @@ body.viewer .pdf-btn,body.viewer [onclick*="openExportCalModal"],body.viewer [on
 
 // ═══ ADMIN / VIEWER ═══
 function _checkViewer(){return document.body.classList.contains('viewer');}
-function enableAdmin(){document.body.classList.remove('viewer');const btn=document.getElementById('admin-lock-btn');if(btn){btn.textContent='🔓';btn.title='Admin attivo — clicca per uscire';btn.classList.add('is-admin');btn.onclick=adminLogout;}}
-function adminLogout(){_auth.signOut();document.body.classList.add('viewer');const btn=document.getElementById('admin-lock-btn');if(btn){btn.textContent='🔐';btn.title='Admin';btn.classList.remove('is-admin');btn.onclick=openAdminModal;}if(currentTab==='settings')switchTab('players');toast('👋 Uscito dalla modalità admin');}
+function enableAdmin(){document.body.classList.remove('viewer');const btn=document.getElementById('admin-lock-btn');if(btn){btn.textContent='🔓';btn.title='Admin attivo — clicca per uscire';btn.classList.add('is-admin');btn.onclick=adminLogout;}flushOrphanPurge();}
+// Partite (calendario/risultati) di tornei eliminati: spariscono ovunque.
+// Si filtrano in memoria per tutti; il salvataggio su Firestore lo fa solo
+// un admin e solo con dati letti dal server (mai da cache locale).
+let _orphanPurgePending=false;const _serverOK={main:false,tornei:false};
+function pruneOrphanSched(){
+  if(!Array.isArray(tornei)||!tornei.length)return 0;
+  const ids=new Set(tornei.map(t=>t.id));const before=sched.length;
+  sched=sched.filter(s=>s.torneoId==null||ids.has(s.torneoId));
+  const removed=before-sched.length;if(removed)_orphanPurgePending=true;
+  return removed;
+}
+function flushOrphanPurge(){
+  if(!_orphanPurgePending||_checkViewer()||!_serverOK.main||!_serverOK.tornei)return;
+  _orphanPurgePending=false;save();
+}
+function adminLogout(){_auth.signOut();document.body.classList.add('viewer');const btn=document.getElementById('admin-lock-btn');if(btn){btn.textContent='🔐';btn.title='Admin';btn.classList.remove('is-admin');btn.onclick=openAdminModal;}if(['settings','tornei','classifiche-torneo','fanta'].includes(currentTab))switchTab('players');toast('👋 Uscito dalla modalità admin');}
+// Menu mobile, pillola profilo: non-admin -> accesso admin; admin -> Impostazioni.
+function mobileProfileTap(){if(_checkViewer())openAdminModal();else switchTab('settings');}
 function openAdminModal(){const ei=document.getElementById('admin-email-input');const pi=document.getElementById('admin-pw-input');if(ei)ei.value='';if(pi)pi.value='';document.getElementById('admin-pw-err').style.display='none';document.getElementById('modal-admin-login').classList.add('open');setTimeout(()=>{if(ei)ei.focus();else if(pi)pi.focus();},100);}
 async function submitAdminLogin(){const email=document.getElementById('admin-email-input').value.trim();const pw=document.getElementById('admin-pw-input').value;if(!email||!pw)return;const btn=document.querySelector('#modal-admin-login .btn-p');if(btn)btn.disabled=true;try{await _auth.signInWithEmailAndPassword(email,pw);document.getElementById('modal-admin-login').classList.remove('open');toast('✅ Benvenuto Admin!');}catch(e){document.getElementById('admin-pw-err').style.display='block';}finally{if(btn)btn.disabled=false;}}
 function initAdmin(){_auth.onAuthStateChanged(user=>{if(user)enableAdmin();});}
@@ -2199,11 +2238,10 @@ function buildPlayerCardHTML(p,opts){
   const rowItem=(lbl,valHtml)=>`<div class="pcrd-row"><span class="pcrd-row-lbl">${lbl}</span><span class="pcrd-row-val">${valHtml}</span></div>`;
   const valC=(val,col)=>col?`<span style="color:${col}">${val}</span>`:`<span>${val}</span>`;
   const rowsHtml=
-    rowItem('Ranking',valC(`#${d.rankPos||'-'}`,'#38bdf8'))+
-    rowItem('Punti',valC(d.pts,'#9b59b6'))+
     rowItem('Match',valC(p.pg||0,'var(--accent)'))+
+    rowItem('Punti',valC(d.pts,'#9b59b6'))+
     rowItem('V/P/S',storicoHtml(p.storico))+
-    rowItem('Game Tot.',valC(p.gv||0,'#e620a0'))+
+    rowItem('Game',valC(p.gv||0,'#e620a0'))+
     rowItem('Media',valC((p.mg||0).toFixed(2),'#ff7a00'));
   return`<div class="pcrd ${d.isFoil?'foil':''}">
     <div class="pcrd-ring" style="background:${ringBg};cursor:${opts.interactive?'pointer':'default'}"${ringClick}><div class="pcrd-ring-inner">${photoHtml}</div></div>
@@ -2897,8 +2935,14 @@ function deleteTorneo(){
   if(!editTorneoId||!confirm('Eliminare il torneo?'))return;
   const t=tornei.find(x=>x.id===editTorneoId);
   addLog('🗑️',`Eliminato torneo "${t?.nome}"`);
-  tornei=tornei.filter(x=>x.id!==editTorneoId);
+  const delId=editTorneoId;
+  tornei=tornei.filter(x=>x.id!==delId);
   saveTornei();
+  // Via anche partite, risultati e calendario di quel torneo
+  const before=sched.length;sched=sched.filter(s=>s.torneoId!==delId);
+  if(sched.length!==before)save();
+  if(typeof calActiveTorneoId!=='undefined'&&calActiveTorneoId===delId)calActiveTorneoId=null;
+  renderTickerTape();updateHdrStats();renderRisultati();
   document.getElementById('modal-torneo').classList.remove('open');
   document.getElementById('torneo-detail-wrap').innerHTML='';
   renderTornei();toast('🗑️ Eliminato');
@@ -3430,6 +3474,7 @@ migrateStorageNamespace();
 initTheme();initAdmin();fillNazList();
 (async()=>{
   await Promise.all([loadTornei(),loadFanta(),loadAlbo(),load(),loadLog()]);
+  pruneOrphanSched();
   migrateStoricoAll();
   renderLog();
 
@@ -3438,6 +3483,8 @@ initTheme();initAdmin();fillNazList();
     if(_skipNextSnap.main){_skipNextSnap.main=false;return;}
     if(!snap.exists)return;
     const d=snap.data();players=d.players||[];matches=d.matches||[];sched=d.sched||[];nextId=d.nextId||100;matchNextId=d.matchNextId||200;schedNextId=d.schedNextId||300;
+    if(!snap.metadata.fromCache)_serverOK.main=true;
+    pruneOrphanSched();flushOrphanPurge();
     _attachPhotos();_lsCache();
     renderCards();renderTickerTape();updateHdrStats();renderRisultati();
     if(currentTab==='classifiche')renderRank();
@@ -3446,6 +3493,8 @@ initTheme();initAdmin();fillNazList();
     if(_skipNextSnap.tornei){_skipNextSnap.tornei=false;return;}
     if(!snap.exists)return;
     const d=snap.data();tornei=_decodeTorneiField(d.tornei);tNextId=d.tNextId||1000;
+    if(!snap.metadata.fromCache)_serverOK.tornei=true;
+    if(pruneOrphanSched()){flushOrphanPurge();renderCards();renderTickerTape();updateHdrStats();renderRisultati();if(currentTab==='calendario'&&calActiveTorneoId)calRender();}
     if(currentTab==='tornei')renderTornei();
     if(currentTab==='calendario')renderCalTorneoSelector();
     if(currentTab==='classifiche-torneo')renderRanking();
@@ -4594,15 +4643,32 @@ document.addEventListener('click',function(e){
     try{if(localStorage.getItem('laurera_install_dismissed'))return;}catch(err){}
     showInstallBanner();
   });
-  function showInstallBanner(){
+  // Service worker minimo (nessuna cache): rende l'app installabile su PC e Android.
+  if('serviceWorker' in navigator&&location.protocol==='https:'){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+  }
+  // iPhone/iPad (Safari): niente prompt automatico, si spiega come fare.
+  var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  var standalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
+  if(isIOS&&!standalone){
+    var dismissed=false;try{dismissed=!!localStorage.getItem('laurera_install_dismissed');}catch(e){}
+    if(!dismissed)setTimeout(function(){showInstallBanner(true);},2500);
+  }
+  function showInstallBanner(ios){
     if(document.getElementById('install-banner'))return;
     var banner=document.createElement('div');
     banner.id='install-banner';
-    banner.innerHTML='<span class="ib-text">📲 Aggiungi Laurera 15A40 alla schermata Home</span>'
-      +'<button type="button" class="ib-install">Installa</button>'
-      +'<button type="button" class="ib-close" title="Chiudi">✕</button>';
+    banner.innerHTML=ios
+      ?'<img src="icon-180.png" alt="" style="width:34px;height:34px;border-radius:8px;flex-shrink:0">'
+        +'<span class="ib-text">Installa l\'app: tocca <b>Condividi</b> <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> e poi <b>Aggiungi alla schermata Home</b></span>'
+        +'<button type="button" class="ib-close" title="Chiudi">✕</button>'
+      :'<img src="icon-180.png" alt="" style="width:34px;height:34px;border-radius:8px;flex-shrink:0">'
+        +'<span class="ib-text">Installa Laurera 15A40 come app</span>'
+        +'<button type="button" class="ib-install">Installa</button>'
+        +'<button type="button" class="ib-close" title="Chiudi">✕</button>';
     document.body.appendChild(banner);
-    banner.querySelector('.ib-install').onclick=async function(){
+    var inst=banner.querySelector('.ib-install');
+    if(inst)inst.onclick=async function(){
       banner.remove();
       if(deferredPrompt){deferredPrompt.prompt();try{await deferredPrompt.userChoice;}catch(e){}deferredPrompt=null;}
     };
