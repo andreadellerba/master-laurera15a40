@@ -63,7 +63,7 @@ body.light .fg input,body.light .fg select,body.light .fg textarea{background:#f
 @media(max-width:640px){.hdr-info{min-width:auto;}}
 /* TABS */
 .tabs{background:var(--bg2);border-top:3px solid var(--accent);border-bottom:3px solid var(--accent);overflow-x:auto;scrollbar-width:none;position:sticky;top:var(--header-h,0px);z-index:999;backdrop-filter:blur(20px);letter-spacing:.5px;}
-.ticker-tape{position:sticky;top:calc(var(--header-h,0px) + var(--tabs-h,0px));z-index:998;overflow:hidden;white-space:nowrap;background:var(--accent);border-bottom:3px solid #000;}
+.ticker-tape{position:sticky;top:calc(var(--header-h,0px) + var(--tabs-h,0px) + 8px);z-index:998;overflow:hidden;white-space:nowrap;background:var(--accent);border-bottom:none;margin:8px 20px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.45),0 0 18px rgba(232,255,0,.18),inset 0 1px 0 rgba(255,255,255,.45);}
 .ticker-tape-content{display:inline-flex;animation:tickerScroll 44s linear infinite;}
 .ticker-tape-content span{display:inline-block;padding:13px 0;font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:1px;color:#111111;font-weight:700;padding-right:46px;}
 @keyframes tickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -334,8 +334,8 @@ body:not(.viewer) .tabs-inner{justify-content:space-between;}
 
 
   /* TICKER */
-  .ticker-tape{border-bottom-width:1px;}
-  .ticker-tape-content span{font-size:10px;padding:4px 0;padding-right:14px;}
+  .ticker-tape{margin:8px 10px;}
+  .ticker-tape-content span{font-size:14px;padding:7px 0;padding-right:22px;}
 
   /* QUOTE BAR — in flusso, sopra a ricerca/ordinamento, ALTEZZA FISSA per 2 righe:
      1 riga = centrata verticalmente, 2 righe = riempie, 3+ righe = troncate (non spinge mai la pagina) */
@@ -2673,12 +2673,13 @@ function initQuotes(){
     const q=QUOTES[quoteIdx];
     const inner='"'+q.q+'"'+(q.a?' <strong style="color:var(--accent)">'+q.a+'</strong>':'');
     const html='<span style="display:block;text-align:center">'+inner+'</span>';
+    const first=!el2||!el2.innerHTML;
     if(el){el.style.opacity='0';}
     if(el2){el2.style.opacity='0';}
     setTimeout(()=>{
       if(el){el.innerHTML=html;el.style.opacity='1';}
       if(el2){el2.innerHTML=html;el2.style.opacity='1';}
-    },400);
+    },first?0:400);
     quoteIdx=(quoteIdx+1)%QUOTES.length;
   }
   show();
@@ -3539,6 +3540,7 @@ function migrateStorageNamespace(){
 migrateStorageNamespace();
 initTheme();initAdmin();fillNazList();
 (async()=>{
+  initQuotes(); // citazioni subito, senza aspettare i dati dal database
   // Apertura veloce: si mostrano subito i giocatori dell'ultima visita (copia
   // locale), poi arrivano i dati aggiornati da Firestore e si ridisegna tutto.
   try{
@@ -3595,7 +3597,7 @@ initTheme();initAdmin();fillNazList();
     }
   });
   // Aggiorna albo per tornei già completati
-  setTimeout(function(){tornei.forEach(function(t){if(t.bracket)autoAlboCheck(t.id);});},300);migrateAlboNotes();renderAlbo();renderCards();renderTickerTape();updateHdrStats();fetchMeteo();setInterval(updateHdrClock,1000);setInterval(updateHdrStats,30000);setInterval(fetchMeteo,600000);updateHdrClock();initQuotes();
+  setTimeout(function(){tornei.forEach(function(t){if(t.bracket)autoAlboCheck(t.id);});},300);migrateAlboNotes();renderAlbo();renderCards();renderTickerTape();updateHdrStats();fetchMeteo();setInterval(updateHdrClock,1000);setInterval(updateHdrStats,30000);setInterval(fetchMeteo,600000);updateHdrClock();
 })();
 function advanceBracket(torneoId,p1Id,p2Id,winnerId,risultato){
   const t=tornei.find(x=>x.id===torneoId);
