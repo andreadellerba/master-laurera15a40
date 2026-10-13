@@ -688,7 +688,23 @@ body:not(.light) .srch-pill:focus-within{border-color:rgba(232,255,0,.6)!importa
 .pg-title{background:none;color:var(--text);clip-path:none;padding:2px 0;gap:10px;}
 .pg-title::before{content:'';width:4px;height:20px;border-radius:4px;background:var(--accent);flex-shrink:0;}
 /* Card giocatore: bandiera/nome allineati a sinistra con le statistiche sotto */
-.pcrd-row{align-items:flex-start;text-align:left;}
+/* Card giocatore: tessere (Match, V/P/S, Game) + Media in evidenza a destra,
+   luce gialla nell'angolo e anello che brilla */
+.pcrd-rows{grid-template-columns:1fr 1.45fr 1fr;gap:5px;}
+.pcrd-row{align-items:center;text-align:center;background:rgba(var(--ov),.06);border:.5px solid rgba(var(--ov),.1);border-radius:10px;padding:4px 2px 5px;}
+.pcrd-row-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.3px;}
+.pcrd .pcrd-row-val{font-size:14px;font-weight:800;}
+.pcrd-hero{flex-shrink:0;align-self:stretch;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;padding-left:12px;border-left:.5px solid rgba(var(--ov),.14);position:relative;z-index:1;}
+.pcrd-hero b{font-family:"Bebas Neue",sans-serif;font-size:32px;line-height:.95;font-weight:400;color:var(--accent);text-shadow:0 0 18px rgba(232,255,0,.35);}
+.pcrd-hero span{font-size:9.5px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;}
+body.light .pcrd-hero b{color:#111;text-shadow:none;}
+.pcrd::before{content:'';position:absolute;left:0;top:0;width:84px;height:84px;background:radial-gradient(circle at 0 0,rgba(232,255,0,.26),transparent 70%);pointer-events:none;}
+.pcrd-ring,.pcrd-info{position:relative;z-index:1;}
+.pcrd-ring{box-shadow:0 0 16px rgba(232,255,0,.35);}
+.pcrd.foil .pcrd-ring{box-shadow:0 0 16px rgba(255,215,0,.45);}
+/* PC stretto: la citazione va su una riga sua sotto ricerca e ordinamento (prima si sovrapponeva) */
+@media(min-width:641px) and (max-width:1320px){#page-players .filters{flex-wrap:wrap;}#quote-text-inline{position:static!important;transform:none!important;order:10;flex:1 1 100%;white-space:normal!important;}}
+@media(max-width:640px){.pcrd-hero{min-width:58px;padding-left:10px;}.pcrd-hero b{font-size:28px;}.pcrd .pcrd-row-val{font-size:13px;}}
 </style>
 </head>
 <body class="viewer">
@@ -2284,10 +2300,8 @@ function buildPlayerCardHTML(p,opts){
   const valC=(val,col)=>col?`<span style="color:${col}">${val}</span>`:`<span>${val}</span>`;
   const rowsHtml=
     rowItem('Match',valC(p.pg||0,'var(--accent)'))+
-    rowItem('Punti',valC(d.pts,'#9b59b6'))+
     rowItem('V/P/S',storicoHtml(p.storico))+
-    rowItem('Game',valC(p.gv||0,'#e620a0'))+
-    rowItem('Media',valC((p.mg||0).toFixed(2),'#ff7a00'));
+    rowItem('Game',valC(p.gv||0,'#e620a0'));
   return`<div class="pcrd ${d.isFoil?'foil':''}">
     <div class="pcrd-ring" style="background:${ringBg};cursor:${opts.interactive?'pointer':'default'}"${ringClick}><div class="pcrd-ring-inner">${photoHtml}</div></div>
     <div class="pcrd-info">
@@ -2300,6 +2314,7 @@ function buildPlayerCardHTML(p,opts){
       </div>
       <div class="pcrd-rows">${rowsHtml}</div>
     </div>
+    <div class="pcrd-hero"><b>${(p.mg||0).toFixed(2)}</b><span>Media</span></div>
   </div>`;
 }
 function openPlayerCard(playerId){
