@@ -637,6 +637,8 @@ body.viewer .tab[data-tab="fanta"]{display:none!important;}
 /* Non-admin: Tornei e Ranking nascosti (restano per l'admin) */
 body.viewer .tab[data-tab="tornei"],body.viewer .tab[data-tab="classifiche-torneo"]{display:none!important;}
 body.light{--ov:0,0,0;}
+/* Ranking nascosto per ora a tutti, admin compresi (la pagina resta, si riattiva togliendo questa riga) */
+.tab[data-tab="classifiche-torneo"]{display:none!important;}
 /* Non-admin: niente "+ Risultato", matita e clic di modifica sulle partite del calendario */
 body.viewer .add-res-btn,body.viewer .cmc-edit{display:none!important;}
 body.viewer .cmc{cursor:default;}body.viewer .cmc:hover{transform:none;}
