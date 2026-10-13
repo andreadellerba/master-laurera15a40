@@ -690,6 +690,12 @@ body:not(.light) .srch-pill:focus-within{border-color:rgba(232,255,0,.6)!importa
 /* Card giocatore: bandiera/nome allineati a sinistra con le statistiche sotto */
 /* Card giocatore: tessere (Match, V/P/S, Game) + Media in evidenza a destra,
    luce gialla nell'angolo e anello che brilla */
+/* Nome centrato sopra le tessere, bandiera alta quanto le lettere; badge livello e matita (solo admin) a destra */
+.pcrd-name-row{justify-content:center;position:relative;}
+.pcrd-name{justify-content:center;}
+.pcrd .pcrd-name img{height:.72em;width:auto;border-radius:1.5px;}
+.pcrd-name-actions{position:absolute;right:0;top:50%;transform:translateY(-50%);}
+body:not(.viewer) .pcrd-name-row{padding-right:62px;}
 .pcrd-rows{grid-template-columns:1fr 1.45fr 1fr;gap:5px;}
 .pcrd-row{align-items:center;text-align:center;background:rgba(var(--ov),.06);border:.5px solid rgba(var(--ov),.1);border-radius:10px;padding:4px 2px 5px;}
 .pcrd-row-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.3px;}
