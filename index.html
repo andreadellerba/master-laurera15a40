@@ -306,19 +306,22 @@ body:not(.viewer) .tabs-inner{justify-content:space-between;}
      (la voce attiva in giallo su una pillola chiara) + pillola profilo a destra */
   .tabs{border-top:none!important;border-bottom:none!important;background:transparent!important;}
   .tabs-inner{display:none!important;}
-  .hdr-admin-col{display:none!important;}
-  .tabs-mobile2{display:flex!important;position:fixed;left:14px;right:14px;bottom:calc(22px + env(safe-area-inset-bottom));z-index:900;margin:0 auto;max-width:452px;
+  /* Contatore giocatori e lucchetto allineati alla parte bassa del logo ("aurera", senza la L) */
+  .hdr-players-mobile{top:calc(50% + 6px)!important;}
+  .hdr-info{top:calc(50% + 6px)!important;}
+  #admin-lock-btn,#settings-gear-btn{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;opacity:1;background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,.035));border:.5px solid rgba(255,255,255,.2);box-shadow:inset 0 1px 0 rgba(255,255,255,.14);}
+  .tabs-mobile2{display:flex!important;position:fixed;left:14px;right:14px;bottom:calc(30px + env(safe-area-inset-bottom));z-index:900;margin:0 auto;max-width:452px;
     flex-wrap:nowrap;gap:10px;align-items:stretch;justify-content:center;padding:0;background:none;border:none;}
   .tabs-mobile2 .tbar{position:relative;display:flex;padding:0;overflow:hidden;
-    background:rgba(var(--ov),.08);-webkit-backdrop-filter:blur(38px) saturate(220%);backdrop-filter:blur(38px) saturate(220%);
-    border:.5px solid rgba(var(--ov),.22);border-radius:30px;
-    box-shadow:0 10px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(var(--ov),.15),inset 0 -1px 0 rgba(0,0,0,.2);}
+    background:rgba(16,16,16,.84);-webkit-backdrop-filter:blur(38px) saturate(220%);backdrop-filter:blur(38px) saturate(220%);
+    border:.5px solid rgba(255,255,255,.26);border-radius:30px;
+    box-shadow:0 12px 40px rgba(0,0,0,.75),0 0 0 1px rgba(0,0,0,.6),0 0 22px rgba(232,255,0,.12),inset 0 1px 0 rgba(255,255,255,.18),inset 0 -1px 0 rgba(0,0,0,.2);}
   .tabs-mobile2 .tbar::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;
     background:linear-gradient(180deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,.03) 22%,rgba(255,255,255,0) 45%);}
   .tabs-mobile2 .pill-main{flex:1;min-width:0;}
   .tabs-mobile2 .pill-side{flex:0 0 auto;}
   .tabs-mobile2 .tbtn{position:relative;z-index:1;flex:1 1 0;min-width:0;display:flex!important;align-items:center;justify-content:center;
-    background:none!important;border:none;color:rgba(var(--ov),.45);font-family:inherit;padding:15px 0!important;border-radius:26px!important;
+    background:none!important;border:none;color:rgba(255,255,255,.62);font-family:inherit;padding:15px 0!important;border-radius:26px!important;
     transition:color .2s,transform .12s ease;-webkit-appearance:none;appearance:none;cursor:pointer;}
   .tabs-mobile2 .pill-side .tbtn{flex:0 0 auto;padding:15px 18px!important;}
   .tabs-mobile2 .tbtn:active{transform:scale(.94);}
@@ -328,9 +331,9 @@ body:not(.viewer) .tabs-inner{justify-content:space-between;}
   .tabs-mobile2 .tbtn svg{width:clamp(22px,7vw,29px);height:clamp(22px,7vw,29px);shape-rendering:geometricPrecision;}
   body:not(.viewer) .tabs-mobile2 .pill-main .tbtn svg{width:clamp(20px,6vw,26px);height:clamp(20px,6vw,26px);}
   body.viewer .tabs-mobile2 .tab[data-tab="settings"]{display:flex!important;}
-  .fab{bottom:calc(104px + env(safe-area-inset-bottom))!important;}
-  #install-banner{bottom:calc(104px + env(safe-area-inset-bottom))!important;}
-  .toast{bottom:calc(104px + env(safe-area-inset-bottom))!important;}
+  .fab{bottom:calc(112px + env(safe-area-inset-bottom))!important;}
+  #install-banner{bottom:calc(112px + env(safe-area-inset-bottom))!important;}
+  .toast{bottom:calc(112px + env(safe-area-inset-bottom))!important;}
 
 
   /* TICKER */
@@ -710,7 +713,15 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
 .pcrd.foil .pcrd-ring{box-shadow:0 0 16px rgba(255,215,0,.45);}
 /* PC stretto: la citazione va su una riga sua sotto ricerca e ordinamento (prima si sovrapponeva) */
 @media(min-width:641px) and (max-width:1320px){#page-players .filters{flex-wrap:wrap;}#quote-text-inline{position:static!important;transform:none!important;order:10;flex:1 1 100%;white-space:normal!important;}}
-@media(max-width:640px){.pcrd-hero{min-width:58px;padding-left:10px;}.pcrd-hero b{font-size:28px;}.pcrd .pcrd-row-val{font-size:13px;}}
+@media(max-width:640px){.pcrd-hero{min-width:58px;padding-left:10px;}.pcrd-hero b{font-size:30px;}.pcrd .pcrd-row-val{font-size:13px;}
+  /* Telefono: nome più grande e tessere più basse, "MATCH 0" su una riga */
+  .pcrd .pcrd-name{font-size:19px;}
+  .pcrd-name-row{margin-bottom:6px;}
+  .pcrd-row{flex-direction:row;justify-content:center;align-items:baseline;gap:4px;padding:5px 3px;}
+  .pcrd .pcrd-row-val{font-size:14px;}
+}
+@media(max-width:430px){.logo-img{max-width:calc(100vw - 196px)!important;height:auto!important;max-height:56px;}}
+@media(max-width:359px){.pcrd-row{flex-direction:column;align-items:center;gap:1px;padding:4px 2px;}.pcrd .pcrd-name{font-size:17px;}}
 </style>
 </head>
 <body class="viewer">
@@ -757,9 +768,6 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
     <button type="button" class="tab tbtn" data-tab="classifiche-torneo" onclick="switchTab('classifiche-torneo')" title="Ranking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></button>
     <button type="button" class="tab tbtn" data-tab="classifiche" onclick="switchTab('classifiche')" title="Classifiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V12"/><path d="M12 21V5"/><path d="M19 21v-6"/></svg></button>
     <button type="button" class="tab tbtn" data-tab="albo" onclick="switchTab('albo')" title="Albo d'Oro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5L3 7Z"/><path d="M5 21h14"/></svg></button>
-  </div>
-  <div class="tbar pill-side">
-    <button type="button" class="tab tbtn" data-tab="settings" onclick="mobileProfileTap()" title="Admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="4"/><path d="M5 20.5a7 7 0 0 1 14 0"/></svg></button>
   </div>
 </div>
 
@@ -1325,7 +1333,8 @@ const mobileShortName=nome=>{
     return parts[0].charAt(0)+'. '+parts.slice(1).join(' ');
   }).join(' / ');
 };
-const dispName=nome=>isMobileView()?mobileShortName(nome):nome;
+// Nome puntato + cognome ovunque (la Home mostra invece il nome completo)
+const dispName=nome=>mobileShortName(nome);
 const avc=id=>`av-${id%8}`;
 const caC={1:'#86efac',2:'#16a34a',3:'#eab308',4:'#f97316',5:'#ef4444'};
 const NAZIONALITA=['ITALIA','FRANCIA','SPAGNA','GERMANIA','SVIZZERA','REGNO UNITO','PORTOGALLO','BELGIO','OLANDA','AUSTRIA','SERBIA','CROAZIA','ARGENTINA','BRASILE','STATI UNITI','RUSSIA','POLONIA','ROMANIA','GRECIA','ALBANIA','TUNISIA','MAROCCO','ALTRO'];
@@ -2492,7 +2501,7 @@ function renderH2H(){
   // Get all direct matches between the two
   const matches=sched.filter(m=>m.risultato&&((m.p1Id===p1.id&&m.p2Id===p2.id)||(m.p1Id===p2.id&&m.p2Id===p1.id))).sort((a,b)=>b.data.localeCompare(a.data));
   if(!matches.length){
-    cont.innerHTML=`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Nessuna partita diretta tra ${esc(p1.nome)} e ${esc(p2.nome)}.</div>`;
+    cont.innerHTML=`<div style="text-align:center;padding:16px;color:var(--text2);font-size:13px">Nessuna partita diretta tra ${esc(dispName(p1.nome))} e ${esc(dispName(p2.nome))}.</div>`;
     return;
   }
   // Count results
@@ -3367,7 +3376,7 @@ function renderFantaPronostici(){
       <!-- Match summary row -->
       <div style="display:flex;align-items:center;gap:10px;padding:12px 14px">
         <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:700;color:var(--text)">${p1?esc(p1.nome):'?'} <span style="color:var(--text2);font-weight:400">vs</span> <span class="fanta-p2-name">${p2?esc(p2.nome):'?'}</span></div>
+          <div style="font-size:14px;font-weight:700;color:var(--text)">${p1?esc(dispName(p1.nome)):'?'} <span style="color:var(--text2);font-weight:400">vs</span> <span class="fanta-p2-name">${p2?esc(dispName(p2.nome)):'?'}</span></div>
           <div style="font-size:11px;color:var(--text2);margin-top:2px">${d}${m.ora?' · '+m.ora:''}${m.risultato?` · <span style="color:var(--green);font-weight:600">${esc(m.risultato)}</span>`:''}</div>
         </div>
         <div class="fanta-actions" style="display:flex;align-items:center;gap:6px;flex-shrink:0">
