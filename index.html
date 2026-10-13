@@ -3635,7 +3635,10 @@ initTheme();initAdmin();fillNazList();
 
   // ── Realtime listeners ──
   _doc('main').onSnapshot(snap=>{
-    if(_skipNextSnap.main){_skipNextSnap.main=false;return;}
+    // Si ignora solo l'eco del proprio salvataggio non ancora confermato (hasPendingWrites).
+    // Prima si saltava "il prossimo aggiornamento" alla cieca: se nel frattempo arrivava la
+    // modifica di un altro admin veniva persa, e il salvataggio successivo la cancellava.
+    if(snap.metadata.hasPendingWrites)return;
     if(!snap.exists)return;
     const d=snap.data();players=d.players||[];matches=d.matches||[];sched=d.sched||[];nextId=d.nextId||100;matchNextId=d.matchNextId||200;schedNextId=d.schedNextId||300;
     if(!snap.metadata.fromCache)_serverOK.main=true;
@@ -3645,7 +3648,7 @@ initTheme();initAdmin();fillNazList();
     if(currentTab==='classifiche')renderRank();
   });
   _doc('tornei').onSnapshot(snap=>{
-    if(_skipNextSnap.tornei){_skipNextSnap.tornei=false;return;}
+    if(snap.metadata.hasPendingWrites)return;
     if(!snap.exists)return;
     const d=snap.data();tornei=_decodeTorneiField(d.tornei);tNextId=d.tNextId||1000;
     if(!snap.metadata.fromCache)_serverOK.tornei=true;
@@ -3655,19 +3658,19 @@ initTheme();initAdmin();fillNazList();
     if(currentTab==='classifiche-torneo')renderRanking();
   });
   _doc('fanta').onSnapshot(snap=>{
-    if(_skipNextSnap.fanta){_skipNextSnap.fanta=false;return;}
+    if(snap.metadata.hasPendingWrites)return;
     if(!snap.exists)return;
     fantaData=snap.data().fantaData||{predictions:[]};
     if(currentTab==='fanta')renderFantaPronostici();
   });
   _doc('albo').onSnapshot(snap=>{
-    if(_skipNextSnap.albo){_skipNextSnap.albo=false;return;}
+    if(snap.metadata.hasPendingWrites)return;
     if(!snap.exists)return;
     alboData=snap.data().alboData||[];
     if(currentTab==='albo')renderAlbo();
   });
   _doc('log').onSnapshot(snap=>{
-    if(_skipNextSnap.log){_skipNextSnap.log=false;return;}
+    if(snap.metadata.hasPendingWrites)return;
     if(!snap.exists)return;
     if(Array.isArray(snap.data().entries)){
       _changeLog=snap.data().entries;
