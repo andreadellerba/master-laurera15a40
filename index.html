@@ -1577,6 +1577,12 @@ html{background-color:#000!important}
 @media(max-width:640px){.ticker-tape .tk-label{padding-left:16px!important}}
 .tk{line-height:1}
 .tk b,.tk s{line-height:1}
+/* ═══ TELEFONO: Albo d'oro centrato; header più in basso sotto la notch, con fondo nero pieno ═══ */
+@media(max-width:640px){
+  #page-albo .pg-hd{flex-direction:column;justify-content:center!important;gap:8px;text-align:center}
+  #page-albo .albo-year{text-align:center}
+  .header{padding-top:calc(18px + env(safe-area-inset-top))!important;background:#000!important}
+}
 </style>
 </head>
 <body class="viewer">
