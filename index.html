@@ -2682,7 +2682,7 @@ function renderHomeFeat(){
     const gg=m=>{let g1=+m.gv1,g2=+m.gv2;if(!(g1||g2)){const r=String(m.risultato).match(/(\d+)\s*[-–]\s*(\d+)/);g1=r?+r[1]:0;g2=r?+r[2]:0;}return side(m)===1?[g1,g2]:[g2,g1];};
     let streak=0;for(const m of mine){if(won(m))streak++;else break;}
     const add=(ic,w,t)=>ch.push({ic,w,t});
-    if(streak>=2)add('🔥','STRISCIA',`${streak} vittorie di fila`);
+    if(streak>=2)add('🔥','INFUOCATO',`${streak} vittorie di fila`);
     if(mine.length>=2&&!mine.some(lost))add('🛡️','IMBATTUTO','Mai sconfitto');
     const ri=rankListAll().findIndex(x=>x.id===p.id);
     if(ri===0)add('🥇','CAPOLISTA','Primo in classifica');else if(ri>0&&ri<3)add('🏅','PODIO',`${ri+1}° in classifica`);
