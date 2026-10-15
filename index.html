@@ -933,6 +933,42 @@ body:not(.light) .srch-pill,body:not(.light) .sort-sel{
   .tg-item:hover{background:rgba(255,255,255,.08);color:#fff}
   .tg-item.on{background:rgba(255,255,255,.14);color:var(--page)}
 }
+/* ═══ WOW 2: card 3D col riflesso che segue il mouse ═══ */
+.pcrd{transition:transform .18s ease,box-shadow .18s ease;transform-style:preserve-3d;will-change:transform}
+.pcrd::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .2s;
+  background:radial-gradient(240px circle at var(--gx,50%) var(--gy,0%),rgba(255,255,255,.16),transparent 60%)}
+.pcrd.tilt{box-shadow:0 18px 40px rgba(0,0,0,.55),0 0 22px color-mix(in srgb,var(--page) 22%,transparent)!important}
+.pcrd.tilt::after{opacity:1}
+/* ═══ WOW 5: podio ═══ */
+.podio-wrap{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:12px;max-width:640px;margin:6px auto 22px}
+.podio-slot{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0;animation:podioUp .7s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes podioUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:none}}
+.podio-av{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#1e1f23;font-family:"Bebas Neue",sans-serif;font-size:22px;color:#fff;margin-bottom:6px}
+.podio-av img{width:100%;height:100%;object-fit:cover}
+.p1 .podio-av{width:80px;height:80px;font-size:28px;box-shadow:0 0 0 3px #f0c040,0 0 26px rgba(240,192,64,.6)}
+.p2 .podio-av{box-shadow:0 0 0 3px #c8ced8,0 0 20px rgba(200,206,216,.45)}
+.p3 .podio-av{box-shadow:0 0 0 3px #cd7c3f,0 0 20px rgba(205,124,63,.5)}
+.podio-name{font-family:"Bebas Neue",sans-serif;font-size:17px;letter-spacing:.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.podio-val{font-family:"Bebas Neue",sans-serif;font-size:26px;line-height:1;margin-top:2px}
+.p1 .podio-val{color:#f0c040}.p2 .podio-val{color:#dfe3ea}.p3 .podio-val{color:#e0904f}
+.podio-lbl{font-size:9.5px;letter-spacing:1px;color:var(--text2);margin-bottom:8px}
+.podio-step{width:100%;border-radius:16px 16px 6px 6px;display:flex;align-items:flex-start;justify-content:center;padding-top:8px;font-family:"Bebas Neue",sans-serif;font-size:30px;color:rgba(0,0,0,.55)}
+.p1 .podio-step{height:96px;background:linear-gradient(180deg,#ffe38a,#c99a1c);box-shadow:0 0 30px rgba(240,192,64,.35)}
+.p2 .podio-step{height:70px;background:linear-gradient(180deg,#eef1f5,#9aa3b0)}
+.p3 .podio-step{height:52px;background:linear-gradient(180deg,#f0a96b,#9c5a26)}
+@media(max-width:640px){.podio-wrap{gap:8px}.podio-av{width:52px;height:52px;font-size:18px}.p1 .podio-av{width:64px;height:64px}.podio-name{font-size:14px}.podio-val{font-size:21px}}
+/* ═══ WOW 8: Albo d'Oro come bacheca trofei ═══ */
+.albo-grid{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px!important}
+.albo-card.albo-trophy{display:flex!important;flex-direction:column;align-items:center!important;text-align:center;gap:10px!important;padding:18px 16px 24px!important;position:relative;
+  animation:podioUp .6s cubic-bezier(.2,.9,.3,1.2) both;background:radial-gradient(120% 70% at 50% 0%,rgba(240,192,64,.22),transparent 65%),linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02))!important;
+  border:.5px solid rgba(240,192,64,.5)!important;border-top:.5px solid rgba(240,192,64,.5)!important}
+.albo-card.albo-trophy::after{content:"";position:absolute;left:14px;right:14px;bottom:8px;height:6px;border-radius:6px;background:linear-gradient(90deg,transparent,rgba(240,192,64,.55),transparent);box-shadow:0 0 18px rgba(240,192,64,.45)}
+.albo-trophy .cup svg{width:72px;height:auto;display:block;filter:drop-shadow(0 6px 14px rgba(240,192,64,.45));animation:cupFloat 3.6s ease-in-out infinite}
+@keyframes cupFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.albo-trophy > div[style*="flex:1"]{flex:none!important}
+.albo-trophy .albo-edit-btn{position:absolute!important;top:10px;right:10px}
+@media(prefers-reduced-motion:reduce){.podio-slot,.albo-card.albo-trophy,.albo-trophy .cup svg{animation:none}}
+.albo-trophy div[style*="Bebas"]{font-size:18px!important;letter-spacing:1px!important;line-height:1.2!important}
 </style>
 </head>
 <body class="viewer">
@@ -1585,7 +1621,7 @@ function toast(msg){const t=document.getElementById('toast-el');t.textContent=ms
 function applyTheme(){document.body.classList.remove('light');}
 function initTheme(){applyTheme();}
 // ═══ TAB ═══
-function switchTab(t){currentTab=t;document.body.dataset.tab=t;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('fab').style.display=['players','calendario'].includes(t)?'flex':'none';if(t==='classifiche')renderRank();if(t==='fanta'){loadFanta();renderFantaPronostici();}if(t==='calendario'){loadTornei();renderCalTorneoSelector();}if(t==='risultati')renderRisultati();if(t==='tornei'){loadTornei();renderTornei();}if(t==='albo'){renderAlbo();}if(t==='classifiche-torneo'){loadTornei();renderRanking();}if(t==='settings'){renderLog();}if(t==='players')renderTickerTape();const activeBn=document.querySelector('.bn-item.active');if(activeBn)activeBn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
+function switchTab(t){currentTab=t;document.body.dataset.tab=t;if(t==='players')setTimeout(()=>countUp(document.getElementById('cards-grid')),30);document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('fab').style.display=['players','calendario'].includes(t)?'flex':'none';if(t==='classifiche')renderRank();if(t==='fanta'){loadFanta();renderFantaPronostici();}if(t==='calendario'){loadTornei();renderCalTorneoSelector();}if(t==='risultati')renderRisultati();if(t==='tornei'){loadTornei();renderTornei();}if(t==='albo'){renderAlbo();}if(t==='classifiche-torneo'){loadTornei();renderRanking();}if(t==='settings'){renderLog();}if(t==='players')renderTickerTape();const activeBn=document.querySelector('.bn-item.active');if(activeBn)activeBn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
 function fabClick(){if(_checkViewer())return;if(currentTab==='players')openNewPlayer();else if(currentTab==='calendario')openCalModal();}
 // ═══ FILTERS ═══
 // PC admin: sottomenu "Gestione"
@@ -1758,6 +1794,44 @@ function calcolaRanking() {
 
 // Render pagina Ranking
 
+// ═══ WOW 1: numeri che salgono da 0 al valore (card, barra, podio) ═══
+const _reduceMotion=()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function countUp(root){
+  if(_reduceMotion()||!root)return;
+  root.querySelectorAll('.pcrd-hero b,.pcrd-row-val > span:not(:has(*)),.podio-val,.hdr-chip span[id^="hdr-"]:not(#hdr-meteo)').forEach(el=>{
+    const txt=el.textContent.trim();if(!/^\d+([.,]\d+)?$/.test(txt))return;
+    const end=parseFloat(txt.replace(',','.'));if(!end)return;
+    const dec=(txt.split(/[.,]/)[1]||'').length,sep=txt.includes(',')?',':'.';
+    const t0=performance.now(),dur=900;
+    const step=now=>{const k=Math.max(0,Math.min(1,(now-t0)/dur)),e=1-Math.pow(1-k,3);el.textContent=(end*e).toFixed(dec).replace('.',sep);if(k<1)requestAnimationFrame(step);else el.textContent=txt;};
+    el.textContent=(0).toFixed(dec).replace('.',sep);requestAnimationFrame(step);
+    setTimeout(()=>{el.textContent=txt;},dur+300); // sicurezza: il valore giusto arriva sempre
+  });
+}
+// ═══ WOW 2: card che si inclinano in 3D e riflesso che segue il mouse (PC) ═══
+document.addEventListener('pointermove',e=>{
+  if(e.pointerType!=='mouse'||_reduceMotion())return;
+  const c=e.target.closest&&e.target.closest('.pcrd');
+  document.querySelectorAll('.pcrd.tilt').forEach(o=>{if(o!==c){o.classList.remove('tilt');o.style.transform='';}});
+  if(!c)return;
+  const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+  c.classList.add('tilt');
+  c.style.transform=`perspective(700px) rotateX(${((.5-y)*8).toFixed(2)}deg) rotateY(${((x-.5)*10).toFixed(2)}deg) translateY(-3px)`;
+  c.style.setProperty('--gx',(x*100).toFixed(1)+'%');c.style.setProperty('--gy',(y*100).toFixed(1)+'%');
+},{passive:true});
+document.addEventListener('pointerleave',()=>document.querySelectorAll('.pcrd.tilt').forEach(o=>{o.classList.remove('tilt');o.style.transform='';}),true);
+// ═══ WOW 5: podio animato in cima a Classifiche ═══
+function podioHtml(list,sortKey){
+  const top=list.slice(0,3).filter(p=>(+p.gv||0)>0);if(!top.length)return'';
+  const val=p=>sortKey==='mg'?(+p.mg||0).toFixed(2):sortKey==='pg'?(+p.pg||0):(+p.gv||0);
+  const lbl=sortKey==='mg'?'MEDIA':sortKey==='pg'?'PARTITE':'GAME';
+  const av=p=>p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${ini(p.nome)}</span>`;
+  const slot=(p,pos)=>p?`<div class="podio-slot p${pos}" style="animation-delay:${pos===1?.35:pos===2?.15:0}s">
+      <div class="podio-av">${av(p)}</div><div class="podio-name">${esc(dispName(p.nome))}</div>
+      <div class="podio-val">${val(p)}</div><div class="podio-lbl">${lbl}</div>
+      <div class="podio-step"><b>${pos}</b></div></div>`:'<div class="podio-slot empty"></div>';
+  return `<div class="podio-wrap">${slot(top[1],2)}${slot(top[0],1)}${slot(top[2],3)}</div>`;
+}
 function renderCards(){
   const grid=document.getElementById('cards-grid');
   const list=getFiltered();
@@ -1766,6 +1840,7 @@ function renderCards(){
   grid.innerHTML=list.map((p,_cardIdx)=>
     `<div style="animation:cardIn .25s ease both;animation-delay:${_cardIdx*0.04}s">${buildPlayerCardHTML(p,{interactive:true,rankPtsMap:_rPts,rankList:_rList})}</div>`
   ).join('');
+  if(!window._cardsCounted&&list.length){window._cardsCounted=true;countUp(grid);}
 }
 // ═══ PLAYER MODAL ═══
 function calcMgAuto(){const gv=+document.getElementById('fp-gv').value||0,pg=+document.getElementById('fp-pg').value||0;document.getElementById('fp-mg').value=pg?calcMg(gv,pg).toFixed(2):'—';}
@@ -1810,10 +1885,11 @@ function renderRank(){
       <td style="text-align:center;font-weight:700;color:var(--accent2)">${(p.mg||0).toFixed(2)}</td>
       <td style="text-align:center;font-weight:800;color:var(--accent)">${p.gv||0}</td>
     </tr>`).join('');
-  document.getElementById('rank-body').innerHTML=`<div class="card" style="padding:0;overflow-x:auto;overflow-y:hidden"><table class="girone-table rank-table">
+  document.getElementById('rank-body').innerHTML=podioHtml(list,sortKey)+`<div class="card" style="padding:0;overflow-x:auto;overflow-y:hidden"><table class="girone-table rank-table">
       <thead><tr><th>#</th><th>Giocatore</th><th>PG</th><th>V/P/S</th><th>Media</th><th>TOT</th></tr></thead>
       <tbody>${rows||'<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:24px">Nessun giocatore</td></tr>'}</tbody>
     </table></div>`;
+  countUp(document.getElementById('rank-body'));
 }
 // ═══ PDF EXPORT — STILE CONDIVISO (tema scuro/neon dell'app) ═══
 function pdfFontsLink(){
@@ -4094,6 +4170,11 @@ function saveAlboData(){
   _skipNextSnap.albo=true;
   _doc('albo').set({alboData}).catch(e=>{console.error('saveAlboData() failed:',e);toast('⚠️ Salvataggio albo d\'oro non riuscito: '+(e&&e.message?e.message:'errore sconosciuto'));});
 }
+// ═══ WOW 8: coppa dorata in cima a ogni trofeo dell'Albo d'Oro ═══
+const ALBO_CUP='<div class="cup" aria-hidden="true"><svg viewBox="0 0 64 72"><defs><linearGradient id="cupG" x1="0" x2="1"><stop offset="0" stop-color="#8a6a12"/><stop offset=".35" stop-color="#ffe9a3"/><stop offset=".55" stop-color="#f0c040"/><stop offset="1" stop-color="#7a5a0c"/></linearGradient></defs>'
+ +'<path d="M18 6h28v14c0 10-6 18-14 18S18 30 18 20Z" fill="url(#cupG)"/><path d="M18 10H9c0 9 4 14 10 15M46 10h9c0 9-4 14-10 15" fill="none" stroke="url(#cupG)" stroke-width="3.5" stroke-linecap="round"/>'
+ +'<rect x="28" y="38" width="8" height="12" fill="url(#cupG)"/><path d="M20 50h24l3 8H17Z" fill="url(#cupG)"/><rect x="14" y="58" width="36" height="7" rx="2" fill="#3a2a06"/>'
+ +'<path d="M24 10c0 8 2 13 6 16" stroke="rgba(255,255,255,.65)" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg></div>';
 function renderAlbo(){
   var el=document.getElementById('albo-list');if(!el)return;
   if(!alboData.length){el.innerHTML='<div class="empty"><span class="empty-icon">👑</span>Nessun trofeo ancora.'+(_checkViewer()?'':`<br><button class="btn btn-p" style="margin-top:14px" onclick="openAlboModal()">+ Aggiungi Trofeo</button>`)+'</div>';return;}
@@ -4107,7 +4188,7 @@ function renderAlbo(){
     var entries=byYear[year];
     for(var ei=0;ei<entries.length;ei++){
       var a=entries[ei];
-      html+='<div class="albo-card" style="display:flex;align-items:center;gap:16px">'
+      html+='<div class="albo-card albo-trophy" style="animation-delay:'+(ei*0.08)+'s">'+ALBO_CUP
         +(function(){
   var _vn=(a.vincitore||'').split('/')[0].trim();
   var _vp=null; for(var _pi=0;_pi<players.length;_pi++){if(players[_pi].nome.trim()===_vn){_vp=players[_pi];break;}}
