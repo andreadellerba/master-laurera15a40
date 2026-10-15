@@ -2510,27 +2510,33 @@ function rankListAll(){const r=rankListGv(),ids=new Set(r.map(x=>x.id));return r
 function avHtmlBig(p){return p&&p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p?p.nome:'?'))}</span>`;}
 function surnameOf(n){const p=String(n||'').trim().split(/\s+/);return p.length>1?p.slice(1).join(' '):p[0]||'';}
 function weekStar(){
-  // Giocatore della settimana: si aggiorna il lunedì e premia la settimana PRECEDENTE (da lunedì a domenica).
+  // Giocatore della settimana: dal lunedì premia la settimana PRECEDENTE (da lunedì a domenica);
+  // se quella settimana non si è giocato, mostra il migliore della settimana in corso.
   // Classifica: prima le vittorie, poi il saldo game (fatti - subiti), poi i game fatti, poi il nome.
   const today=new Date();today.setHours(12,0,0,0);
-  const mon=new Date(today);mon.setDate(today.getDate()-((today.getDay()+6)%7)-7);
-  const sun=new Date(mon);sun.setDate(mon.getDate()+6);
-  const f=fmtD(mon),t=fmtD(sun);
-  const s={};
-  sched.filter(m=>m.risultato&&m.data&&m.data>=f&&m.data<=t&&m.p1Id&&m.p2Id).forEach(m=>{
-    let g1=+m.gv1,g2=+m.gv2;
-    if(!(Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2))){const r=String(m.risultato).match(/(\d+)\s*[-–]\s*(\d+)/);g1=r?+r[1]:0;g2=r?+r[2]:0;}
-    [[m.p1Id,g1,g2],[m.p2Id,g2,g1]].forEach(([id,g,o])=>{s[id]=s[id]||{g:0,o:0,w:0,n:0};s[id].g+=g;s[id].o+=o;s[id].n++;if(+m.winnerId===id)s[id].w++;});
-  });
-  const ids=Object.keys(s).filter(id=>players.some(x=>x.id===+id));
-  const nm=id=>(players.find(x=>x.id===+id)||{}).nome||'';
-  ids.sort((a,b)=>s[b].w-s[a].w||(s[b].g-s[b].o)-(s[a].g-s[a].o)||s[b].g-s[a].g||nm(a).localeCompare(nm(b)));
-  const best=ids[0];
-  const p=best?players.find(x=>x.id===+best):rankListGv()[0];
-  if(!p)return null;
+  const thisMon=new Date(today);thisMon.setDate(today.getDate()-((today.getDay()+6)%7));
   const dd=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'}).toUpperCase();
-  const per=mon.getMonth()===sun.getMonth()?`${mon.getDate()}–${dd(sun)}`:`${dd(mon)} – ${dd(sun)}`;
-  return {p,st:best?s[best]:null,per};
+  const calc=mon=>{
+    const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+    const f=fmtD(mon),t=fmtD(sun);
+    const s={};
+    sched.filter(m=>m.risultato&&m.data&&m.data>=f&&m.data<=t&&m.p1Id&&m.p2Id).forEach(m=>{
+      let g1=+m.gv1,g2=+m.gv2;
+      if(!(Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2))){const r=String(m.risultato).match(/(\d+)\s*[-–]\s*(\d+)/);g1=r?+r[1]:0;g2=r?+r[2]:0;}
+      [[m.p1Id,g1,g2],[m.p2Id,g2,g1]].forEach(([id,g,o])=>{s[id]=s[id]||{g:0,o:0,w:0,n:0};s[id].g+=g;s[id].o+=o;s[id].n++;if(+m.winnerId===id)s[id].w++;});
+    });
+    const ids=Object.keys(s).filter(id=>players.some(x=>x.id===+id));
+    const nm=id=>(players.find(x=>x.id===+id)||{}).nome||'';
+    ids.sort((a,b)=>s[b].w-s[a].w||(s[b].g-s[b].o)-(s[a].g-s[a].o)||s[b].g-s[a].g||nm(a).localeCompare(nm(b)));
+    if(!ids.length)return null;
+    const per=mon.getMonth()===sun.getMonth()?`${mon.getDate()}–${dd(sun)}`:`${dd(mon)} – ${dd(sun)}`;
+    return {p:players.find(x=>x.id===+ids[0]),st:s[ids[0]],per};
+  };
+  const prevMon=new Date(thisMon);prevMon.setDate(thisMon.getDate()-7);
+  const r=calc(prevMon)||calc(thisMon);
+  if(r)return r;
+  const p=rankListGv()[0];
+  return p?{p,st:null}:null;
 }
 // pari merito nei record: ogni 3 secondi la scheda mostra il giocatore successivo
 setInterval(()=>{const R=window._recs;if(!R)return;
