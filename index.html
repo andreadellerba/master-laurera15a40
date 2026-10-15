@@ -1358,6 +1358,14 @@ body:not(.light) .cmc.mk{display:grid!important;grid-template-columns:auto minma
 /* etichetta RISULTATI piena: il testo che scorre le passa sotto e sfuma, invece di sovrapporsi */
 .tk-label{background:#16171a!important;box-shadow:14px 0 14px #16171a!important;z-index:3!important}
 .tk-label::before{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(90deg,rgba(255,45,61,.22),rgba(255,45,61,0));pointer-events:none}
+/* PC: 4 card per riga (3 sotto i 1250px, 2 sotto i 960px), card più compatte */
+@media(min-width:641px){
+  .cards-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .pk-hd{padding:10px 12px;gap:10px}.pk-ring{width:56px;height:56px}.pk-nm{font-size:19px}.pk-rank{font-size:26px}
+  .pk-bd{gap:5px;padding:8px 10px 10px}.pk-t{padding:5px 2px}.pk-t span{font-size:10.5px;letter-spacing:.3px}.pk-t b{font-size:17px}
+}
+@media(min-width:641px) and (max-width:1250px){.cards-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(min-width:641px) and (max-width:960px){.cards-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 </style>
 </head>
 <body class="viewer">
