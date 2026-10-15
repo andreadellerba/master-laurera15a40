@@ -1624,6 +1624,9 @@ body .cards-grid .pcrd.k4c,body:is(:not([data-tab]),[data-tab="players"]) .pcrd.
 .k4-st{background:rgba(0,0,0,.42);border-top:none;border-radius:14px;padding:8px 4px 7px;margin-top:12px;border:1px solid rgba(255,255,255,.06)}
 .k4-st .pk-t>span{color:#b4b4b4!important}
 .hf-per{color:rgba(255,255,255,.55);margin-left:6px;letter-spacing:1px;white-space:nowrap;display:inline-block}
+/* record: etichette lunghe su telefono vanno su due righe invece di essere tagliate */
+@media(max-width:640px){.hl-tx small{white-space:normal;overflow:visible;line-height:1.15;letter-spacing:.3px;margin-bottom:2px}}
+@media(max-width:380px){.hl-rc{gap:6px!important;padding:7px 7px!important}.hl-av{width:30px!important;height:30px!important}.hl-rc>span{font-size:15px!important}.hl-tx small{font-size:8px;letter-spacing:.2px}}
 </style>
 </head>
 <body class="viewer">
@@ -2552,7 +2555,7 @@ function renderHomeFeat(){
   const act=players.filter(x=>!x.archiviato&&(+x.pg||0)>0);
   const wins=p=>{const m=String(p.storico||'').match(/(\d+)/);return m?+m[1]:0;};
   const tiedBy=f=>{if(!act.length)return [];const mx=Math.max(...act.map(f));return act.filter(p=>Math.abs(f(p)-mx)<1e-9).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>({p,v:f(p)}));};
-  const R=[['PIÙ MATCH',p=>+p.pg||0,'#e8ff00',v=>v],['PIÙ VITTORIE',wins,'#22c55e',v=>v],['PIÙ GAME',p=>+p.gv||0,'#ff4fb8',v=>v],['MEDIA TOP',p=>+p.mg||0,'#22b8f0',v=>v.toFixed(2)]];
+  const R=[['PIÙ MATCH GIOCATI',p=>+p.pg||0,'#e8ff00',v=>v],['PIÙ VITTORIE',wins,'#22c55e',v=>v],['PIÙ GAME VINTI',p=>+p.gv||0,'#ff4fb8',v=>v],['MEDIA GAME PIÙ ALTA',p=>+p.mg||0,'#22b8f0',v=>v.toFixed(2)]];
   const recs=R.map(([l,f,c,fm])=>({l:()=>l,c,items:tiedBy(f).map(x=>({p:x.p,v:fm(x.v)}))}));
   // record di partita: più game in una partita e maggior distacco (game vinti - game persi)
   const gList=[],dList=[];
@@ -2564,8 +2567,8 @@ function renderHomeFeat(){
   });
   const topOf=(list,mk)=>{if(!list.length)return [];const mx=Math.max(...list.map(x=>x.v));const seen=new Set();
     return list.filter(x=>x.v===mx&&!seen.has(x.id+'|'+(x.s||''))&&seen.add(x.id+'|'+(x.s||''))).map(x=>({p:players.find(q=>q.id===x.id),v:mk(x),s:x.s})).filter(x=>x.p).sort((a,b)=>a.p.nome.localeCompare(b.p.nome));};
-  recs.push({l:it=>'GAME IN 1 PARTITA',c:'#ff8a00',items:topOf(gList,x=>x.v)});
-  recs.push({l:it=>'DISTACCO '+(it&&it.s||''),c:'#a78bfa',items:topOf(dList,x=>'+'+x.v)});
+  recs.push({l:it=>'PIÙ GAME IN 1 PARTITA',c:'#ff8a00',items:topOf(gList,x=>x.v)});
+  recs.push({l:it=>'MAGGIOR DISTACCO',c:'#a78bfa',items:topOf(dList,x=>'+'+x.v)});
   window._recs=recs;
   const tile=(r,k)=>{const it=r.items[0];return `<div class="hl-rc" data-rec="${k}" data-i="0" style="--c:${r.c}" onclick="openProfile(+this.dataset.pid)" data-pid="${it.p.id}"><div class="hl-av">${avHtmlBig(it.p)}</div><div class="hl-tx"><small>${esc(r.l(it))}</small><b>${esc(dispName(it.p.nome))}</b></div><span>${esc(String(it.v))}</span></div>`;};
   const rec=act.length?`<div class="hl-rec">${recs.map((r,k)=>r.items.length?tile(r,k):'').join('')}</div>`:'';
