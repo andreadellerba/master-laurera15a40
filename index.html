@@ -1623,6 +1623,7 @@ body .cards-grid .pcrd.k4c,body:is(:not([data-tab]),[data-tab="players"]) .pcrd.
 .k4-rk{text-shadow:0 2px 10px rgba(0,0,0,.5)}
 .k4-st{background:rgba(0,0,0,.42);border-top:none;border-radius:14px;padding:8px 4px 7px;margin-top:12px;border:1px solid rgba(255,255,255,.06)}
 .k4-st .pk-t>span{color:#b4b4b4!important}
+.hf-per{color:rgba(255,255,255,.55);margin-left:6px;letter-spacing:1px;white-space:nowrap;display:inline-block}
 </style>
 </head>
 <body class="viewer">
@@ -2506,15 +2507,27 @@ function rankListAll(){const r=rankListGv(),ids=new Set(r.map(x=>x.id));return r
 function avHtmlBig(p){return p&&p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p?p.nome:'?'))}</span>`;}
 function surnameOf(n){const p=String(n||'').trim().split(/\s+/);return p.length>1?p.slice(1).join(' '):p[0]||'';}
 function weekStar(){
-  const from=new Date();from.setDate(from.getDate()-7);const f=fmtD(from);
+  // Giocatore della settimana: si aggiorna il lunedì e premia la settimana PRECEDENTE (da lunedì a domenica).
+  // Classifica: prima le vittorie, poi il saldo game (fatti - subiti), poi i game fatti, poi il nome.
+  const today=new Date();today.setHours(12,0,0,0);
+  const mon=new Date(today);mon.setDate(today.getDate()-((today.getDay()+6)%7)-7);
+  const sun=new Date(mon);sun.setDate(mon.getDate()+6);
+  const f=fmtD(mon),t=fmtD(sun);
   const s={};
-  sched.filter(m=>m.risultato&&m.data&&m.data>=f).forEach(m=>{
-    [[m.p1Id,+m.gv1||0],[m.p2Id,+m.gv2||0]].forEach(([id,g])=>{if(!id)return;s[id]=s[id]||{g:0,w:0,n:0};s[id].g+=g;s[id].n++;if(+m.winnerId===id)s[id].w++;});
+  sched.filter(m=>m.risultato&&m.data&&m.data>=f&&m.data<=t&&m.p1Id&&m.p2Id).forEach(m=>{
+    let g1=+m.gv1,g2=+m.gv2;
+    if(!(Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2))){const r=String(m.risultato).match(/(\d+)\s*[-–]\s*(\d+)/);g1=r?+r[1]:0;g2=r?+r[2]:0;}
+    [[m.p1Id,g1,g2],[m.p2Id,g2,g1]].forEach(([id,g,o])=>{s[id]=s[id]||{g:0,o:0,w:0,n:0};s[id].g+=g;s[id].o+=o;s[id].n++;if(+m.winnerId===id)s[id].w++;});
   });
-  let best=null;Object.keys(s).forEach(id=>{if(!best||s[id].g>s[best].g)best=id;});
+  const ids=Object.keys(s).filter(id=>players.some(x=>x.id===+id));
+  const nm=id=>(players.find(x=>x.id===+id)||{}).nome||'';
+  ids.sort((a,b)=>s[b].w-s[a].w||(s[b].g-s[b].o)-(s[a].g-s[a].o)||s[b].g-s[a].g||nm(a).localeCompare(nm(b)));
+  const best=ids[0];
   const p=best?players.find(x=>x.id===+best):rankListGv()[0];
   if(!p)return null;
-  return {p,st:best?s[best]:null};
+  const dd=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'}).toUpperCase();
+  const per=mon.getMonth()===sun.getMonth()?`${mon.getDate()}–${dd(sun)}`:`${dd(mon)} – ${dd(sun)}`;
+  return {p,st:best?s[best]:null,per};
 }
 // pari merito nei record: ogni 3 secondi la scheda mostra il giocatore successivo
 setInterval(()=>{const R=window._recs;if(!R)return;
@@ -2532,7 +2545,7 @@ function renderHomeFeat(){
     const p=ws.p,st=ws.st,rl2=rankListAll(),ri=rl2.findIndex(x=>x.id===p.id);
     const sub=`<span>MATCH ${+p.pg||0} · V-P-S ${esc(normStorico(p.storico))}</span><span>GAME ${+p.gv||0} · MEDIA ${(+p.mg||0).toFixed(2)}</span>`;
     feat=`<div class="hf-feat" onclick="openProfile(${p.id})"><div class="hf-ph">${avHtmlBig(p)}</div>
-      <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}${ri>=0?` <em class="hf-rk">#${ri+1}</em>`:''}</div><div class="hf-sub">${sub}</div>
+      <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA <span class="hf-per">'+ws.per+'</span>':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}${ri>=0?` <em class="hf-rk">#${ri+1}</em>`:''}</div><div class="hf-sub">${sub}</div>
       ${st&&st.w>=2?'<div class="hf-chips"><span>🔥 IN FORMA</span></div>':''}</div></div>`;
   }
   // 6 record. Se più giocatori sono a pari merito, la scheda li fa scorrere uno ogni 3 secondi.
