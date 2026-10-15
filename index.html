@@ -1634,6 +1634,11 @@ body .cards-grid .pcrd.k4c,body:is(:not([data-tab]),[data-tab="players"]) .pcrd.
     background:none!important;border:none!important;box-shadow:none!important;min-height:38px}
 }
 @media(max-width:640px){.header .hdr{padding-top:8px!important}.header .hdr .logo-img{margin:4px auto}.header .hdr .hdr-info,.header .hdr .hdr-players-mobile{top:33px!important}}
+/* ═══ TICKER: punteggio senza pillola gialla; verde chi vince, rosso chi perde, azzurro il pareggio; VS viola ═══ */
+.tk em,.tk em.draw{background:none!important;box-shadow:none!important;padding:0!important;border-radius:0!important;display:inline-flex;align-items:center;gap:2px}
+.tk em i{font-style:normal}
+.tk em i.w{color:#22c55e}.tk em i.l{color:#ef4444}.tk em i.d{color:#38bdf8}.tk em i.x{color:#6b7280}
+.tk u{color:#a78bfa!important}
 </style>
 </head>
 <body class="viewer">
@@ -2815,12 +2820,12 @@ function renderTickerTape(){renderNextMatch();
     const n1=_gtn(m,m.p1Id),n2=_gtn(m,m.p2Id);
     const g1=+m.gv1,g2=+m.gv2,hasG=Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2);
     const isDraw=m.winnerId==='draw'||!m.winnerId;
-    if(isDraw){items.push(`<i class="tk"><b>${esc(n1.toUpperCase())}</b><u>VS</u><b>${esc(n2.toUpperCase())}</b><em class="draw">${hasG?g1+'-'+g2:esc(m.risultato)}</em></i>`);return;}
+    if(isDraw){items.push(`<i class="tk"><b>${esc(n1.toUpperCase())}</b><u>VS</u><b>${esc(n2.toUpperCase())}</b><em class="draw">${hasG?`<i class="d">${g1}</i><i class="x">-</i><i class="d">${g2}</i>`:esc(m.risultato)}</em></i>`);return;}
     // ordine come è stata creata la partita: il vincitore in bianco, lo sconfitto attenuato
     const winnerIsP1=+m.winnerId===m.p1Id;
     const t1=winnerIsP1?'b':'s',t2=winnerIsP1?'s':'b';
-    const sc=hasG?g1+'-'+g2:m.risultato;
-    items.push(`<i class="tk"><${t1}>${esc(n1.toUpperCase())}</${t1}><u>VS</u><${t2}>${esc(n2.toUpperCase())}</${t2}><em>${esc(sc)}</em></i>`);
+    const sc=hasG?`<i class="${winnerIsP1?"w":"l"}">${g1}</i><i class="x">-</i><i class="${winnerIsP1?"l":"w"}">${g2}</i>`:esc(m.risultato);
+    items.push(`<i class="tk"><${t1}>${esc(n1.toUpperCase())}</${t1}><u>VS</u><${t2}>${esc(n2.toUpperCase())}</${t2}><em>${sc}</em></i>`);
   });
   // le prossime partite non stanno più nel ticker: si vedono nella pillola del menu
   if(!items.length)items.push('<i class="tk"><b>LAURERA 15A40</b><u>la nuova era del tennis inizia qui</u></i>');
