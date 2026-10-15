@@ -744,7 +744,7 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
    in una pillola che galleggia in alto. Su telefono non cambia nulla. ═══ */
 .tab svg{width:19px;height:19px;flex-shrink:0;}
 @media(min-width:641px){
-  .header{background:linear-gradient(180deg,#000 72%,rgba(0,0,0,0));padding:12px 20px 6px;backdrop-filter:none;}
+  .header{background:transparent;padding:12px 20px 6px;backdrop-filter:none;}
   .hdr{max-width:1400px;margin:0 auto;gap:12px;padding:7px 8px 7px 22px;border-radius:999px;
     background:rgba(18,18,18,.86);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);
     border:.5px solid rgba(255,255,255,.2);box-shadow:0 10px 34px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.25);}
@@ -779,7 +779,7 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
 #admin-lock-btn svg{width:18px;height:18px;display:block;}
 /* Telefono: intestazione nella pillola di vetro (proposta 1) */
 @media(max-width:640px){
-  .header{background:linear-gradient(180deg,#000 75%,rgba(0,0,0,0));padding:10px 10px 4px;}
+  .header{background:transparent;padding:10px 10px 4px;}
   .hdr{border-radius:999px;padding:6px 12px;min-height:64px;
     background:rgba(18,18,18,.86);-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);
     border:.5px solid rgba(255,255,255,.2);box-shadow:0 10px 30px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14),inset 0 -1px 0 rgba(0,0,0,.25);}
@@ -817,6 +817,8 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
    Ogni pagina ha la sua tinta: voce attiva del menu, lineetta del titolo e un
    leggero bagliore in alto. Home resta gialla; ticker, card e pulsanti non cambiano. */
 body{--page:var(--accent)}
+/* in Home il giallo sul nero diventa verde oliva: luce più leggera */
+body:not([data-tab]),body[data-tab="players"]{--gk:20%;--gk2:12%}
 body[data-tab="tornei"]{--page:#fb923c}
 body[data-tab="calendario"]{--page:#38bdf8}
 body[data-tab="risultati"]{--page:#22c55e}
@@ -863,6 +865,37 @@ body:not(.light) .pcrd,body:not(.light) .card,body:not(.light) .rcard,body:not(.
 .pcrd-row[style*="--tc"] .pcrd-row-lbl{color:color-mix(in srgb,var(--tc) 55%,#fff)}
 /* titoli di pagina nel colore della pagina */
 .pg-title{color:color-mix(in srgb,var(--page) 70%,#fff)}
+/* ═══ SFONDO COLORATO VISIBILE OVUNQUE (anche iPhone) ═══
+   Un livello fisso dietro la pagina con le luci colorate: non scorre e non viene
+   coperto dalla testata (che ora è trasparente, si vede solo la pillola). */
+html{background:#07080a}
+body:not(.light){background:transparent}
+body:not(.light)::before{content:"";display:block;position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+  radial-gradient(110% 75% at 50% 0%,color-mix(in srgb,var(--page) var(--gk,38%),transparent),transparent 72%),
+  radial-gradient(70% 65% at 100% 100%,color-mix(in srgb,var(--page) var(--gk2,26%),transparent),transparent 72%),
+  radial-gradient(60% 60% at 0% 55%,color-mix(in srgb,#7c3aed 22%,transparent),transparent 72%),
+  linear-gradient(180deg,color-mix(in srgb,var(--page) 9%,#07080a),#07080a);
+  transition:background .3s}
+/* posizione in classifica al posto della bandiera, rossa accesa, stesso carattere del nome */
+.pcrd-pos{font:inherit;color:#ff2d3d;text-shadow:0 0 12px rgba(255,45,61,.55);flex-shrink:0}
+/* via la linea della media in Classifiche */
+.rk-bar{display:none!important}
+/* barra del menu: stesso vetro degli altri riquadri (bordo e riflesso nel colore della pagina)
+   e un alone che la lega al ticker giallo sotto */
+@media(min-width:641px){.hdr{background:linear-gradient(180deg,color-mix(in srgb,var(--page) 16%,rgba(255,255,255,.08)),rgba(20,20,22,.78) 60%);border-color:color-mix(in srgb,var(--page) 45%,rgba(255,255,255,.2))!important;box-shadow:0 10px 34px rgba(0,0,0,.45),0 6px 26px color-mix(in srgb,var(--accent) 14%,transparent),inset 0 1px 0 rgba(255,255,255,.16)}}
+@media(max-width:640px){.hdr{background:linear-gradient(180deg,color-mix(in srgb,var(--page) 16%,rgba(255,255,255,.08)),rgba(20,20,22,.78) 60%);border-color:color-mix(in srgb,var(--page) 45%,rgba(255,255,255,.2))!important}}
+/* ticker: giallo con un po' di profondità invece del blocco piatto, così stacca meno dalla barra */
+.ticker-tape{background:linear-gradient(180deg,#f2ff4d 0%,var(--accent) 45%,#c9dd00 100%);box-shadow:0 8px 24px rgba(0,0,0,.4),0 0 22px rgba(232,255,0,.28),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 6px rgba(0,0,0,.18)}
+/* ═══ PILLOLE UGUALI: barra, ticker, ricerca e ordinamento con stessa forma, bordo e ombra ═══ */
+body:not(.light) .srch-pill,body:not(.light) .sort-sel{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--page) 16%,rgba(255,255,255,.08)),rgba(20,20,22,.78) 70%)!important;
+  border:.5px solid color-mix(in srgb,var(--page) 45%,rgba(255,255,255,.2))!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.16)!important;border-radius:999px}
+.srch-pill{height:46px;max-width:300px;padding:0 16px;gap:9px}
+.srch-pill input{font-size:15px}
+.sort-sel{height:46px;padding:0 18px;font-size:15px;font-weight:600}
+.ticker-tape{border:.5px solid rgba(255,255,255,.45)}
+@media(max-width:640px){.srch-pill,.sort-sel{height:42px}.srch-pill{max-width:none}}
 </style>
 </head>
 <body class="viewer">
@@ -2484,6 +2517,8 @@ function autoParseGames(){
 }
 // ═══ PLAYER PROFILE ═══
 let profilePlayerId=null;
+// Posizione in Classifiche (game totali, come la pagina Classifiche); solo per chi ha giocato
+function classPos(p){if(!(+p.gv>0))return"";const list=players.filter(x=>!x.archiviato).sort((a,b)=>(+b.gv||0)-(+a.gv||0));const i=list.findIndex(x=>x.id===p.id);return i<0?"":`<b class="pcrd-pos" title="Posizione in classifica">${i+1}°</b>`;}
 function getPlayerCardData(p,rankPtsMap,rankListSorted){
   const rankPts=rankPtsMap||calcolaRanking();
   const ovr=calcOVR(p,rankPts);
@@ -2517,7 +2552,7 @@ function buildPlayerCardHTML(p,opts){
     <div class="pcrd-ring" style="background:${ringBg};cursor:${opts.interactive?'pointer':'default'}"${ringClick}><div class="pcrd-ring-inner">${photoHtml}</div></div>
     <div class="pcrd-info">
       <div class="pcrd-name-row">
-        <div class="pcrd-name">${flg}<span>${esc(p.nome)}</span></div>
+        <div class="pcrd-name">${classPos(p)}<span>${esc(p.nome)}</span></div>
         <div class="pcrd-name-actions">
           <div class="pcrd-lv" style="background:${lvColor}26;color:${lvColor};border:1px solid ${lvColor}">LV${p.livello}</div>
           ${editBtn}
