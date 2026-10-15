@@ -3957,7 +3957,7 @@ function renderFantaPronostici(){
     const p1=players.find(p=>p.id===m.p1Id),p2=players.find(p=>p.id===m.p2Id);
     const d=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
     const preds=fantaData.predictions.filter(p=>p.matchId===m.id);
-    const panelId='fp-'+m.id;
+    const panelId='fpan-'+m.id; // prefisso diverso da quello del modulo giocatore (fp-nome…)
 
     // Prediction rows
     const predsHtml=preds.map(pr=>{
@@ -4016,7 +4016,9 @@ function renderFantaPronostici(){
 
   // Start all panels hidden (panel starts as display:none but we set it via inline style above)
   // Actually we need to hide them properly after render
-  document.querySelectorAll('[id^="fp-"]').forEach(p=>{if(p.id.startsWith('fp-'))p.style.display='none';});
+  // SOLO i pannelli dei pronostici dentro questa lista: prima cercava in tutta la pagina e nascondeva
+  // anche le caselle del modulo "Nuovo giocatore" (fp-nome, fp-sesso…), che sparivano.
+  el.querySelectorAll('[id^="fpan-"]').forEach(p=>{p.style.display='none';});
 }
 function toggleFantaPanel(id){
   const panel=document.getElementById(id);
