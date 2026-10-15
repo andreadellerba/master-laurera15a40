@@ -1130,6 +1130,22 @@ body.viewer .pk-lv,body.viewer .pk-edit{display:none}
 @media(min-width:641px) and (max-width:1100px){body:not(.viewer) .hdr .tabs-inner .tab{padding:6px 6px 9px!important;font-size:9.5px!important}body:not(.viewer) .hdr .hdr-info-stack{display:none!important}}
 /* ospiti: testata della card arancione per tutti (il colore del livello resta solo per gli admin) */
 body.viewer .pcrd.pk{--lv:#ff8a00!important}
+/* logo più grande, menu e ticker più leggibili */
+@media(min-width:641px){
+  .hdr .logo-img{height:62px!important;max-width:240px!important}
+  .hdr .tabs-inner .tab,body.viewer .hdr .tabs-inner .tab,body .hdr .tabs-inner .tab{font-size:13px!important}
+  .hdr .tabs-inner .tab svg{width:23px!important;height:23px!important}
+  body:not(.viewer) .hdr .tabs-inner .tab{font-size:12px!important}
+}
+@media(min-width:641px) and (max-width:1100px){body:not(.viewer) .hdr .tabs-inner .tab{font-size:10.5px!important}.hdr .logo-img{height:48px!important;max-width:170px!important}}
+.ticker-tape-content span{padding:11px 0!important}
+.tk{font-size:22px;letter-spacing:1px;gap:10px}
+.tk b{color:#fff;text-shadow:0 0 12px rgba(255,255,255,.18)}
+.tk s{color:#c3c8cf}
+.tk u{font-size:13.5px;color:#a9a9a9}
+.tk em{font-size:20px;padding:3px 10px;box-shadow:0 0 14px rgba(232,255,0,.45)}
+.tk-label{font-size:20px}
+@media(max-width:640px){.tk{font-size:17px;gap:7px}.tk em{font-size:15px}.tk u{font-size:11.5px}.tk-label{font-size:15px}.ticker-tape-content span{padding:8px 0!important}}
 </style>
 </head>
 <body class="viewer">
@@ -2001,8 +2017,8 @@ function renderHomeFeat(){
       <div class="hf-chips">${ps?`<span>${ps}° IN CLASSIFICA</span>`:''}${st&&st.w>=2?'<span>🔥 IN FORMA</span>':''}</div></div></div>`;
   }
   const top=rl.slice(0,5),cols=['#e8ff00','#22b8f0','#22c55e','#8b5cf6','#ff4fb8'],ink=['#111','#fff','#111','#fff','#fff'];
-  const t5=top.length?`<div class="hf-sec">TOP 5</div><div class="hf-top5">${top.map((p,i)=>`<div class="hf-cc" style="--c:${cols[i]};color:${ink[i]}" onclick="openProfile(${p.id})"><span class="no">${i+1}</span><span class="mini">${avHtmlBig(p)}</span><b>${esc(surnameOf(p.nome))}</b><small>${(+p.mg||0).toFixed(2)} MEDIA · ${+p.gv||0} GAME</small></div>`).join('')}</div>`:'';
-  el.innerHTML=`<div class="hf-top2">${feat}<div id="home-poster"></div></div>${t5}<div class="hf-sec">TUTTI I GIOCATORI · ${players.filter(x=>!x.archiviato).length}</div>`;
+  const t5=top.length?`<div class="hf-top5">${top.map((p,i)=>`<div class="hf-cc" style="--c:${cols[i]};color:${ink[i]}" onclick="openProfile(${p.id})"><span class="no">${i+1}</span><span class="mini">${avHtmlBig(p)}</span><b>${esc(surnameOf(p.nome))}</b><small>${(+p.mg||0).toFixed(2)} MEDIA · ${+p.gv||0} GAME</small></div>`).join('')}</div>`:'';
+  el.innerHTML=`<div class="hf-top2">${feat}<div id="home-poster"></div></div>${t5}`;
   renderHomePoster();
 }
 function renderHomePoster(){
@@ -2235,6 +2251,8 @@ function renderTickerTape(){renderNextMatch();
   el.style.animation='none';
   void el.offsetWidth;
   el.style.animation='';
+  // velocità costante (~45 px al secondo) qualunque sia la lunghezza
+  requestAnimationFrame(()=>{el.style.animationDuration=Math.max(30,Math.round(el.scrollWidth/2/45))+'s';});
 }
 // ═══ HIGHLIGHTS ═══
 function fillMSelects(){const opts='<option value="">— Seleziona —</option>'+players.filter(p=>!p.archiviato).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');document.getElementById('mm-p1').innerHTML=opts;document.getElementById('mm-p2').innerHTML=opts;}
