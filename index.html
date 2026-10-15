@@ -2648,7 +2648,7 @@ function renderHomeFeat(){
   const topOf=(list,mk)=>{if(!list.length)return [];const mx=Math.max(...list.map(x=>x.v));const seen=new Set();
     return list.filter(x=>x.v===mx&&!seen.has(x.id+'|'+(x.s||''))&&seen.add(x.id+'|'+(x.s||''))).map(x=>({p:players.find(q=>q.id===x.id),v:mk(x),s:x.s})).filter(x=>x.p).sort((a,b)=>bySurname(a.p,b.p));};
   recs.push({l:it=>'PIÙ GAME IN 1 PARTITA',c:'#ff8a00',items:topOf(gList,x=>x.v)});
-  recs.push({l:it=>'MAGGIOR DISTACCO',c:'#a78bfa',items:topOf(dList,x=>'+'+x.v)});
+  recs.push({l:it=>'MAGGIOR DISTACCO',c:'#a78bfa',items:topOf(dList,x=>x.s)});
   window._recs=recs;
   const tile=(r,k)=>{const it=r.items[0];return `<div class="hl-rc" data-rec="${k}" data-i="0" style="--c:${r.c}" onclick="openProfile(+this.dataset.pid)" data-pid="${it.p.id}"><div class="hl-av">${avHtmlBig(it.p)}</div><div class="hl-tx"><small>${esc(r.l(it))}</small><b>${esc(dispName(it.p.nome))}</b></div><span>${esc(String(it.v))}</span></div>`;};
   const rec=act.length?`<div class="hl-rec">${recs.map((r,k)=>r.items.length?tile(r,k):'').join('')}</div>`:'';
