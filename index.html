@@ -2561,7 +2561,7 @@ function renderHomeFeat(){
   const act=players.filter(x=>!x.archiviato&&(+x.pg||0)>0);
   const wins=p=>{const m=String(p.storico||'').match(/(\d+)/);return m?+m[1]:0;};
   const tiedBy=f=>{if(!act.length)return [];const mx=Math.max(...act.map(f));return act.filter(p=>Math.abs(f(p)-mx)<1e-9).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>({p,v:f(p)}));};
-  const R=[['PIÙ MATCH GIOCATI',p=>+p.pg||0,'#e8ff00',v=>v],['PIÙ VITTORIE',wins,'#22c55e',v=>v],['PIÙ GAME VINTI',p=>+p.gv||0,'#ff4fb8',v=>v],['MEDIA GAME PIÙ ALTA',p=>+p.mg||0,'#22b8f0',v=>v.toFixed(2)]];
+  const R=[['PIÙ MATCH GIOCATI',p=>+p.pg||0,'#e8ff00',v=>v],['PIÙ VITTORIE',wins,'#22c55e',v=>v],['PIÙ GAME VINTI',p=>+p.gv||0,'#ff4fb8',v=>v],['MEDIA PIÙ ALTA',p=>+p.mg||0,'#22b8f0',v=>v.toFixed(2)]];
   const recs=R.map(([l,f,c,fm])=>({l:()=>l,c,items:tiedBy(f).map(x=>({p:x.p,v:fm(x.v)}))}));
   // record di partita: più game in una partita e maggior distacco (game vinti - game persi)
   const gList=[],dList=[];
@@ -2909,7 +2909,7 @@ function cmcHtml(m){
   const nx=nextMatchesAll()[0],isNext=!m.risultato&&nx&&nx.m.id===m.id;
   const g1=+m.gv1,g2=+m.gv2,hasG=Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2);
   let col,stat,tag;
-  if(m.risultato){col='#22c55e';stat=hasG?`${g1}-${g2}`:esc(m.risultato);tag='GIOCATA';}
+  if(m.risultato){col='#22c55e';stat=hasG?`${g1}-${g2}`:esc(m.risultato);tag=m.data?new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short'}).toUpperCase():'';}
   else if(live){col='#ff2d3d';stat='IN CORSO';tag='ORA';}
   else if(m.data===today){col='#22b8f0';stat='DA GIOCARE';tag='OGGI';}
   else{col='#8b5cf6';stat='DA GIOCARE';tag='';}
