@@ -791,6 +791,26 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
   #page-players .filters{padding-top:2px;}
   .ticker-tape{margin-bottom:6px;}
 }
+/* ═══ PC: pillola "prossima partita" nella barra — si accorcia da sola se c'è poco spazio ═══ */
+.hdr-next{display:none}
+@media(min-width:641px){
+  .hdr .tabs{flex:0 1 auto}
+  .hdr-next{display:flex;flex:1;min-width:0;justify-content:center;container-type:inline-size}
+  .next-pill{display:flex;align-items:center;gap:8px;max-width:100%;overflow:hidden;padding:5px 12px 5px 5px;border-radius:999px;cursor:pointer;white-space:nowrap;font-family:inherit;color:#fff;
+    background:rgba(232,255,0,.10);border:.5px solid rgba(232,255,0,.5);box-shadow:0 0 16px rgba(232,255,0,.35),inset 0 1px 0 rgba(255,255,255,.12);transition:box-shadow .2s,background .2s}
+  .next-pill:hover{background:rgba(232,255,0,.16);box-shadow:0 0 22px rgba(232,255,0,.5)}
+  .np-tag{flex-shrink:0;font-size:10px;font-weight:800;letter-spacing:.8px;color:#111;background:var(--accent);padding:4px 9px;border-radius:999px}
+  .next-pill.is-live .np-tag{background:#ff3b3b;color:#fff}
+  .np-full,.np-short{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .np-short{display:none}
+  .np-when{flex-shrink:0;font-size:12px;font-weight:600;color:#c9c9c9}
+  .np-live{flex-shrink:0;width:8px;height:8px;margin-left:4px;border-radius:50%;background:#ff3b3b;animation:npPulse 1.6s infinite}
+  @keyframes npPulse{0%{box-shadow:0 0 0 0 rgba(255,59,59,.6)}70%{box-shadow:0 0 0 8px rgba(255,59,59,0)}100%{box-shadow:0 0 0 0 rgba(255,59,59,0)}}
+  @container (max-width:430px){.np-full{display:none}.np-short{display:inline}}
+  @container (max-width:300px){.np-tag{display:none}.next-pill{padding-left:12px}}
+  @container (max-width:190px){.np-short,.np-day{display:none}}
+  @container (max-width:70px){.next-pill{display:none}}
+}
 </style>
 </head>
 <body class="viewer">
@@ -813,6 +833,7 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
     <div class="hdr-center">
       <div class="hdr-title"><h1>CENTRO SPORTIVO · LAURERA15A40</h1><a class="hdr-addr" href="https://www.google.com/maps/place//data=!4m2!3m1!1s0x47881766c48bc33f:0xb7e99e2c09f32821?sa=X&ved=1t:8290&ictx=111" target="_blank" rel="noopener" style="font-size:16px;text-decoration:none;cursor:pointer">📍 Via Ugo Foscolo, 21, 10040 Volvera TO</a></div>
     </div>
+    <div class="hdr-next" id="hdr-next"></div>
     <div class="hdr-info">
       <div class="hdr-info-stack">
         <div class="hdr-chip" title="Giocatori registrati"><svg class="hdr-chip-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span id="hdr-players">—</span><strong>Giocatori</strong></div>
@@ -1706,7 +1727,42 @@ function exportRankPDF(){
   pdfOpenAndPrint(html);
 }
 // ═══ TICKERS ═══
-function renderTickerTape(){
+// ═══ PC: pillola "prossima partita" nella barra del menu ═══
+// La prossima partita non ancora giocata (o quella in corso adesso). Si accorcia
+// da sola quando nella barra c'è poco spazio (vedi @container .hdr-next).
+function nextMatchInfo(){
+  const now=new Date(),today=fmtD(now);
+  const pn=id=>{const p=players.find(x=>x.id===id);return p?p.nome:null;};
+  const side=(a,b,t)=>{const n1=a?pn(a):null,n2=b?pn(b):null;if(n1&&n2)return n1+' / '+n2;return n1||t||'?';};
+  const list=sched.filter(m=>m.data&&!m.risultato&&m.data>=today).map(m=>{
+    const [h,mi]=(m.ora||'00:00').split(':').map(Number);const d=new Date(m.data+'T00:00:00');d.setHours(h||0,mi||0,0,0);return {m,start:d};
+  }).filter(x=>x.start.getTime()+100*60000>now.getTime()).sort((a,b)=>a.start-b.start);
+  if(!list.length)return null;
+  const {m,start}=list[0];
+  const live=now>=start&&now.getTime()<start.getTime()+100*60000;
+  const tom=new Date(now);tom.setDate(now.getDate()+1);
+  const when=m.data===today?'oggi':m.data===fmtD(tom)?'domani':new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
+  return {m,live,when,ora:m.ora||'',a:side(m.p1Id,m.p1Id2,m.teamName1),b:side(m.p2Id,m.p2Id2,m.teamName2)};
+}
+function renderNextMatch(){
+  const el=document.getElementById('hdr-next');if(!el)return;
+  const x=nextMatchInfo();
+  if(!x){el.innerHTML='';return;}
+  const short=n=>esc(String(n).split(' / ').map(s=>{const p=s.trim().split(/\s+/);return p[p.length-1];}).join(' / '));
+  el.innerHTML=`<button type="button" class="next-pill${x.live?' is-live':''}" onclick="openNextMatch()" title="${esc(x.a)} vs ${esc(x.b)} · ${esc(x.when)} ${esc(x.ora)}">
+    ${x.live?'<span class="np-live" aria-hidden="true"></span>':''}<span class="np-tag">${x.live?'IN CORSO':'PROSSIMA'}</span>
+    <b class="np-full">${esc(x.a)} vs ${esc(x.b)}</b><b class="np-short">${short(x.a)} – ${short(x.b)}</b>
+    <span class="np-when"><span class="np-day">${esc(x.when)} · </span>${esc(x.ora)}</span></button>`;
+}
+function openNextMatch(){
+  const x=nextMatchInfo();if(!x)return;
+  const mon=d=>{const t=new Date(d);const k=t.getDay();t.setDate(t.getDate()-(k===0?6:k-1));t.setHours(0,0,0,0);return t;};
+  calOffset=Math.round((mon(new Date(x.m.data+'T12:00:00'))-mon(new Date()))/(7*864e5));
+  calSelDate=x.m.data;calActiveTorneoId=x.m.torneoId||calActiveTorneoId;
+  switchTab('calendario');renderCalTorneoSelector();
+}
+setInterval(renderNextMatch,60000);
+function renderTickerTape(){renderNextMatch();
   const el=document.getElementById('ticker-tape-content');
   if(!el)return;
   const _gtn=(m,pid)=>{if(!pid)return'?';const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){const entries=[bm.p1,bm.p2];for(const e of entries){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(+pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / ');}}}}const p=players.find(x=>x.id===+pid);if(p)return p.nome;if(m.teamName1&&+pid===m.p1Id)return m.teamName1;if(m.teamName2&&+pid===m.p2Id)return m.teamName2;return'?';};
