@@ -767,9 +767,6 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
 }
 /* PC non larghissimo: le voci del menu restano solo icone (nome nel suggerimento al passaggio del mouse) */
 @media(min-width:641px) and (max-width:1120px){.hdr .tabs-inner .tab span{display:none;}.hdr .tabs-inner .tab,body.viewer .hdr .tabs-inner .tab{padding:9px 11px;}}
-/* Admin (9 voci): nomi visibili da 1480 px in su con voci più strette, sotto solo icone */
-@media(min-width:1121px){body:not(.viewer) .hdr .tabs-inner .tab{padding:8px 9px;gap:5px;font-size:12px;letter-spacing:.2px;}body:not(.viewer) .hdr .tabs-inner{gap:2px;}}
-@media(min-width:641px) and (max-width:1479px){body:not(.viewer) .hdr .tabs-inner .tab span{display:none;}body:not(.viewer) .hdr .tabs-inner .tab{padding:9px 11px;}}
 /* PC: barra, ticker, filtri e card tutti larghi uguale (margine 20 px ai lati) */
 @media(min-width:641px){.hdr{max-width:none!important;}.filters{max-width:none;padding-left:20px;padding-right:20px;}.wrap{max-width:none;padding-left:20px;padding-right:20px;}.cards-grid{padding:16px 20px 24px;grid-template-columns:repeat(auto-fill,minmax(min(100%,380px),1fr));}.cards-grid .pcrd{max-width:none;}}
 @media(max-width:640px){.hdr .tabs{display:none!important;}}
@@ -920,6 +917,22 @@ body:not(.light) .srch-pill,body:not(.light) .sort-sel{
 }
 #hdr-next .next-pill{transition:opacity .25s,box-shadow .2s,background .2s}
 #hdr-next.np-fade .next-pill{opacity:0}
+/* ═══ PC admin: sottomenu "Gestione" (Tornei, Calendario, Risultati, Classifiche, Albo d'Oro) ═══ */
+.tab-group{display:none!important}
+@media(min-width:641px){
+  body:not(.viewer) .hdr .tabs-inner .tab-group{display:flex!important;position:relative}
+  body:not(.viewer) .hdr .tabs-inner > .tab:is([data-tab="tornei"],[data-tab="calendario"],[data-tab="risultati"],[data-tab="classifiche"],[data-tab="albo"]){display:none!important}
+  body:not(.viewer) .hdr .tabs{overflow:visible}
+  .tg-chev{width:14px!important;height:14px!important;transition:transform .2s}
+  .tab-group.open .tg-chev{transform:rotate(180deg)}
+  body:not(.viewer):is([data-tab="tornei"],[data-tab="calendario"],[data-tab="risultati"],[data-tab="classifiche"],[data-tab="albo"]) .hdr .tab-group{color:var(--page);background:rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+  .tg-drop{display:none;position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);min-width:190px;padding:6px;border-radius:20px;z-index:2000;flex-direction:column;gap:2px;
+    background:rgba(20,21,24,.97);border:.5px solid rgba(255,255,255,.2);box-shadow:0 16px 40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.14)}
+  .tab-group.open .tg-drop{display:flex}
+  .tg-item{all:unset;box-sizing:border-box;cursor:pointer;padding:10px 14px;border-radius:14px;font-size:13px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:rgba(255,255,255,.75);white-space:nowrap}
+  .tg-item:hover{background:rgba(255,255,255,.08);color:#fff}
+  .tg-item.on{background:rgba(255,255,255,.14);color:var(--page)}
+}
 </style>
 </head>
 <body class="viewer">
@@ -930,6 +943,16 @@ body:not(.light) .srch-pill,body:not(.light) .sort-sel{
     <!-- Menu PC: dentro la barra unica di vetro (proposta 1). Su telefono è nascosto: c'è il menu in basso. -->
     <nav class="tabs"><div class="tabs-inner">
       <div class="tab active" data-tab="players" onclick="switchTab('players')" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg><span>Home</span></div>
+      <!-- Admin (solo PC): le pagine del torneo raccolte nel sottomenu "Gestione" -->
+      <div class="tab tab-group" id="tab-gestione" onclick="toggleGestione(event)" title="Gestione"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><rect x="13.5" y="13.5" width="7" height="7" rx="2"/></svg><span>Gestione</span><svg class="tg-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+        <div class="tg-drop" role="menu">
+          <button type="button" class="tg-item" data-go="tornei" role="menuitem">Tornei</button>
+          <button type="button" class="tg-item" data-go="calendario" role="menuitem">Calendario</button>
+          <button type="button" class="tg-item" data-go="risultati" role="menuitem">Risultati</button>
+          <button type="button" class="tg-item" data-go="classifiche" role="menuitem">Classifiche</button>
+          <button type="button" class="tg-item" data-go="albo" role="menuitem">Albo d'Oro</button>
+        </div>
+      </div>
       <div class="tab" data-tab="tornei" onclick="switchTab('tornei')" title="Tornei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4"/><path d="M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/><path d="M12 14v3"/><path d="M8.5 21h7"/><path d="M9.5 17h5v4h-5z"/></svg><span>Tornei</span></div>
       <div class="tab" data-tab="calendario" onclick="switchTab('calendario')" title="Calendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span>Calendario</span></div>
       <div class="tab" data-tab="risultati" onclick="switchTab('risultati')" title="Risultati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M5.5 6.5c3 2 4 5.5 3 11"/><path d="M18.5 17.5c-3-2-4-5.5-3-11"/></svg><span>Risultati</span></div>
@@ -1564,6 +1587,15 @@ function initTheme(){applyTheme();}
 function switchTab(t){currentTab=t;document.body.dataset.tab=t;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('fab').style.display=['players','calendario'].includes(t)?'flex':'none';if(t==='classifiche')renderRank();if(t==='fanta'){loadFanta();renderFantaPronostici();}if(t==='calendario'){loadTornei();renderCalTorneoSelector();}if(t==='risultati')renderRisultati();if(t==='tornei'){loadTornei();renderTornei();}if(t==='albo'){renderAlbo();}if(t==='classifiche-torneo'){loadTornei();renderRanking();}if(t==='settings'){renderLog();}if(t==='players')renderTickerTape();const activeBn=document.querySelector('.bn-item.active');if(activeBn)activeBn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
 function fabClick(){if(_checkViewer())return;if(currentTab==='players')openNewPlayer();else if(currentTab==='calendario')openCalModal();}
 // ═══ FILTERS ═══
+// PC admin: sottomenu "Gestione"
+function toggleGestione(e){
+  const g=document.getElementById('tab-gestione');if(!g)return;
+  const it=e&&e.target.closest('.tg-item');
+  if(it){g.classList.remove('open');switchTab(it.dataset.go);return;}
+  g.querySelectorAll('.tg-item').forEach(b=>b.classList.toggle('on',b.dataset.go===currentTab));
+  g.classList.toggle('open');
+}
+document.addEventListener('click',e=>{const g=document.getElementById('tab-gestione');if(g&&!g.contains(e.target))g.classList.remove('open');});
 // Home: la lente apre/chiude la ricerca al posto della citazione
 function toggleHomeSearch(force){const f=document.getElementById("home-filters");if(!f)return;const on=typeof force==="boolean"?force:!f.classList.contains("searching");f.classList.toggle("searching",on);if(on){setTimeout(()=>{const i=document.getElementById("srch-input");if(i)i.focus();},30);}else{const i=document.getElementById("srch-input");if(i&&i.value){i.value="";renderCards();}}}
 function clearSearch(){const i=document.getElementById('srch-input');i.value='';renderCards();i.focus();}
