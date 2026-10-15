@@ -1645,6 +1645,10 @@ body .cards-grid .pcrd.k4c,body:is(:not([data-tab]),[data-tab="players"]) .pcrd.
 @media(min-width:1251px){body.viewer #hdr-next .ticker-tape{transform:translateY(3px)}}
 @media(min-width:1421px){body:not(.viewer) #hdr-next .ticker-tape{transform:translateY(2.5px)}}
 @media(min-width:1251px) and (max-width:1420px){body:not(.viewer) #hdr-next .ticker-tape{transform:translateY(1.5px)}}
+/* badge del giocatore della settimana: solo PC, sempre su una riga (quelli che non ci stanno vengono nascosti) */
+.hf-chips{flex-wrap:nowrap!important;overflow:hidden;gap:6px}
+.hf-chips span{white-space:nowrap;flex-shrink:0;font-size:14px!important;padding:3px 9px!important;background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.12)}
+@media(max-width:640px){.hf-chips{display:none!important}}
 </style>
 </head>
 <body class="viewer">
@@ -2619,6 +2623,11 @@ setInterval(()=>{const R=window._recs;if(!R)return;
     el.classList.add('hl-swap');setTimeout(()=>{el.querySelector('.hl-av').innerHTML=avHtmlBig(it.p);el.querySelector('.hl-tx small').textContent=r.l(it);
       el.querySelector('.hl-tx b').textContent=dispName(it.p.nome);el.querySelector(':scope>span').textContent=it.v;el.classList.remove('hl-swap');},220);});
 },3000);
+// i badge restano su una riga: quelli che non ci stanno interi vengono nascosti
+function fitChips(){requestAnimationFrame(()=>document.querySelectorAll('.hf-chips').forEach(c=>{
+  const s=[...c.children];s.forEach(x=>x.style.display='');const r=c.getBoundingClientRect();
+  s.forEach(x=>{if(x.getBoundingClientRect().right>r.right+0.5)x.style.display='none';});}));}
+window.addEventListener('resize',()=>{clearTimeout(fitChips._t);fitChips._t=setTimeout(fitChips,150);});
 function renderHomeFeat(){
   const el=document.getElementById('home-feat');if(!el)return;
   const rl=rankListGv(),pos=p=>{const i=rl.findIndex(x=>x.id===p.id);return i<0?null:i+1;};
@@ -2629,7 +2638,7 @@ function renderHomeFeat(){
     const sub=`<span>MATCH ${+p.pg||0} · V-P-S ${esc(normStorico(p.storico))}</span><span>GAME ${+p.gv||0} · MEDIA ${(+p.mg||0).toFixed(2)}</span>`;
     feat=`<div class="hf-feat" onclick="openProfile(${p.id})"><div class="hf-ph">${avHtmlBig(p)}</div>
       <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA <span class="hf-per">'+ws.per+'</span>':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}${ri>=0?` <em class="hf-rk">#${ri+1}</em>`:''}</div><div class="hf-sub">${sub}</div>
-      ${st&&st.w>=2?'<div class="hf-chips"><span>🔥 IN FORMA</span></div>':''}</div></div>`;
+      %%CHIPS%%</div></div>`;
   }
   // 6 record. Se più giocatori sono a pari merito, la scheda li fa scorrere uno ogni 3 secondi.
   const act=players.filter(x=>!x.archiviato&&(+x.pg||0)>0);
@@ -2652,7 +2661,24 @@ function renderHomeFeat(){
   window._recs=recs;
   const tile=(r,k)=>{const it=r.items[0];return `<div class="hl-rc" data-rec="${k}" data-i="0" style="--c:${r.c}" onclick="openProfile(+this.dataset.pid)" data-pid="${it.p.id}"><div class="hl-av">${avHtmlBig(it.p)}</div><div class="hl-tx"><small>${esc(r.l(it))}</small><b>${esc(dispName(it.p.nome))}</b></div><span>${esc(String(it.v))}</span></div>`;};
   const rec=act.length?`<div class="hl-rec">${recs.map((r,k)=>r.items.length?tile(r,k):'').join('')}</div>`:'';
+  // badge del giocatore della settimana (solo PC, una riga): serie di vittorie, imbattuto, record, settimana
+  if(ws&&feat){
+    const p=ws.p,st=ws.st,ch=[];
+    const mine=sched.filter(m=>m.risultato&&(m.p1Id===p.id||m.p2Id===p.id)).sort((a,b)=>(b.data+(b.ora||'')).localeCompare(a.data+(a.ora||'')));
+    let streak=0;for(const m of mine){if(+m.winnerId===p.id)streak++;else break;}
+    const losses=mine.filter(m=>m.winnerId&&m.winnerId!=='draw'&&+m.winnerId!==p.id).length;
+    if(streak>=2)ch.push(`🔥 ${streak} VITTORIE DI FILA`);
+    if(mine.length>=2&&!losses&&streak<mine.length)ch.push('🛡️ IMBATTUTO');
+    const ri=rankListAll().findIndex(x=>x.id===p.id);if(ri===0)ch.push('🥇 PRIMO IN CLASSIFICA');
+    const short={'PIÙ MATCH GIOCATI':'PIÙ MATCH','PIÙ VITTORIE':'PIÙ VITTORIE','PIÙ GAME VINTI':'PIÙ GAME','MEDIA PIÙ ALTA':'MEDIA TOP','PIÙ GAME IN 1 PARTITA':'GAME IN 1 PARTITA','MAGGIOR DISTACCO':'MAGGIOR DISTACCO'};
+    recs.forEach(r=>{if(r.items.length===1&&r.items[0].p.id===p.id)ch.push('👑 RECORD '+(short[r.l(r.items[0])]||r.l(r.items[0])));});
+    if(st&&st.n>=2)ch.push(`🎾 ${st.n} PARTITE IN SETTIMANA`);
+    if(st&&st.g-st.o>0)ch.push(`⚡ SALDO GAME +${st.g-st.o}`);
+    feat=feat.replace('%%CHIPS%%',ch.length?`<div class="hf-chips">${ch.slice(0,4).map(c=>`<span>${esc(c)}</span>`).join('')}</div>`:'');
+  }
+  feat=feat.replace('%%CHIPS%%','');
   el.innerHTML=feat||rec?`<div class="hl">${feat}${rec}</div>`:'';
+  fitChips();
 }
 // PC: il ticker dei risultati scorre DENTRO la barra del menu (tra le voci e il lucchetto);
 // sul telefono torna sotto la barra.
