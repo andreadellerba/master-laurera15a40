@@ -1487,6 +1487,17 @@ body:not(.light)::before,body:not(.light)::after{display:none!important}
 .rk-row.top{background:linear-gradient(90deg,color-mix(in srgb,var(--m) 26%,transparent),transparent 60%),var(--aur)!important;background-attachment:fixed!important}
 /* bordi leggeri e uniformi */
 .hdr,.tabs-mobile2 .tbar,.ticker-tape,.hl,.cmc.mk,.rs,.rk-row,.rk-seg{border-color:rgba(255,255,255,.14)!important}
+/* MVP: niente numero gigante, #posizione accanto al nome; blocco più compatto su PC */
+.hl .hf-big{display:none!important}
+.hf-rk{font-style:normal;color:var(--accent);margin-left:6px}
+@media(min-width:641px){.hl{grid-template-columns:auto minmax(0,1fr)!important;gap:28px}.hl .hf-feat{padding-right:10px!important}.hl-rec{min-width:560px}}
+/* PC: il ticker nella barra scorre solo dopo il pallino rosso */
+.tk-win{flex:1;min-width:0;overflow:hidden;display:flex;align-items:center}
+/* sfondo dell'app nero pieno, distinto dalle card */
+html,body,body:not(.light),.page,#page-players,.wrap{background:#000!important;background-image:none!important}
+html{background-color:#000!important}
+@media(min-width:641px) and (max-width:1180px){.hl{grid-template-columns:1fr!important}.hl-rec{min-width:0!important;grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(min-width:641px) and (max-width:900px){.hl-rec{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body class="viewer">
@@ -1533,7 +1544,7 @@ body:not(.light)::before,body:not(.light)::after{display:none!important}
     </div>
   </div>
 </header>
-<div class="ticker-tape"><div class="tk-label"><i></i>RISULTATI</div><div class="ticker-tape-content" id="ticker-tape-content"></div></div>
+<div class="ticker-tape"><div class="tk-label"><i></i>RISULTATI</div><div class="tk-win"><div class="ticker-tape-content" id="ticker-tape-content"></div></div></div>
 <!-- Menu mobile: stile itstracker (pillola vetro con icone + pillola profilo a destra) -->
 <div class="tabs-mobile2">
   <div class="tbar pill-main">
@@ -2386,11 +2397,11 @@ function renderHomeFeat(){
   const ws=weekStar();
   let feat='';
   if(ws){
-    const p=ws.p,st=ws.st,ps=pos(p);
-    const sub=st?`${st.w} ${st.w===1?'vittoria':'vittorie'} · ${st.g} game in settimana · media ${(+p.mg||0).toFixed(2)}`:`${+p.pg||0} partite · ${+p.gv||0} game · media ${(+p.mg||0).toFixed(2)}`;
-    feat=`<div class="hf-feat" onclick="openProfile(${p.id})"><div class="hf-big">${(+p.mg||0).toFixed(1)}</div><div class="hf-ph">${avHtmlBig(p)}</div>
-      <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}</div><div class="hf-sub">${esc(sub)}</div>
-      <div class="hf-chips">${ps?`<span>${ps}° IN CLASSIFICA</span>`:''}${st&&st.w>=2?'<span>🔥 IN FORMA</span>':''}</div></div></div>`;
+    const p=ws.p,st=ws.st,rl2=rankListAll(),ri=rl2.findIndex(x=>x.id===p.id);
+    const sub=st?`${st.w} ${st.w===1?'vittoria':'vittorie'} · ${st.g} game in settimana · V-P-S ${normStorico(p.storico)} · media ${(+p.mg||0).toFixed(2)}`:`${+p.pg||0} partite · V-P-S ${normStorico(p.storico)} · ${+p.gv||0} game · media ${(+p.mg||0).toFixed(2)}`;
+    feat=`<div class="hf-feat" onclick="openProfile(${p.id})"><div class="hf-ph">${avHtmlBig(p)}</div>
+      <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}${ri>=0?` <em class="hf-rk">#${ri+1}</em>`:''}</div><div class="hf-sub">${esc(sub)}</div>
+      ${st&&st.w>=2?'<div class="hf-chips"><span>🔥 IN FORMA</span></div>':''}</div></div>`;
   }
   // 4 record: più match, più vittorie, più game, media game più alta (solo chi ha giocato)
   const act=players.filter(x=>!x.archiviato&&(+x.pg||0)>0);
