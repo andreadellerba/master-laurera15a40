@@ -2535,7 +2535,7 @@ function fakeAv(p){
   // posizione del giocatore nel suo gruppo (uomini/donne): ogni combinazione esce una volta sola
   const grp=players.filter(x=>(String(x.sesso||'').toUpperCase()==='DONNA')===F).map(x=>+x.id).sort((a,b)=>a-b);
   const i=Math.max(0,grp.indexOf(+p.id));
-  const SK=['#f6d2b8','#eebf9c','#dea47e','#c98b62','#ad7350','#8c5a3c','#6e432c'];
+  const SK=['#fbe0cc','#f6d2b8','#f3c9ab','#efc2a2','#f8d8c0','#f1cdb2','#eab996'];
   const HR=['#1f1a17','#3a2a20','#5a3a24','#7f5232','#a8743f','#d2ab68','#e6d3a3','#8f8f8f','#7a2e1f'];
   const SH=['#22c55e','#38bdf8','#a78bfa','#ff4fb8','#f59e0b','#ef4444','#14b8a6','#f4f4f5','#e8ff00','#2563eb'];
   const AC=['#ffffff','#ff2d3d','#22c55e','#38bdf8','#e8ff00','#a78bfa','#111111'];
