@@ -1130,7 +1130,7 @@ body.viewer .pk-lv,body.viewer .pk-edit{display:none}
 @media(min-width:641px) and (max-width:1250px){body:not(.viewer) .hdr .hdr-info-stack .hdr-chip:last-child{display:none!important}}
 @media(min-width:641px) and (max-width:1100px){body:not(.viewer) .hdr .tabs-inner .tab{padding:6px 6px 9px!important;font-size:9.5px!important}body:not(.viewer) .hdr .hdr-info-stack{display:none!important}}
 /* ospiti: testata della card arancione per tutti (il colore del livello resta solo per gli admin) */
-body.viewer .pcrd.pk{--lv:#ff8a00!important}
+body.viewer .pcrd.pk{--lv:var(--gc)!important}
 /* logo più grande, menu e ticker più leggibili */
 @media(min-width:641px){
   .hdr .logo-img{height:62px!important;max-width:240px!important}
@@ -1166,7 +1166,7 @@ body.viewer .pcrd.pk{--lv:#ff8a00!important}
     color:rgba(255,255,255,.4)!important;text-transform:uppercase;border-radius:0!important;transition:none!important}
   .hdr .tabs-inner .tab:hover{color:rgba(255,255,255,.75)!important;background:none!important}
   .hdr .tabs-inner .tab.active,body .hdr .tabs-inner .tab.active{color:#fff!important;font-size:28px!important}
-  .hdr .tabs-inner .tab.active::before{content:counter(nv,decimal-leading-zero);position:absolute;top:-6px;right:-14px;font-family:"DM Sans",sans-serif;font-size:10px;font-weight:800;color:var(--page)}
+  .hdr .tabs-inner .tab.active::before{content:none!important}
   .hdr .tabs-inner .tab.active::after{content:""!important;position:absolute;left:0!important;right:0!important;bottom:0!important;height:4px!important;border-radius:4px;background:linear-gradient(90deg,var(--page),transparent)!important;box-shadow:none!important}
   body:not(.viewer) .hdr .tabs-inner{gap:13px!important}
   body:not(.viewer) .hdr .tabs-inner .tab{font-size:17px!important}
@@ -1189,6 +1189,24 @@ body.viewer .pcrd.pk{--lv:#ff8a00!important}
   .tabs-mobile2 .tbtn.active .tl{display:inline}
 }
 @media(max-width:370px){.tabs-mobile2 .tbtn.active .tl{font-size:10.5px}.tabs-mobile2 .tbtn.active{padding:12px 12px!important}}
+/* ticker: etichetta discreta (solo pallino rosso), VS rosso */
+.tk-label{background:linear-gradient(90deg,rgba(255,45,61,.22),rgba(255,45,61,0))!important;box-shadow:none!important;color:#fff!important;font-size:16px!important;padding:0 18px 0 14px!important}
+.tk-label i{background:#ff2d3d!important;box-shadow:0 0 8px #ff2d3d}
+.tk u{font-family:"Bebas Neue",sans-serif!important;font-size:inherit!important;letter-spacing:1px!important;color:#ff2d3d!important;text-transform:uppercase!important}
+@media(max-width:640px){.tk-label{font-size:13px!important;padding:0 12px 0 10px!important}}
+/* locandina home: data e ora sempre rosse, nome sopra il cognome (solo PC), statistiche sotto */
+.hp-when{background:#ff2d3d!important}
+.hp-fn{display:block;font-style:normal;font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:1px;color:#e6e6e6;line-height:1;margin-bottom:2px}
+.hp-p small{display:block;margin-top:4px;font-size:10.5px;font-weight:800;letter-spacing:.8px;color:#d6d6d6}
+@media(max-width:640px){.hp-fn{display:none}.hp-p small{font-size:9px;letter-spacing:.3px}}
+/* Top 5: nome sopra il cognome solo su PC */
+.cc-fn{display:none}
+@media(min-width:641px){.cc-fn{display:block;font-style:normal;font-family:"Bebas Neue",sans-serif;font-size:16px;letter-spacing:.8px;line-height:1;opacity:.85;margin-bottom:1px}}
+/* MVP: statistiche in maiuscolo */
+.hf-sub{text-transform:uppercase;letter-spacing:.6px;font-weight:700;font-size:12px}
+/* card giocatore: avatar più grande */
+.pk-ring{width:64px;height:64px;padding:3px}.pk-ring>*{font-size:22px}
+@media(max-width:640px){.pk-ring{width:54px;height:54px}.pk-ring>*{font-size:19px}}
 </style>
 </head>
 <body class="viewer">
@@ -2061,7 +2079,7 @@ function renderHomeFeat(){
       <div class="hf-chips">${ps?`<span>${ps}° IN CLASSIFICA</span>`:''}${st&&st.w>=2?'<span>🔥 IN FORMA</span>':''}</div></div></div>`;
   }
   const top=rl.slice(0,5),cols=['#e8ff00','#22b8f0','#22c55e','#8b5cf6','#ff4fb8'],ink=['#111','#fff','#111','#fff','#fff'];
-  const t5=top.length?`<div class="hf-top5">${top.map((p,i)=>`<div class="hf-cc" style="--c:${cols[i]};color:${ink[i]}" onclick="openProfile(${p.id})"><span class="no">${i+1}</span><span class="mini">${avHtmlBig(p)}</span><b>${esc(surnameOf(p.nome))}</b><small>${(+p.mg||0).toFixed(2)} MEDIA · ${+p.gv||0} GAME</small></div>`).join('')}</div>`:'';
+  const t5=top.length?`<div class="hf-top5">${top.map((p,i)=>`<div class="hf-cc" style="--c:${cols[i]};color:${ink[i]}" onclick="openProfile(${p.id})"><span class="no">${i+1}</span><span class="mini">${avHtmlBig(p)}</span>${String(p.nome).trim().split(/\s+/).length>1?`<em class="cc-fn">${esc(String(p.nome).trim().split(/\s+/)[0])}</em>`:""}<b>${esc(surnameOf(p.nome))}</b><small>${(+p.mg||0).toFixed(2)} MEDIA · ${+p.gv||0} GAME</small></div>`).join('')}</div>`:'';
   el.innerHTML=`<div class="hf-top2">${feat}<div id="home-poster"></div></div>${t5}`;
   renderHomePoster();
 }
@@ -2070,8 +2088,11 @@ function renderHomePoster(){
   const x=nextMatchInfo();
   if(!x){el.innerHTML='';el.parentElement&&el.parentElement.classList.add('one');return;}
   el.parentElement&&el.parentElement.classList.remove('one');
-  const rl=rankListGv(),side=(id,n)=>{const p=players.find(q=>q.id===id);const i=p?rl.findIndex(q=>q.id===p.id):-1;
-    return `<div class="hp-p"><div class="hp-av">${avHtmlBig(p||{nome:n})}</div><b>${esc(String(n).split(' / ').map(surnameOf).join(' / '))}</b><small>${i>=0?(i+1)+'° · ':''}${p?(+p.mg||0).toFixed(2)+' MEDIA':''}</small></div>`;};
+  // per ogni giocatore: nome (piccolo, solo PC) sopra il cognome grande, sotto Match · storico V-P-S · media
+  const rl=rankListGv(),side=(id,n)=>{const p=players.find(q=>q.id===id);const dbl=String(n).includes(' / ');
+    const fn=!dbl?String(n).trim().split(/\s+/)[0]:'';const sn=String(n).split(' / ').map(surnameOf).join(' / ');
+    const st=p&&!dbl?`MATCH ${+p.pg||0} · ${esc(normStorico(p.storico))} · MEDIA ${(+p.mg||0).toFixed(2)}`:'';
+    return `<div class="hp-p"><div class="hp-av">${avHtmlBig(p||{nome:n})}</div>${fn&&fn!==sn?`<em class="hp-fn">${esc(fn)}</em>`:''}<b>${esc(sn)}</b><small>${st}</small></div>`;};
   const col=x.live||x.idx===0?'np-red':x.when==='oggi'?'np-cyan':'np-violet';
   el.innerHTML=`<div class="hf-poster ${col}" onclick="openNextMatch()"><div class="hp-when">${x.live?'IN CORSO · ':x.idx===0?'PROSSIMA · ':''}${esc(x.when.toUpperCase())} ${esc(x.ora)}</div>
     ${side(x.m.p1Id,x.a)}<div class="hp-vs">VS</div>${side(x.m.p2Id,x.b)}
@@ -2271,16 +2292,18 @@ function renderTickerTape(){renderNextMatch();
   if(!el)return;
   const _gtn=(m,pid)=>{if(!pid)return'?';const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){const entries=[bm.p1,bm.p2];for(const e of entries){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(+pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / ');}}}}const p=players.find(x=>x.id===+pid);if(p)return p.nome;if(m.teamName1&&+pid===m.p1Id)return m.teamName1;if(m.teamName2&&+pid===m.p2Id)return m.teamName2;return'?';};
   const items=[];
-  const done=sched.filter(m=>m.risultato).sort((a,b)=>b.data.localeCompare(a.data)).slice(0,10);
+  // dal più recente: data e ora; il punteggio segue l'ordine dei nomi (prima il vincitore)
+  const done=sched.filter(m=>m.risultato).sort((a,b)=>(b.data+(b.ora||'')).localeCompare(a.data+(a.ora||''))).slice(0,10);
   done.forEach(m=>{
     if(!m.p1Id||!m.p2Id)return;
     const n1=_gtn(m,m.p1Id),n2=_gtn(m,m.p2Id);
+    const g1=+m.gv1,g2=+m.gv2,hasG=Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2);
     const isDraw=m.winnerId==='draw'||!m.winnerId;
-    if(isDraw){items.push(`<i class="tk"><b>${esc(n1.toUpperCase())}</b><u>pareggia con</u><b>${esc(n2.toUpperCase())}</b><em class="draw">${esc(m.risultato)}</em></i>`);return;}
+    if(isDraw){items.push(`<i class="tk"><b>${esc(n1.toUpperCase())}</b><u>VS</u><b>${esc(n2.toUpperCase())}</b><em class="draw">${hasG?g1+'-'+g2:esc(m.risultato)}</em></i>`);return;}
     const winnerIsP1=+m.winnerId===m.p1Id;
     const wName=winnerIsP1?n1:n2,lName=winnerIsP1?n2:n1;
-    const winVerb=wName.includes(' / ')?'BATTONO':'BATTE';
-    items.push(`<i class="tk"><b>${esc(wName.toUpperCase())}</b><u>${winVerb.toLowerCase()}</u><s>${esc(lName.toUpperCase())}</s><em>${esc(m.risultato)}</em></i>`);
+    const sc=hasG?(winnerIsP1?g1+'-'+g2:g2+'-'+g1):m.risultato;
+    items.push(`<i class="tk"><b>${esc(wName.toUpperCase())}</b><u>VS</u><s>${esc(lName.toUpperCase())}</s><em>${esc(sc)}</em></i>`);
   });
   // le prossime partite non stanno più nel ticker: si vedono nella pillola del menu
   if(!items.length)items.push('<i class="tk"><b>LAURERA 15A40</b><u>la nuova era del tennis inizia qui</u></i>');
@@ -2296,7 +2319,7 @@ function renderTickerTape(){renderNextMatch();
   void el.offsetWidth;
   el.style.animation='';
   // velocità costante (~45 px al secondo) qualunque sia la lunghezza
-  requestAnimationFrame(()=>{el.style.animationDuration=Math.max(24,Math.round(el.scrollWidth/2/60))+'s';});
+  requestAnimationFrame(()=>{el.style.animationDuration=Math.max(20,Math.round(el.scrollWidth/2/75))+'s';});
 }
 // ═══ HIGHLIGHTS ═══
 function fillMSelects(){const opts='<option value="">— Seleziona —</option>'+players.filter(p=>!p.archiviato).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');document.getElementById('mm-p1').innerHTML=opts;document.getElementById('mm-p2').innerHTML=opts;}
@@ -2938,7 +2961,10 @@ function buildPlayerCardHTML(p,opts){
   const editBtn=opts.interactive?`<div class="pk-edit" onclick="event.stopPropagation();openEditPlayer(${p.id})" title="Modifica">✏️</div>`:'';
   const rl=rankListGv(),ri=rl.findIndex(x=>x.id===p.id);
   const tile=(lbl,val,c)=>`<div class="pk-t" style="--tc:${c}"><span>${lbl}</span><b>${val}</b></div>`;
-  return`<div class="pcrd pk ${d.isFoil?'foil':''}" style="--lv:${lvColor}">
+  // per chi non è admin un colore fisso per persona (non legato al livello, che resta nascosto)
+  const GUEST=["#ff8a00","#22b8f0","#22c55e","#8b5cf6","#ff4fb8","#e8ff00","#14b8a6","#f43f5e","#f59e0b","#60a5fa"];
+  const gc=GUEST[Math.abs((+p.id||0)*7)%GUEST.length];
+  return`<div class="pcrd pk ${d.isFoil?'foil':''}" style="--lv:${lvColor};--gc:${gc}">
     <div class="pk-hd">
       <div class="pk-ring"${ringClick}>${photoHtml}</div>
       <div class="pk-nm">${esc(p.nome)}</div>
