@@ -2514,7 +2514,7 @@ function podioHtml(list,sortKey){
   const top=list.slice(0,3).filter(p=>(+p.gv||0)>0);if(!top.length)return'';
   const val=p=>sortKey==='mg'?(+p.mg||0).toFixed(2):sortKey==='pg'?(+p.pg||0):(+p.gv||0);
   const lbl=sortKey==='mg'?'MEDIA':sortKey==='pg'?'PARTITE':'GAME';
-  const av=p=>p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${ini(p.nome)}</span>`;
+  const av=p=>phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${ini(p.nome)}</span>`;
   const slot=(p,pos)=>p?`<div class="podio-slot p${pos}" style="animation-delay:${pos===1?.35:pos===2?.15:0}s">
       <div class="podio-av">${av(p)}</div><div class="podio-name">${esc(dispName(p.nome))}</div>
       <div class="podio-val">${val(p)}</div><div class="podio-lbl">${lbl}</div>
@@ -2525,7 +2525,61 @@ function podioHtml(list,sortKey){
 function rankListGv(){return players.filter(x=>!x.archiviato&&(+x.gv||0)>0).sort((a,b)=>(+b.gv||0)-(+a.gv||0)||bySurname(a,b));}
 // Posizione per tutti: prima chi ha giocato (per game), poi chi non ha ancora giocato in ordine alfabetico
 function rankListAll(){const r=rankListGv(),ids=new Set(r.map(x=>x.id));return r.concat(players.filter(x=>!x.archiviato&&!ids.has(x.id)).sort((a,b)=>bySurname(a,b)));}
-function avHtmlBig(p){return p&&p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p?p.nome:'?'))}</span>`;}
+// ═══ AVATAR DISEGNATI: un tennista diverso per ogni giocatore senza foto (uomo/donna dal campo "sesso") ═══
+// Non vengono salvati: appena si carica una foto vera, si vede la foto.
+const _avCache={};
+function fakeAv(p){
+  if(!p)return'';
+  const key=p.id+'|'+p.sesso+'|'+players.length;if(_avCache[key])return _avCache[key];
+  const F=String(p.sesso||'').toUpperCase()==='DONNA';
+  // posizione del giocatore nel suo gruppo (uomini/donne): ogni combinazione esce una volta sola
+  const grp=players.filter(x=>(String(x.sesso||'').toUpperCase()==='DONNA')===F).map(x=>+x.id).sort((a,b)=>a-b);
+  const i=Math.max(0,grp.indexOf(+p.id));
+  const SK=['#f6d2b8','#eebf9c','#dea47e','#c98b62','#ad7350','#8c5a3c','#6e432c'];
+  const HR=['#1f1a17','#3a2a20','#5a3a24','#7f5232','#a8743f','#d2ab68','#e6d3a3','#8f8f8f','#7a2e1f'];
+  const SH=['#22c55e','#38bdf8','#a78bfa','#ff4fb8','#f59e0b','#ef4444','#14b8a6','#f4f4f5','#e8ff00','#2563eb'];
+  const AC=['#ffffff','#ff2d3d','#22c55e','#38bdf8','#e8ff00','#a78bfa','#111111'];
+  const nS=F?5:6;
+  const st=i%nS,sk=SK[(i*3+1)%7],hc=HR[(i*5+2)%9],sh=SH[(i*7+3)%10],acc=(i*2+1)%3,ac=AC[(i*4+2)%7],bd=F?0:(i*5+1)%3;
+  const hair=(st===4&&!F)?HR[7]:hc;
+  const dk=c=>{const n=parseInt(c.slice(1),16),r=Math.max(0,(n>>16)-28),g=Math.max(0,((n>>8)&255)-28),b=Math.max(0,(n&255)-28);return`rgb(${r},${g},${b})`;};
+  let back='',top='';
+  if(F){
+    if(st===0){back=`<path d="M30 44C28 64 30 78 36 84L64 84C70 78 72 64 70 44Z" fill="${hair}"/>`;top=`<path d="M32 44C31 28 40 22 50 22C60 22 69 28 68 44C64 34 57 30 50 30C43 30 36 34 32 44Z" fill="${hair}"/><path d="M50 23L49 33" stroke="${dk(hair)}" stroke-width="1.4"/>`;}
+    else if(st===1){back=`<path d="M64 36C78 38 80 56 72 70C76 56 72 46 64 44Z" fill="${hair}"/>`;top=`<path d="M32 44C31 27 41 22 51 22C61 22 69 28 68 42C63 33 56 30 49 30C42 30 36 35 32 44Z" fill="${hair}"/>`;}
+    else if(st===2){top=`<circle cx="50" cy="19" r="8" fill="${hair}"/><path d="M32 44C31 27 41 23 50 23C59 23 69 27 68 44C64 34 57 30 50 30C43 30 36 34 32 44Z" fill="${hair}"/>`;}
+    else if(st===3){back=`<path d="M30 42C28 56 30 62 34 64L66 64C70 62 72 56 70 42Z" fill="${hair}"/>`;top=`<path d="M31 46C30 27 40 22 50 22C60 22 70 27 69 46C66 36 60 31 50 31C40 31 34 36 31 46Z" fill="${hair}"/>`;}
+    else{back=`<path d="M29 44C25 60 27 76 33 86C38 80 37 70 35 62L65 62C63 70 62 80 67 86C73 76 75 60 71 44Z" fill="${hair}"/>`;top=`<path d="M32 46C30 28 40 22 50 22C61 22 70 28 68 46C66 34 59 29 52 30C46 31 40 35 32 46Z" fill="${hair}"/>`;}
+  }else{
+    if(st===0)top=`<path d="M33 42C33 27 42 22 50 22C59 22 67 27 67 42C63 34 57 31 50 31C43 31 37 34 33 42Z" fill="${hair}"/>`;
+    else if(st===1)top=`<path d="M33.5 40C34 28 42 24 50 24C58 24 66 28 66.5 40C62 34 57 32 50 32C43 32 38 34 33.5 40Z" fill="${hair}" opacity=".75"/>`;
+    else if(st===2)top=[[38,30],[44,25],[51,23],[58,25],[63,30],[35,37],[66,37],[47,28],[55,28]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5.2" fill="${hair}"/>`).join('');
+    else if(st===3)top=`<path d="M33 42C32 28 40 20 52 19C60 19 68 24 67 40C62 31 55 29 47 30C41 31 36 35 33 42Z" fill="${hair}"/><path d="M46 20C52 15 60 17 63 22C57 20 51 21 46 24Z" fill="${hair}"/>`;
+    else if(st===4)top=`<path d="M33 46C32 40 34 36 36 35L36 47Z" fill="${hair}"/><path d="M67 46C68 40 66 36 64 35L64 47Z" fill="${hair}"/>`;
+    else{back=`<path d="M31 42C29 52 31 58 33 60L67 60C69 58 71 52 69 42Z" fill="${hair}"/>`;top=`<path d="M31 46C30 28 40 21 50 21C61 21 70 28 69 46C66 35 59 30 50 30C41 30 34 35 31 46Z" fill="${hair}"/>`;}
+  }
+  // accessori: fascia, cappellino, visiera
+  let acs='';
+  if(acc===0)acs=`<rect x="32" y="33" width="36" height="6" rx="3" fill="${ac}"/>`;
+  else if(acc===1)acs=`<path d="M32 38C32 26 40 20 50 20C60 20 68 26 68 38Z" fill="${ac}"/><path d="M50 37C60 36 72 37 76 40C70 42 58 41 50 40Z" fill="${dk(ac)}"/>`;
+  else acs=F||st===4?`<path d="M33 37C40 34 60 34 67 37L67 40C60 38 40 38 33 40Z" fill="${ac}"/><path d="M50 39C60 38 72 39 76 42C70 44 58 43 50 42Z" fill="${dk(ac)}"/>`:'';
+  const beard=bd===1?`<path d="M35 52C36 66 43 70 50 70C57 70 64 66 65 52C61 60 56 62 50 62C44 62 39 60 35 52Z" fill="${hair}" opacity=".9"/>`
+    :bd===2?`<path d="M35 52C36 66 43 70 50 70C57 70 64 66 65 52C61 60 56 62 50 62C44 62 39 60 35 52Z" fill="${hair}" opacity=".28"/>`:'';
+  const cheeks=F?`<circle cx="40" cy="55" r="3" fill="#ff8a8a" opacity=".28"/><circle cx="60" cy="55" r="3" fill="#ff8a8a" opacity=".28"/>`:'';
+  const ear=F?`<circle cx="33" cy="53" r="1.4" fill="${ac==='#111111'?'#e8ff00':ac}"/><circle cx="67" cy="53" r="1.4" fill="${ac==='#111111'?'#e8ff00':ac}"/>`:'';
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="9 7 82 82"><defs><radialGradient id="g" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="${sh}" stop-opacity=".35"/><stop offset="1" stop-color="#14151a"/></radialGradient></defs>`
+    +`<rect width="100" height="100" fill="url(#g)"/>${back}`
+    +`<path d="M12 104C14 82 30 74 50 74C70 74 86 82 88 104Z" fill="${sh}"/><path d="M41 74L50 84L59 74" fill="none" stroke="${sh==='#f4f4f5'?'#c9c9cf':'#ffffff'}" stroke-width="2.6" stroke-linejoin="round" opacity=".85"/>`
+    +`<rect x="44" y="60" width="12" height="16" rx="5" fill="${dk(sk)}"/>`
+    +`<circle cx="33" cy="49" r="4.2" fill="${sk}"/><circle cx="67" cy="49" r="4.2" fill="${sk}"/>`
+    +`<ellipse cx="50" cy="47" rx="17" ry="20" fill="${sk}"/>${beard}${top}${acs}`
+    +`<path d="M40.5 43.5Q43 42 45.5 43.5M54.5 43.5Q57 42 59.5 43.5" stroke="${dk(hair)}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`
+    +`<circle cx="43" cy="48" r="1.9" fill="#1b1b1f"/><circle cx="57" cy="48" r="1.9" fill="#1b1b1f"/>${cheeks}${ear}`
+    +`<path d="M44.5 57Q50 61.5 55.5 57" stroke="#7a3b2e" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>`;
+  return _avCache[key]='data:image/svg+xml,'+encodeURIComponent(svg);
+}
+function phUrl(p){return p?(p.photoUrl||fakeAv(p)):'';}
+function avHtmlBig(p){return p&&phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p?p.nome:'?'))}</span>`;}
 // ordine alfabetico per cognome, poi per nome
 function bySurname(a,b){return surnameOf(a.nome).localeCompare(surnameOf(b.nome),"it")||String(a.nome).localeCompare(String(b.nome),"it");}
 function surnameOf(n){const p=String(n||'').trim().split(/\s+/);return p.length>1?p.slice(1).join(' '):p[0]||'';}
@@ -2670,7 +2724,7 @@ function renderRank(){
   if(sortKey==='name')list.sort((a,b)=>bySurname(a,b));
   else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0)||bySurname(a,b));
   const medal=['#f0c040','#c8ced8','#cd7c3f'];
-  const av=p=>`<div class="mk-av">${p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`;
+  const av=p=>`<div class="mk-av">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`;
   const keyCls=k=>sortKey===k?' k':'';
   const rows=list.map((p,i)=>{const top=sortKey!=='name'&&i<3&&(+p[sortKey]||0)>0;
     return `<div class="rk-row${top?' top':''}"${top?` style="--m:${medal[i]}"`:''} onclick="openProfile(${p.id})">
@@ -2934,7 +2988,7 @@ function cmcHtml(m){
   else if(m.data===today){col='#22b8f0';stat='DA GIOCARE';tag='OGGI';}
   else{col='#8b5cf6';stat='DA GIOCARE';tag='';}
   if(!tag&&m.data)tag=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric'}).toUpperCase();
-  const av=p=>p?`<div class="mk-av">${p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`:'';
+  const av=p=>p?`<div class="mk-av">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`:'';
   const nm=(n,w,l)=>{const dbl=String(n).includes(' / ');const sn=String(n).split(' / ').map(surnameOf).join(' / ');const fn=dbl?'':String(n).trim().split(/\s+/)[0];
     return `<div class="mk-nm${w?' win':''}${l?' lose':''}">${fn&&fn!==sn?`<small>${esc(fn)}</small>`:''}<b>${esc(sn)}</b></div>`;};
   const admin=!m.risultato
@@ -3167,7 +3221,7 @@ function renderRisultati(){
   const teamOf=(m,pid)=>{const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;
     if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){for(const e of [bm.p1,bm.p2]){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / ');}}}}
     const p=players.find(x=>x.id===pid);return p?p.nome:(pid===m.p1Id?m.teamName1:m.teamName2)||'?';};
-  const av=pid=>{const p=players.find(x=>x.id===pid);return p?`<div class="mk-av">${p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`:'';};
+  const av=pid=>{const p=players.find(x=>x.id===pid);return p?`<div class="mk-av">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`:'';};
   const nm=(n,lbl)=>{const dbl=String(n).includes(' / ');const sn=String(n).split(' / ').map(surnameOf).join(' / ');const fn=dbl?'':String(n).trim().split(/\s+/)[0];
     return `<div class="rs-nm">${fn&&fn!==sn?`<small class="fn">${esc(fn)}</small>`:''}<b>${esc(sn)}</b></div>`;};
   const row=m=>{
@@ -3444,7 +3498,7 @@ function buildPlayerCardHTML(p,opts){
   opts=opts||{};
   const d=getPlayerCardData(p,opts.rankPtsMap,opts.rankList);
   const lvColor=caC[p.livello]||'#e8ff00';
-  const photoHtml=p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${ini(p.nome)}</span>`;
+  const photoHtml=phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${ini(p.nome)}</span>`;
   const ringClick=opts.interactive?` onclick="openProfile(${p.id})" title="Apri profilo"`:'';
   const editBtn=opts.interactive?`<div class="pk-edit" onclick="event.stopPropagation();openEditPlayer(${p.id})" title="Modifica">✏️</div>`:'';
   const rl=rankListAll(),ri=rl.findIndex(x=>x.id===p.id);
@@ -3576,7 +3630,7 @@ function openProfile(playerId){
   // Header
   const av=document.getElementById('profile-av');
   av.className=`av ${avc(p.id)}`;
-  av.innerHTML=p.photoUrl?`<img src="${p.photoUrl}" alt="">`:ini(p.nome);
+  av.innerHTML=phUrl(p)?`<img src="${phUrl(p)}" alt="">`:ini(p.nome);
   document.getElementById('profile-name').textContent=p.nome;
   // niente livello né bandiera nel profilo: il livello è solo per l'admin
   const _lvEl=document.getElementById('profile-lv');if(_lvEl)_lvEl.innerHTML='';
@@ -3650,7 +3704,7 @@ function renderH2H(){
   const pct1=total?Math.round(w1/total*100):0;
   const pct2=total?Math.round(w2/total*100):0;
   // Avatars
-  const av=p=>{const ph=p.photoUrl?`<img src="${p.photoUrl}" alt="">`:ini(p.nome);return`<div class="av ${avc(p.id)}" style="width:44px;height:44px;font-size:16px;flex-shrink:0">${ph}</div>`;};
+  const av=p=>{const ph=phUrl(p)?`<img src="${phUrl(p)}" alt="">`:ini(p.nome);return`<div class="av ${avc(p.id)}" style="width:44px;height:44px;font-size:16px;flex-shrink:0">${ph}</div>`;};
   cont.innerHTML=`
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px">
       <!-- Score bar — avatar sopra, nome sotto (leggibile anche su mobile) -->
@@ -4272,10 +4326,10 @@ function renderBracketHtml(t){
     if(Array.isArray(entry)){
       const names=entry.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / ');
       const p=players.find(x=>x.id===entry[0]);
-      return{name:names,id:entry[0],photo:p?p.photoUrl:null};
+      return{name:names,id:entry[0],photo:p?phUrl(p):null};
     }
     const p=players.find(x=>x.id===entry);
-    return p?{name:p.nome,id:p.id,photo:p.photoUrl}:{name:'?',id:null,photo:null};
+    return p?{name:p.nome,id:p.id,photo:phUrl(p)}:{name:'?',id:null,photo:null};
   };
   // Fixed slot height per first-round unit — enough for card + gap
   const SLOT=148; // px per first-round match slot (card ~100px + 48px gap)
@@ -4966,8 +5020,8 @@ function renderAlbo(){
   var _vp=null; for(var _pi=0;_pi<players.length;_pi++){if(players[_pi].nome.trim()===_vn){_vp=players[_pi];break;}}
   var _ini=_vn.split(/\s+/).map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
   var _avcls='av-'+((_vp?_vp.id:0)%8);
-  return _vp&&_vp.photoUrl
-    ?'<img src="'+_vp.photoUrl+'" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);flex-shrink:0;">'
+  return _vp&&phUrl(_vp)
+    ?'<img src="'+phUrl(_vp)+'" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);flex-shrink:0;">'
     :'<div class="av '+_avcls+'" style="width:52px;height:52px;font-size:17px;flex-shrink:0;">'+_ini+'</div>';
 })()
 +'<div style="flex:1;min-width:0">'
