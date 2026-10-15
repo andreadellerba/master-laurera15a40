@@ -1543,7 +1543,6 @@ html{background-color:#000!important}
 .hl-rc{position:relative}
 .hl-rc .hl-av,.hl-rc .hl-tx,.hl-rc>span{transition:opacity .22s ease}
 .hl-rc.hl-swap .hl-av,.hl-rc.hl-swap .hl-tx,.hl-rc.hl-swap>span{opacity:0}
-.hl-n{position:absolute;top:6px;right:9px;font-style:normal;font:600 9.5px "DM Sans",sans-serif;letter-spacing:.4px;color:rgba(255,255,255,.45)}
 /* ═══ PROFILO: senza livello/bandiera, nome centrato con l'avatar; telefono: più spazio sotto la notch ═══ */
 #profile-lv:empty{display:none}
 .ph-band .ph-main{display:flex;flex-direction:column;justify-content:center;align-self:stretch}
@@ -1554,6 +1553,30 @@ html{background-color:#000!important}
   .cmc.mk .mk-score{flex-direction:column;gap:4px;align-items:center}
   .cmc.mk .mk-score b{min-width:34px;text-align:center}
 }
+/* ═══ CLASSIFICHE: legenda sopra le colonne, numeri più grandi e leggibili, sfondo più scuro sotto i numeri ═══ */
+.rk-row{background:linear-gradient(90deg,rgba(0,0,0,.15),rgba(0,0,0,.7) 62%),var(--aur)!important;background-attachment:scroll,fixed!important;background-size:auto,100vw 100vh!important}
+.rk-row.top{background:linear-gradient(90deg,color-mix(in srgb,var(--m) 26%,transparent),rgba(0,0,0,.7) 62%),var(--aur)!important;background-attachment:scroll,fixed!important;background-size:auto,100vw 100vh!important}
+.rk-c b{color:#fff;font-size:27px!important}
+.rk-c.k b{text-shadow:0 0 14px currentColor}
+.rk-leg{display:none}
+@media(min-width:641px){
+  .rk-leg{display:grid;grid-template-columns:44px auto minmax(0,1fr) repeat(4,76px);gap:10px;padding:0 15px 6px;font:700 11px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.7)}
+  .rk-leg span:nth-child(2){width:38px}
+  .rk-leg span{text-align:center}
+  .rk-leg span.k{color:#fff!important;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
+  .rk-leg span.k:nth-child(4){text-decoration-color:#fff}
+  .rk-row .rk-c span{display:none}
+}
+/* ═══ TICKER: il pallino pulsante non viene più tagliato a sinistra; VS centrato sull'altezza dei nomi ═══ */
+.ticker-tape .tk-label{overflow:visible}
+@media(min-width:641px){
+  #hdr-next .ticker-tape{overflow:visible!important}
+  #hdr-next .tk-label{padding:0 10px 0 10px!important}
+  #hdr-next .tk u{font-size:.72em!important;line-height:1;align-self:center;position:relative;top:-.04em}
+}
+@media(max-width:640px){.ticker-tape .tk-label{padding-left:16px!important}}
+.tk{line-height:1}
+.tk b,.tk s{line-height:1}
 </style>
 </head>
 <body class="viewer">
@@ -1624,7 +1647,7 @@ html{background-color:#000!important}
 <div id="page-classifiche" class="page">
   <div class="wrap">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div class="pg-title pg-big" style="margin:0">CLASSI<span>FICHE</span></div>
+      <div class="pg-title pg-big" style="margin:0">CLAS<span>SIFICHE</span></div>
       <div style="display:flex;align-items:center;gap:8px">
         <!-- ordinamento a pillole (la tendina resta nascosta e tiene il valore scelto) -->
         <div class="rk-seg" id="rank-seg">
@@ -2452,7 +2475,7 @@ setInterval(()=>{const R=window._recs;if(!R)return;
   document.querySelectorAll('.hl-rc[data-rec]').forEach(el=>{const r=R[+el.dataset.rec];if(!r||r.items.length<2)return;
     const i=(+el.dataset.i+1)%r.items.length,it=r.items[i];el.dataset.i=i;el.dataset.pid=it.p.id;
     el.classList.add('hl-swap');setTimeout(()=>{el.querySelector('.hl-av').innerHTML=avHtmlBig(it.p);el.querySelector('.hl-tx small').textContent=r.l(it);
-      el.querySelector('.hl-tx b').textContent=dispName(it.p.nome);el.querySelector(':scope>span').textContent=it.v;const n=el.querySelector('.hl-n');if(n)n.textContent=(i+1)+'/'+r.items.length;el.classList.remove('hl-swap');},220);});
+      el.querySelector('.hl-tx b').textContent=dispName(it.p.nome);el.querySelector(':scope>span').textContent=it.v;el.classList.remove('hl-swap');},220);});
 },3000);
 function renderHomeFeat(){
   const el=document.getElementById('home-feat');if(!el)return;
@@ -2485,7 +2508,7 @@ function renderHomeFeat(){
   recs.push({l:it=>'GAME IN 1 PARTITA',c:'#ff8a00',items:topOf(gList,x=>x.v)});
   recs.push({l:it=>'DISTACCO '+(it&&it.s||''),c:'#a78bfa',items:topOf(dList,x=>'+'+x.v)});
   window._recs=recs;
-  const tile=(r,k)=>{const it=r.items[0];return `<div class="hl-rc" data-rec="${k}" data-i="0" style="--c:${r.c}" onclick="openProfile(+this.dataset.pid)" data-pid="${it.p.id}"><div class="hl-av">${avHtmlBig(it.p)}</div><div class="hl-tx"><small>${esc(r.l(it))}</small><b>${esc(dispName(it.p.nome))}</b></div><span>${esc(String(it.v))}</span>${r.items.length>1?`<i class="hl-n">1/${r.items.length}</i>`:''}</div>`;};
+  const tile=(r,k)=>{const it=r.items[0];return `<div class="hl-rc" data-rec="${k}" data-i="0" style="--c:${r.c}" onclick="openProfile(+this.dataset.pid)" data-pid="${it.p.id}"><div class="hl-av">${avHtmlBig(it.p)}</div><div class="hl-tx"><small>${esc(r.l(it))}</small><b>${esc(dispName(it.p.nome))}</b></div><span>${esc(String(it.v))}</span></div>`;};
   const rec=act.length?`<div class="hl-rec">${recs.map((r,k)=>r.items.length?tile(r,k):'').join('')}</div>`:'';
   el.innerHTML=feat||rec?`<div class="hl">${feat}${rec}</div>`:'';
 }
@@ -2569,7 +2592,7 @@ function renderRank(){
       <div class="rk-c${keyCls('mg')}"><b style="color:#22b8f0">${(+p.mg||0).toFixed(2)}</b><span>MEDIA</span></div>
       <div class="rk-c${keyCls('gv')}"><b style="color:#e8ff00">${+p.gv||0}</b><span>GAME</span></div>
     </div>`;}).join('');
-  document.getElementById('rank-body').innerHTML=(sortKey==='name'?'':podioHtml(list,sortKey))+`<div class="rk-list rk-by-${sortKey}">${rows||'<div class="cal-empty">Nessun giocatore</div>'}</div>`;
+  document.getElementById('rank-body').innerHTML=(sortKey==='name'?'':podioHtml(list,sortKey))+`<div class="rk-list rk-by-${sortKey}">${rows?`<div class="rk-leg"><span></span><span></span><span></span><span${keyCls("pg")}>PARTITE</span><span>STORICO</span><span${keyCls("mg")} style="color:#22b8f0">MEDIA</span><span${keyCls("gv")} style="color:#e8ff00">GAME</span></div>`:""}${rows||'<div class="cal-empty">Nessun giocatore</div>'}</div>`;
   countUp(document.getElementById('rank-body'));
 }
 // ═══ PDF EXPORT — STILE CONDIVISO (tema scuro/neon dell'app) ═══
@@ -2708,7 +2731,7 @@ function renderTickerTape(){renderNextMatch();
   if(!el)return;
   const _gtn=(m,pid)=>{if(!pid)return'?';const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){const entries=[bm.p1,bm.p2];for(const e of entries){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(+pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / ');}}}}const p=players.find(x=>x.id===+pid);if(p)return p.nome;if(m.teamName1&&+pid===m.p1Id)return m.teamName1;if(m.teamName2&&+pid===m.p2Id)return m.teamName2;return'?';};
   const items=[];
-  // dal più recente: data e ora; il punteggio segue l'ordine dei nomi (prima il vincitore)
+  // dal più recente: data e ora; il punteggio segue l'ordine dei nomi
   const done=sched.filter(m=>m.risultato).sort((a,b)=>(b.data+(b.ora||'')).localeCompare(a.data+(a.ora||''))).slice(0,10);
   done.forEach(m=>{
     if(!m.p1Id||!m.p2Id)return;
@@ -2716,10 +2739,11 @@ function renderTickerTape(){renderNextMatch();
     const g1=+m.gv1,g2=+m.gv2,hasG=Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2);
     const isDraw=m.winnerId==='draw'||!m.winnerId;
     if(isDraw){items.push(`<i class="tk"><b>${esc(n1.toUpperCase())}</b><u>VS</u><b>${esc(n2.toUpperCase())}</b><em class="draw">${hasG?g1+'-'+g2:esc(m.risultato)}</em></i>`);return;}
+    // ordine come è stata creata la partita: il vincitore in bianco, lo sconfitto attenuato
     const winnerIsP1=+m.winnerId===m.p1Id;
-    const wName=winnerIsP1?n1:n2,lName=winnerIsP1?n2:n1;
-    const sc=hasG?(winnerIsP1?g1+'-'+g2:g2+'-'+g1):m.risultato;
-    items.push(`<i class="tk"><b>${esc(wName.toUpperCase())}</b><u>VS</u><s>${esc(lName.toUpperCase())}</s><em>${esc(sc)}</em></i>`);
+    const t1=winnerIsP1?'b':'s',t2=winnerIsP1?'s':'b';
+    const sc=hasG?g1+'-'+g2:m.risultato;
+    items.push(`<i class="tk"><${t1}>${esc(n1.toUpperCase())}</${t1}><u>VS</u><${t2}>${esc(n2.toUpperCase())}</${t2}><em>${esc(sc)}</em></i>`);
   });
   // le prossime partite non stanno più nel ticker: si vedono nella pillola del menu
   if(!items.length)items.push('<i class="tk"><b>LAURERA 15A40</b><u>la nuova era del tennis inizia qui</u></i>');
@@ -3063,15 +3087,17 @@ function renderRisultati(){
     const g1=+m.gv1,g2=+m.gv2,hasG=Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2);
     const parts=String(m.risultato).match(/(\d+)\s*[-–]\s*(\d+)/);
     const wIsP1=!draw&&+m.winnerId===m.p1Id;
-    const L=draw?m.p1Id:(wIsP1?m.p1Id:m.p2Id),R=draw?m.p2Id:(wIsP1?m.p2Id:m.p1Id);
+    // ordine come è stata creata la partita (giocatore 1 a sinistra); il vincitore è evidenziato
+    const L=m.p1Id,R=m.p2Id;
     let sL,sR;
-    if(hasG){sL=L===m.p1Id?g1:g2;sR=R===m.p1Id?g1:g2;}
-    else if(parts){sL=draw?parts[1]:Math.max(+parts[1],+parts[2]);sR=draw?parts[2]:Math.min(+parts[1],+parts[2]);}
+    if(hasG){sL=g1;sR=g2;}
+    else if(parts){sL=parts[1];sR=parts[2];}
     else{sL=esc(m.risultato);sR='';}
+    const cL=draw?'w':(wIsP1?'w':'l'),cR=draw?'l':(wIsP1?'l':'w');
     return `<div class="rs${draw?' draw':''}">
-      <div class="rs-side w">${av(L)}${nm(teamOf(m,L),draw?'PAREGGIO':'VINCE')}</div>
-      <div class="rs-score"><span class="${draw?'dr':'win'}">${sL}</span>${sR!==''?`<span class="${draw?'dr':''}">${sR}</span>`:''}</div>
-      <div class="rs-side l rt">${nm(teamOf(m,R),draw?'PAREGGIO':'PERDE')}${av(R)}</div>
+      <div class="rs-side ${cL}">${av(L)}${nm(teamOf(m,L),draw?'PAREGGIO':(wIsP1?'VINCE':'PERDE'))}</div>
+      <div class="rs-score"><span class="${draw?'dr':(wIsP1?'win':'')}">${sL}</span>${sR!==''?`<span class="${draw?'dr':(wIsP1?'':'win')}">${sR}</span>`:''}</div>
+      <div class="rs-side ${cR} rt">${nm(teamOf(m,R),draw?'PAREGGIO':(wIsP1?'PERDE':'VINCE'))}${av(R)}</div>
       ${m.ora?`<div class="rs-time">${esc(m.ora)}</div>`:''}
     </div>`;
   };
