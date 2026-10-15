@@ -1498,6 +1498,26 @@ html,body,body:not(.light),.page,#page-players,.wrap{background:#000!important;b
 html{background-color:#000!important}
 @media(min-width:641px) and (max-width:1180px){.hl{grid-template-columns:1fr!important}.hl-rec{min-width:0!important;grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(min-width:641px) and (max-width:900px){.hl-rec{grid-template-columns:1fr 1fr}}
+/* MVP: avatar solo con l'anello (niente sfumatura/alone), nome su una riga, statistiche su due righe */
+.hl .hf-feat::after{display:none!important}
+.hf-ph{background:#1e1f23!important;color:#fff!important;box-shadow:none!important;border:3px solid var(--accent);font-family:"Anton",sans-serif}
+.hl .hf-nm{font-size:30px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hf-sub span{display:block;line-height:1.5}
+@media(max-width:640px){.hl .hf-nm{font-size:clamp(18px,6vw,24px)!important}.hl .hf-ph{width:64px!important;height:64px!important;font-size:24px!important}.hl .hf-feat{gap:12px!important}}
+/* LISTA GIOCATORI centrata, stesso spazio sopra e sotto */
+.hf-list-title{text-align:center;padding:18px 20px 16px!important}
+/* barre e pillole con gli stessi angoli delle card */
+.hdr,.tabs-mobile2 .tbar{border-radius:24px!important}
+.tabs-mobile2 .tbtn,.tabs-mobile2 .tbtn.active{border-radius:18px!important}
+@media(min-width:641px){.hdr{border-radius:24px!important}}
+/* telefono: ticker con solo il pallino, i risultati sfumano verso il pallino */
+@media(max-width:640px){
+  .ticker-tape{border-radius:18px!important}
+  .tk-label{font-size:0!important;padding:0 6px 0 12px!important;background:none!important;box-shadow:none!important}
+  .tk-label::before{display:none!important}
+  .tk-win{-webkit-mask:linear-gradient(90deg,transparent,#000 26px,#000 calc(100% - 26px),transparent);mask:linear-gradient(90deg,transparent,#000 26px,#000 calc(100% - 26px),transparent)}
+}
+.hf-sub span{white-space:nowrap}
 </style>
 </head>
 <body class="viewer">
@@ -2398,9 +2418,9 @@ function renderHomeFeat(){
   let feat='';
   if(ws){
     const p=ws.p,st=ws.st,rl2=rankListAll(),ri=rl2.findIndex(x=>x.id===p.id);
-    const sub=st?`${st.w} ${st.w===1?'vittoria':'vittorie'} · ${st.g} game in settimana · V-P-S ${normStorico(p.storico)} · media ${(+p.mg||0).toFixed(2)}`:`${+p.pg||0} partite · V-P-S ${normStorico(p.storico)} · ${+p.gv||0} game · media ${(+p.mg||0).toFixed(2)}`;
+    const sub=`<span>MATCH ${+p.pg||0} · V-P-S ${esc(normStorico(p.storico))}</span><span>GAME ${+p.gv||0} · MEDIA ${(+p.mg||0).toFixed(2)}</span>`;
     feat=`<div class="hf-feat" onclick="openProfile(${p.id})"><div class="hf-ph">${avHtmlBig(p)}</div>
-      <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}${ri>=0?` <em class="hf-rk">#${ri+1}</em>`:''}</div><div class="hf-sub">${esc(sub)}</div>
+      <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}${ri>=0?` <em class="hf-rk">#${ri+1}</em>`:''}</div><div class="hf-sub">${sub}</div>
       ${st&&st.w>=2?'<div class="hf-chips"><span>🔥 IN FORMA</span></div>':''}</div></div>`;
   }
   // 4 record: più match, più vittorie, più game, media game più alta (solo chi ha giocato)
@@ -2487,7 +2507,7 @@ function renderRank(){
     return `<div class="rk-row${top?' top':''}"${top?` style="--m:${medal[i]}"`:''} onclick="openProfile(${p.id})">
       <span class="rk-p">${sortKey==='name'?'':i+1}</span>${av(p)}<span class="rk-n">${esc(dispName(p.nome))}</span>
       <div class="rk-c${keyCls('pg')}"><b>${+p.pg||0}</b><span>PARTITE</span></div>
-      <div class="rk-c rk-e"><b>${esc(normStorico(p.storico))}</b><span>ESITI</span></div>
+      <div class="rk-c rk-e"><b>${esc(normStorico(p.storico))}</b><span>STORICO</span></div>
       <div class="rk-c${keyCls('mg')}"><b style="color:#22b8f0">${(+p.mg||0).toFixed(2)}</b><span>MEDIA</span></div>
       <div class="rk-c${keyCls('gv')}"><b style="color:#e8ff00">${+p.gv||0}</b><span>GAME</span></div>
     </div>`;}).join('');
@@ -3268,7 +3288,7 @@ function buildPlayerCardHTML(p,opts){
       <div class="pk-rank">${ri>=0?'#'+(ri+1):'#–'}</div>
     </div>
     <div class="pk-bd">
-      ${tile('Match',+p.pg||0,'#e8ff00')}${tile('Esiti',storicoHtml(p.storico),'#22c55e')}${tile('Game',+p.gv||0,'#ff4fb8')}${tile('Media game',(+p.mg||0).toFixed(2),'#22b8f0')}
+      ${tile('Match',+p.pg||0,'#e8ff00')}${tile('Storico',storicoHtml(p.storico),'#22c55e')}${tile('Game',+p.gv||0,'#ff4fb8')}${tile('Media game',(+p.mg||0).toFixed(2),'#22b8f0')}
     </div>
   </div>`;
 }
