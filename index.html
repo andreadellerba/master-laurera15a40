@@ -1544,6 +1544,16 @@ html{background-color:#000!important}
 .hl-rc .hl-av,.hl-rc .hl-tx,.hl-rc>span{transition:opacity .22s ease}
 .hl-rc.hl-swap .hl-av,.hl-rc.hl-swap .hl-tx,.hl-rc.hl-swap>span{opacity:0}
 .hl-n{position:absolute;top:6px;right:9px;font-style:normal;font:600 9.5px "DM Sans",sans-serif;letter-spacing:.4px;color:rgba(255,255,255,.45)}
+/* ═══ PROFILO: senza livello/bandiera, nome centrato con l'avatar; telefono: più spazio sotto la notch ═══ */
+#profile-lv:empty{display:none}
+.ph-band .ph-main{display:flex;flex-direction:column;justify-content:center;align-self:stretch}
+@media(max-width:640px){
+  .profile-modal,body .profile-modal{padding-top:calc(env(safe-area-inset-top) + 22px)!important}
+  .modal-bg{padding-top:calc(env(safe-area-inset-top) + 22px)!important}
+  /* risultato in verticale: un numero per riga, allineato al nome */
+  .cmc.mk .mk-score{flex-direction:column;gap:4px;align-items:center}
+  .cmc.mk .mk-score b{min-width:34px;text-align:center}
+}
 </style>
 </head>
 <body class="viewer">
@@ -3332,7 +3342,7 @@ function buildPlayerCardHTML(p,opts){
     <div class="pk-hd">
       <div class="pk-ring"${ringClick}>${photoHtml}</div>
       <div class="pk-nm">${esc(p.nome)}</div>
-      <div class="pk-lv">LV${p.livello}</div>${editBtn}
+      ${_checkViewer()?"":`<div class="pk-lv">LV${p.livello}</div>`}${editBtn}
       <div class="pk-rank">${ri>=0?'#'+(ri+1):'#–'}</div>
     </div>
     <div class="pk-bd">
@@ -3374,8 +3384,8 @@ function exportPlayerCardPNG(){
     ctx.fillStyle='#888888';ctx.font='400 11px "DM Sans"';
     ctx.fillText('OVR',32+41,32+68);
     const lvW=70,lvX=W-32-lvW;
-    roundRectPath(ctx,lvX,32,lvW,30,8);ctx.fillStyle=lvColor+'33';ctx.fill();ctx.strokeStyle=lvColor;ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=lvColor;ctx.font='700 15px "Bebas Neue"';ctx.fillText('LV'+p.livello,lvX+lvW/2,32+21);
+    if(!_checkViewer()){roundRectPath(ctx,lvX,32,lvW,30,8);ctx.fillStyle=lvColor+'33';ctx.fill();ctx.strokeStyle=lvColor;ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=lvColor;ctx.font='700 15px "Bebas Neue"';ctx.fillText('LV'+p.livello,lvX+lvW/2,32+21);}
     const cx=W/2,cy=210,rad=100;
     if(d.isFoil){
       const rg=ctx.createLinearGradient(cx-rad,cy-rad,cx+rad,cy+rad);
@@ -3451,13 +3461,8 @@ function openProfile(playerId){
   av.className=`av ${avc(p.id)}`;
   av.innerHTML=p.photoUrl?`<img src="${p.photoUrl}" alt="">`:ini(p.nome);
   document.getElementById('profile-name').textContent=p.nome;
-  // Livello (visibile a tutti, anche non-admin)
-  const _lvEl=document.getElementById('profile-lv');
-  if(_lvEl){
-    const _lc=caC[p.livello]||'var(--text2)';
-    const _flg=flag(p.naz);
-    _lvEl.innerHTML=`<span style="display:inline-flex;align-items:center;gap:6px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:.5px;padding:3px 10px;border-radius:7px;background:${_lc}26;color:${_lc};border:1px solid ${_lc}">LIVELLO ${p.livello||'-'}</span>`+(_flg?`<span style="margin-left:8px;font-size:13px;color:var(--text2)">${_flg} ${esc(p.naz||'')}</span>`:'');
-  }
+  // niente livello né bandiera nel profilo: il livello è solo per l'admin
+  const _lvEl=document.getElementById('profile-lv');if(_lvEl)_lvEl.innerHTML='';
   // Stats
   const mm=(p.storico||'0-0-0').match(/(\d+)[\-\/](\d+)(?:[\-\/](\d+))?/)||['','0','0'];
   const hasD=mm[3]!==undefined;
