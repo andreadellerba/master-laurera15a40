@@ -1393,8 +1393,44 @@ body[data-tab="players"],body:not([data-tab]){--page:#ff2d3d}
 /* Albo d'Oro su telefono: un trofeo per riga a tutta larghezza */
 @media(max-width:640px){.albo-grid{grid-template-columns:1fr!important}}
 /* Calendario telefono: tutto su una riga (freccia, titolo, torneo), senza tipo e mese; frecce della settimana compatte */
-@media(max-width:640px){.cal-hd>div:first-child{align-items:center!important;width:100%;flex-wrap:nowrap!important;min-width:0}.cal-titlebox{flex-direction:row;align-items:baseline;gap:8px;flex-wrap:nowrap;min-width:0}.cal-title-big{font-size:30px!important;flex-shrink:0}.cal-sub{padding:0;min-width:0}.cal-sub b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#cal-torneo-tipo,#cal-big{display:none!important}.cal-nav{gap:6px!important;margin:0!important}.cal-wlbl{min-width:0!important;padding:0 2px!important}.cal-hd{margin-bottom:8px!important;gap:6px!important}}
+@media(max-width:640px){.cal-hd>div:first-child{align-items:center!important;width:100%;flex-wrap:nowrap!important;min-width:0}.cal-titlebox{flex-direction:row;align-items:baseline;gap:8px;flex-wrap:nowrap;min-width:0}.cal-title-big{font-size:30px!important;flex-shrink:0}.cal-sub{padding:0;min-width:0}.cal-sub b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#cal-torneo-tipo{display:none!important}.cal-nav{gap:6px!important;margin:0!important}.cal-wlbl{min-width:0!important;padding:0 2px!important}.cal-hd{margin-bottom:8px!important;gap:6px!important}}
 @media(max-width:640px){.tabs-mobile2 .tbar{overflow:hidden!important}.tabs-mobile2 .tbtn:not(.active){flex:1 1 0!important;min-width:34px!important}.tabs-mobile2 .tbtn.active{flex:0 1 auto!important;min-width:0}.tabs-mobile2 .tbtn.active .tl{overflow:hidden;text-overflow:ellipsis}}
+/* ── giro di ritocchi: calendario per tornei, risultati, avatar, filtri, telefono ── */
+.cal-tor{font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:1.5px;color:var(--page);margin:6px 0 2px}
+.cal-tor:first-child{margin-top:0}
+.cal-title-big{margin:0!important}
+/* risultati: avatar più grandi, nome piccolo sopra e cognome grande */
+.rs .mk-av{width:52px;height:52px;font-size:19px}
+.rs-nm .fn{font-size:12px!important}
+/* card giocatore: avatar più grande */
+.pk-ring{width:72px!important;height:72px!important;padding:3px}.pk-ring>*{font-size:24px!important}
+@media(min-width:641px){.cards-grid .pk-ring{width:64px!important;height:64px!important}}
+/* Classifiche: titolo a sinistra, filtri tutti a destra */
+@media(min-width:641px){#page-classifiche .wrap>div:first-child{display:flex!important;justify-content:space-between!important}#page-classifiche .wrap>div:first-child>div:last-child{display:flex!important;align-items:center;gap:8px}}
+/* titolo "LISTA GIOCATORI" al posto della riga, nello stile dell'app */
+.hf-top5{border-bottom:none!important;padding-bottom:6px!important}
+.hf-list-title{font-family:"Anton",sans-serif;font-size:34px;letter-spacing:.5px;text-transform:uppercase;line-height:1;padding:10px 20px 2px}
+.hf-list-title span{color:transparent;-webkit-text-stroke:1.2px var(--page)}
+/* ── TELEFONO ── */
+@media(max-width:640px){
+  .rs .mk-av{display:flex!important;width:40px;height:40px;font-size:15px}
+  .rs-nm .fn{display:block!important;font-size:10px!important}
+  .pk-ring{width:60px!important;height:60px!important}
+  .hf-list-title{font-size:28px;padding:8px 10px 2px;text-align:center}
+  /* titoli centrati */
+  .pg-title.pg-big,.cal-titlebox{text-align:center;justify-content:center}
+  .cal-hd>div:first-child{justify-content:center!important}
+  /* menu in basso più alto e un po' più giù */
+  .tabs-mobile2{bottom:calc(12px + env(safe-area-inset-bottom))!important}
+  .tabs-mobile2 .tbtn{padding:15px 0!important}
+  .tabs-mobile2 .tbtn.active{padding:15px 16px!important}
+  /* pagine a tutto schermo (profilo giocatore ecc.): il contenuto parte sotto il notch */
+  .profile-modal{padding-top:env(safe-area-inset-top)}
+  .profile-header{position:relative;z-index:5}
+  .modal{max-height:calc(88vh - env(safe-area-inset-top))!important}
+}
+.profile-modal{padding-top:env(safe-area-inset-top)}
+@media(max-width:640px){#cal-big.cal-title-big{display:block!important;font-size:38px!important;text-align:center}.cal-titlebox{width:100%}.cal-hd>div:first-child{width:100%}}
 </style>
 </head>
 <body class="viewer">
@@ -1458,6 +1494,7 @@ body[data-tab="players"],body:not([data-tab]){--page:#ff2d3d}
 <div id="page-players" class="page active">
   <!-- Home: giocatore della settimana + locandina prossima partita, Top 5, poi tutti i giocatori -->
   <div id="home-feat"></div>
+  <div class="hf-list-title">LISTA <span>GIOCATORI</span></div>
   <div class="cards-grid" id="cards-grid"></div>
 </div>
 
@@ -1510,9 +1547,8 @@ body[data-tab="players"],body:not([data-tab]){--page:#ff2d3d}
     <div id="cal-torneo-view" style="display:none">
       <div class="cal-hd">
         <div style="display:flex;align-items:center;gap:8px">
-          <button class="cal-nbtn" onclick="exitCalTorneo()" title="Cambia torneo">←</button>
           <!-- titolo grande CALENDARIO con accanto il torneo (e il mese) -->
-          <div class="cal-titlebox"><div class="pg-title pg-big cal-title-big">CALEN<span>DARIO</span></div><div class="cal-sub"><b id="cal-torneo-name">Torneo</b><span id="cal-torneo-tipo"></span><span class="cal-big" id="cal-big"></span></div></div>
+          <div class="cal-titlebox"><div class="pg-title pg-big cal-title-big" id="cal-big"></div></div>
         </div>
         <div class="cal-nav">
           <button class="cal-nbtn" onclick="calPrev()">‹</button>
@@ -2272,7 +2308,9 @@ function podioHtml(list,sortKey){
   return `<div class="podio-wrap">${slot(top[1],2)}${slot(top[0],1)}${slot(top[2],3)}</div>`;
 }
 // ═══ HOME: giocatore della settimana (19), locandina prossima partita (21), Top 5 (22) ═══
-function rankListGv(){return players.filter(x=>!x.archiviato&&(+x.gv||0)>0).sort((a,b)=>(+b.gv||0)-(+a.gv||0));}
+function rankListGv(){return players.filter(x=>!x.archiviato&&(+x.gv||0)>0).sort((a,b)=>(+b.gv||0)-(+a.gv||0)||a.nome.localeCompare(b.nome));}
+// Posizione per tutti: prima chi ha giocato (per game), poi chi non ha ancora giocato in ordine alfabetico
+function rankListAll(){const r=rankListGv(),ids=new Set(r.map(x=>x.id));return r.concat(players.filter(x=>!x.archiviato&&!ids.has(x.id)).sort((a,b)=>a.nome.localeCompare(b.nome)));}
 function avHtmlBig(p){return p&&p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p?p.nome:'?'))}</span>`;}
 function surnameOf(n){const p=String(n||'').trim().split(/\s+/);return p.length>1?p.slice(1).join(' '):p[0]||'';}
 function weekStar(){
@@ -2360,7 +2398,7 @@ function renderRank(){
   document.querySelectorAll('#rank-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===sortKey));
   let list=players.filter(p=>!p.archiviato);
   if(sortKey==='name')list.sort((a,b)=>a.nome.localeCompare(b.nome));
-  else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0));
+  else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0)||a.nome.localeCompare(b.nome));
   const medal=['#f0c040','#c8ced8','#cd7c3f'];
   const av=p=>`<div class="mk-av">${p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`;
   const keyCls=k=>sortKey===k?' k':'';
@@ -2422,7 +2460,7 @@ function exportRankPDF(){
   const sortKey=document.getElementById('rank-sort-sel')?document.getElementById('rank-sort-sel').value:'gv';
   let list=[...players];
   if(sortKey==='name')list.sort((a,b)=>a.nome.localeCompare(b.nome));
-  else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0));
+  else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0)||a.nome.localeCompare(b.nome));
   const rows=list.map((p,i)=>`<tr>
       <td style="font-size:15px;font-weight:800;text-align:center;color:${i===0?'#f0c040':i===1?'#9ca3b0':i===2?'#cd7c3f':'#888888'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
       <td style="font-size:15px;font-weight:700">${esc(pdfName(p.nome))}</td>
@@ -2554,35 +2592,14 @@ let calOffset=0,calSelDate=fmtD(new Date()),calActiveTorneoId=null;
 function calPrev(){calOffset--;calRender();}function calNext(){calOffset++;calRender();}
 function getWeekDates(){const now=new Date(),day=now.getDay(),mon=new Date(now);mon.setDate(now.getDate()-(day===0?6:day-1)+calOffset*7);return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d;});}
 function renderCalTorneoSelector(){
+  // Niente scelta del torneo: il calendario mostra sempre tutte le partite, giorno per giorno,
+  // raggruppate per torneo (se c'è un solo torneo si vede solo quello).
   const sel=document.getElementById('cal-torneo-selector');
   const view=document.getElementById('cal-torneo-view');
-  const listEl=document.getElementById('cal-torneo-list');
-  const noEl=document.getElementById('cal-no-tornei');
   if(!sel)return;
-  if(calActiveTorneoId){
-    sel.style.display='none';view.style.display='';
-    const t=tornei.find(x=>x.id===calActiveTorneoId);
-    if(t){
-      document.getElementById('cal-torneo-name').textContent=t.nome;
-      document.getElementById('cal-torneo-tipo').textContent=t.tipo==='girone'?'🔄 Campionato tutti vs tutti':t.tipo==='misto'?'🔀 Girone + Eliminazione':'⚡ Eliminazione Diretta';
-    }
-    calRender();
-    return;
-  }
-  sel.style.display='';view.style.display='none';
-  if(!tornei.length){listEl.innerHTML='';noEl.style.display='';return;}
-  noEl.style.display='none';
-  listEl.innerHTML=tornei.map(t=>{
-    const matchCount=sched.filter(m=>m.torneoId===t.id).length;
-    const doneCount=sched.filter(m=>m.torneoId===t.id&&m.risultato).length;
-    return`<div class="torneo-card" onclick="selectCalTorneo(${t.id})" style="display:flex;align-items:center;gap:12px;padding:14px 16px">
-      <div style="flex:1">
-        <div style="font-size:16px;font-weight:700;color:var(--text)">${esc(t.nome)}</div>
-        <div style="font-size:12px;color:var(--text2);margin-top:3px">${t.tipo==='girone'?'🔄 Campionato':'⚡ Eliminazione'} · ${t.players.length} giocatori · ${matchCount} partite (${doneCount} giocate)</div>
-      </div>
-      <span style="font-size:22px">›</span>
-    </div>`;
-  }).join('');
+  calActiveTorneoId=null;
+  sel.style.display='none';view.style.display='';
+  calRender();
 }
 function selectCalTorneo(id){
   calActiveTorneoId=id;
@@ -2598,9 +2615,16 @@ function calBig(d0,d6){
   const el=document.getElementById('cal-big');if(!el)return;
   const m0=d0.toLocaleDateString('it-IT',{month:'long'}).toUpperCase(),m1=d6.toLocaleDateString('it-IT',{month:'long'}).toUpperCase();
   const half=s=>{const k=Math.ceil(s.length/2);return `${esc(s.slice(0,k))}<span>${esc(s.slice(k))}</span>`;};
-  el.textContent=m0===m1?m0:m0.slice(0,3)+' / '+m1.slice(0,3);
+  el.innerHTML=m0===m1?half(m0):`${esc(m0.slice(0,3))}<span> / ${esc(m1.slice(0,3))}</span>`;
 }
-function calRender(){const dates=getWeekDates();const d0=dates[0],d6=dates[6];const fmt=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'});document.getElementById('cal-wlbl').textContent=`${fmt(d0)} – ${fmt(d6)}`;calBig(d0,d6);const today=fmtD(new Date());document.getElementById('cal-strip').innerHTML=dates.map((d,i)=>{const ds=fmtD(d);const _schedStrip=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dm=_schedStrip.filter(m=>m.data===ds);const dots=dm.map(m=>`<div class="cdot ${m.risultato?'cdot-d':isLiveMatch(m)?'cdot-l':'cdot-s'}"></div>`).join('');return`<div class="cal-day${ds===calSelDate?' sel':''}${ds===today?' tod':''}" onclick="calSelDay('${ds}')"><div class="cal-dn">${DAY[i]}</div><div class="cal-dd">${d.getDate()}</div><div class="cal-dots">${dots}</div></div>`;}).join('');document.getElementById('cal-dh').textContent=fmtDIt(calSelDate);const _sched=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dayM=_sched.filter(m=>m.data===calSelDate).sort((a,b)=>a.ora.localeCompare(b.ora));const list=document.getElementById('cal-list');list.innerHTML=dayM.length?dayM.map(m=>cmcHtml(m)).join(''):'<div class="cal-empty">Nessun incontro. Premi + per aggiungerne uno.</div>';
+// Partite del giorno raggruppate per torneo: titolo del torneo in maiuscolo e sotto le sue partite
+function calGroupHtml(dayM){
+  const by=new Map();
+  dayM.forEach(m=>{const k=m.torneoId||0;if(!by.has(k))by.set(k,[]);by.get(k).push(m);});
+  return [...by.entries()].map(([k,ms])=>{const t=tornei.find(x=>x.id===k);
+    return `<div class="cal-tor">${esc((t?t.nome:'Altre partite').toUpperCase())}</div>${ms.map(m=>cmcHtml(m)).join('')}`;}).join('');
+}
+function calRender(){const dates=getWeekDates();const d0=dates[0],d6=dates[6];const fmt=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'});document.getElementById('cal-wlbl').textContent=`${fmt(d0)} – ${fmt(d6)}`;calBig(d0,d6);const today=fmtD(new Date());document.getElementById('cal-strip').innerHTML=dates.map((d,i)=>{const ds=fmtD(d);const _schedStrip=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dm=_schedStrip.filter(m=>m.data===ds);const dots=dm.map(m=>`<div class="cdot ${m.risultato?'cdot-d':isLiveMatch(m)?'cdot-l':'cdot-s'}"></div>`).join('');return`<div class="cal-day${ds===calSelDate?' sel':''}${ds===today?' tod':''}" onclick="calSelDay('${ds}')"><div class="cal-dn">${DAY[i]}</div><div class="cal-dd">${d.getDate()}</div><div class="cal-dots">${dots}</div></div>`;}).join('');document.getElementById('cal-dh').textContent=fmtDIt(calSelDate);const _sched=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dayM=_sched.filter(m=>m.data===calSelDate).sort((a,b)=>(a.ora||'').localeCompare(b.ora||''));const list=document.getElementById('cal-list');list.innerHTML=dayM.length?calGroupHtml(dayM):'<div class="cal-empty">Nessun incontro in questo giorno.</div>';
 }
 function calSelDay(ds){calSelDate=ds;calRender();}
 function calShiftDay(delta){
@@ -2873,7 +2897,7 @@ function renderRisultati(){
     const p=players.find(x=>x.id===pid);return p?p.nome:(pid===m.p1Id?m.teamName1:m.teamName2)||'?';};
   const av=pid=>{const p=players.find(x=>x.id===pid);return p?`<div class="mk-av">${p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`:'';};
   const nm=(n,lbl)=>{const dbl=String(n).includes(' / ');const sn=String(n).split(' / ').map(surnameOf).join(' / ');const fn=dbl?'':String(n).trim().split(/\s+/)[0];
-    return `<div class="rs-nm">${fn&&fn!==sn?`<small class="fn">${esc(fn)}</small>`:''}<b>${esc(sn)}</b><small class="lb">${lbl}</small></div>`;};
+    return `<div class="rs-nm">${fn&&fn!==sn?`<small class="fn">${esc(fn)}</small>`:''}<b>${esc(sn)}</b></div>`;};
   const row=m=>{
     const draw=m.winnerId==='draw'||!m.winnerId;
     const g1=+m.gv1,g2=+m.gv2,hasG=Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2);
@@ -3149,7 +3173,7 @@ function buildPlayerCardHTML(p,opts){
   const photoHtml=p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${ini(p.nome)}</span>`;
   const ringClick=opts.interactive?` onclick="openProfile(${p.id})" title="Apri profilo"`:'';
   const editBtn=opts.interactive?`<div class="pk-edit" onclick="event.stopPropagation();openEditPlayer(${p.id})" title="Modifica">✏️</div>`:'';
-  const rl=rankListGv(),ri=rl.findIndex(x=>x.id===p.id);
+  const rl=rankListAll(),ri=rl.findIndex(x=>x.id===p.id);
   const tile=(lbl,val,c)=>`<div class="pk-t" style="--tc:${c}"><span>${lbl}</span><b>${val}</b></div>`;
   // per chi non è admin un colore fisso per persona (non legato al livello, che resta nascosto)
   const GUEST=["#ff8a00","#22b8f0","#22c55e","#8b5cf6","#ff4fb8","#e8ff00","#14b8a6","#f43f5e","#f59e0b","#60a5fa"];
@@ -3292,7 +3316,7 @@ function openProfile(playerId){
   const _GUEST=["#ff8a00","#22b8f0","#22c55e","#8b5cf6","#ff4fb8","#e8ff00","#14b8a6","#f43f5e","#f59e0b","#60a5fa"];
   const _band=document.getElementById('profile-band');
   if(_band)_band.style.setProperty('--lv',_checkViewer()?_GUEST[Math.abs((+p.id||0)*7)%_GUEST.length]:(caC[p.livello]||'#e8ff00'));
-  const _rl=rankListGv(),_ri=_rl.findIndex(x=>x.id===p.id);
+  const _rl=rankListAll(),_ri=_rl.findIndex(x=>x.id===p.id);
   const _rk=document.getElementById('profile-rank');if(_rk)_rk.innerHTML=`${_ri>=0?'#'+(_ri+1):'#–'}<span>IN CLASSIFICA</span>`;
   const _t=(l,v,c)=>`<div class="pk-t" style="--tc:${c}"><span>${l}</span><b>${v}</b></div>`;
   document.getElementById('profile-stats-row').innerHTML=
