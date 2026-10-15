@@ -805,10 +805,12 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
   .np-when{flex-shrink:0;font-size:12px;font-weight:600;color:#c9c9c9}
   .np-live{flex-shrink:0;width:8px;height:8px;margin-left:4px;border-radius:50%;background:#ff3b3b;animation:npPulse 1.6s infinite}
   @keyframes npPulse{0%{box-shadow:0 0 0 0 rgba(255,59,59,.6)}70%{box-shadow:0 0 0 8px rgba(255,59,59,0)}100%{box-shadow:0 0 0 0 rgba(255,59,59,0)}}
-  .next-pill.lv1 .np-full{display:none}.next-pill.lv1 .np-short,.next-pill.lv2 .np-short{display:inline}.next-pill.lv2 .np-full{display:none}
-  .next-pill.lv2 .np-tag,.next-pill.lv3 .np-tag{display:none}.next-pill.lv2,.next-pill.lv3{padding-left:12px}
-  .next-pill.lv3 .np-full,.next-pill.lv3 .np-short,.next-pill.lv3 .np-day{display:none}
-  .next-pill.lv4{display:none}
+  /* livelli: 1 = cognomi; 2 = cognomi senza contatore; 3 = solo giorno e ora (non sparisce mai) */
+  .next-pill.lv1 .np-full,.next-pill.lv2 .np-full{display:none}.next-pill.lv1 .np-short,.next-pill.lv2 .np-short{display:inline}
+  .next-pill.lv2 .np-count,.next-pill.lv3 .np-count{display:none}
+  .next-pill.lv3 .np-full,.next-pill.lv3 .np-short{display:none}
+  .np-count{flex-shrink:0;font-size:10.5px;font-weight:700;color:#8d8d8d;padding-left:8px;border-left:.5px solid rgba(255,255,255,.18)}
+  #hdr-next.np-fade .next-pill{opacity:.25!important}
 }
 /* ═══ COLORE PER PAGINA (1) + LUCE DI SFONDO DELLA PAGINA (7) ═══
    Ogni pagina ha la sua tinta: voce attiva del menu, lineetta del titolo e un
@@ -969,6 +971,7 @@ body:not(.light) .srch-pill,body:not(.light) .sort-sel{
 .albo-trophy .albo-edit-btn{position:absolute!important;top:10px;right:10px}
 @media(prefers-reduced-motion:reduce){.podio-slot,.albo-card.albo-trophy,.albo-trophy .cup svg{animation:none}}
 .albo-trophy div[style*="Bebas"]{font-size:18px!important;letter-spacing:1px!important;line-height:1.2!important}
+@media(min-width:641px){.hdr.menu-compact .tabs-inner .tab span{display:none}.hdr.menu-compact .tabs-inner .tab,body.viewer .hdr.menu-compact .tabs-inner .tab{padding:9px 11px}}
 </style>
 </head>
 <body class="viewer">
@@ -1987,9 +1990,9 @@ function renderNextMatch(){
   if(!x){el.innerHTML='';return;}
   const short=n=>esc(String(n).split(' / ').map(s=>{const p=s.trim().split(/\s+/);return p.length>1?p.slice(1).join(" "):p[0];}).join(' / '));
   el.innerHTML=`<button type="button" class="next-pill${x.live?' is-live':''}" onclick="openNextMatch()" title="${esc(x.a)} vs ${esc(x.b)} · ${esc(x.when)} ${esc(x.ora)}">
-    ${x.live?'<span class="np-live" aria-hidden="true"></span>':''}<span class="np-tag">${x.live?'IN CORSO':x.idx===0?'PROSSIMA':'IN PROGRAMMA'}</span>
+    ${x.live?'<span class="np-live" aria-hidden="true"></span>':''}<span class="np-tag">${x.live?'IN CORSO':esc(x.when.toUpperCase())}</span>
     <b class="np-full">${esc(x.a)} vs ${esc(x.b)}</b><b class="np-short">${short(x.a)} – ${short(x.b)}</b>
-    <span class="np-when"><span class="np-day">${esc(x.when)} · </span>${esc(x.ora)}</span></button>`;
+    <span class="np-when">${esc(x.ora)}</span>${x.total>1?`<span class="np-count">${x.idx+1}/${x.total}</span>`:""}</button>`;
   requestAnimationFrame(fitNextPill);
 }
 // Pillola della prossima partita: parte completa e scala di livello finché logo,
@@ -1997,11 +2000,13 @@ function renderNextMatch(){
 function fitNextPill(){
   const pill=document.querySelector('#hdr-next .next-pill');if(!pill)return;
   const hdr=document.querySelector('.header .hdr');if(!hdr||!hdr.offsetWidth)return;
-  const kids=[...hdr.children].filter(k=>k.offsetParent!==null&&getComputedStyle(k).position!=='absolute');
   const cs=getComputedStyle(hdr),inner=hdr.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
-  const fits=()=>kids.reduce((s,k)=>s+k.getBoundingClientRect().width,0)+(kids.length-1)*12<=inner;
-  for(let lv=0;lv<=4;lv++){
-    pill.classList.remove('lv1','lv2','lv3','lv4');if(lv)pill.classList.add('lv'+lv);
+  const fits=()=>{const kids=[...hdr.children].filter(k=>k.offsetParent!==null&&getComputedStyle(k).position!=='absolute');return kids.reduce((s,k)=>s+k.getBoundingClientRect().width,0)+(kids.length-1)*12<=inner;};
+  // ordine: pillola completa → cognomi → menu solo icone (pillola completa, poi cognomi…) → solo giorno e ora
+  const steps=[[0,0],[0,1],[1,0],[1,1],[1,2],[1,3]];
+  for(const [compact,lv] of steps){
+    hdr.classList.toggle('menu-compact',!!compact);
+    pill.classList.remove('lv1','lv2','lv3');if(lv)pill.classList.add('lv'+lv);
     if(fits())break;
   }
 }
