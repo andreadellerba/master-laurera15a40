@@ -4207,10 +4207,17 @@ function renderAlbo(){
 +(a.note?(function(_n){
   var _i=_n.indexOf(' VS ');
   if(_i<0)return '<div style="font-size:12px;color:var(--text2);margin-top:4px;">'+esc(_n)+'</div>';
+  // in evidenza il vincitore (non sempre il secondo nome): si riconosce dal cognome
+  var _L=_n.slice(0,_i),_R=_n.slice(_i+4),_sc='';
+  var _m=_R.match(/\s+(\d+\s*[-–]\s*\d+.*)$/);if(_m){_sc=_m[1];_R=_R.slice(0,_m.index);}
+  var _sur=function(s){var p=String(s||'').split('/')[0].trim().toUpperCase().split(/[\s.]+/).filter(Boolean);return p.length>1?p.slice(1).join(' '):(p[0]||'');};
+  var _w=_sur(a.vincitore),_lw=_w&&_L.toUpperCase().indexOf(_w)>=0,_rw=_w&&!_lw&&_R.toUpperCase().indexOf(_w)>=0;
+  var _st=function(win){return win?'color:var(--accent);font-weight:700;':'color:var(--text2);';};
   return '<div style="font-size:12px;margin-top:4px;">'
-    +'<span style="color:var(--text2)">'+esc(_n.slice(0,_i))+'</span>'
+    +'<span style="'+_st(_lw)+'">'+esc(_L)+'</span>'
     +'<span style="color:var(--text2)"> vs </span>'
-    +'<span style="color:#ffffff;font-weight:700;">'+esc(_n.slice(_i+4))+'</span>'
+    +'<span style="'+_st(_rw)+'">'+esc(_R)+'</span>'
+    +(_sc?'<div style="color:#fff;font-weight:700;margin-top:2px">'+esc(_sc)+'</div>':'')
     +'</div>';
 })(a.note):'')
 +'</div>'
