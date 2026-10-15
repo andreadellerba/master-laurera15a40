@@ -2306,7 +2306,7 @@ document.addEventListener('click',e=>{const g=document.getElementById('tab-gesti
 // Home: la lente apre/chiude la ricerca al posto della citazione
 function toggleHomeSearch(force){const f=document.getElementById("home-filters");if(!f)return;const on=typeof force==="boolean"?force:!f.classList.contains("searching");f.classList.toggle("searching",on);if(on){setTimeout(()=>{const i=document.getElementById("srch-input");if(i)i.focus();},30);}else{const i=document.getElementById("srch-input");if(i&&i.value){i.value="";renderCards();}}}
 function clearSearch(){const i=document.getElementById('srch-input');i.value='';renderCards();i.focus();}
-function getFiltered(){const q=(document.getElementById('srch-input')||{value:''}).value.toLowerCase(),s=(document.getElementById('sort-sel')||{value:'name'}).value;let list=players.filter(p=>{if(p.archiviato)return false;if(gF!=='ALL'&&p.sesso!==gF)return false;if(!lvF.includes(p.livello))return false;if(q&&!p.nome.toLowerCase().includes(q))return false;return true;});list.sort((a,b)=>s==='name'?a.nome.localeCompare(b.nome):s==='gv'?b.gv-a.gv:s==='mg'?b.mg-a.mg:s==='age'?a.eta-b.eta:wr(b.storico)-wr(a.storico));return list;}
+function getFiltered(){const q=(document.getElementById('srch-input')||{value:''}).value.toLowerCase(),s=(document.getElementById('sort-sel')||{value:'name'}).value;let list=players.filter(p=>{if(p.archiviato)return false;if(gF!=='ALL'&&p.sesso!==gF)return false;if(!lvF.includes(p.livello))return false;if(q&&!p.nome.toLowerCase().includes(q))return false;return true;});list.sort((a,b)=>s==='name'?bySurname(a,b):s==='gv'?b.gv-a.gv:s==='mg'?b.mg-a.mg:s==='age'?a.eta-b.eta:wr(b.storico)-wr(a.storico));return list;}
 // ═══ RENDER CARDS ═══
 function storicoHtml(s){
   // V-S (no draws) or V-P-S (with draws)
@@ -2504,10 +2504,12 @@ function podioHtml(list,sortKey){
   return `<div class="podio-wrap">${slot(top[1],2)}${slot(top[0],1)}${slot(top[2],3)}</div>`;
 }
 // ═══ HOME: giocatore della settimana (19), locandina prossima partita (21), Top 5 (22) ═══
-function rankListGv(){return players.filter(x=>!x.archiviato&&(+x.gv||0)>0).sort((a,b)=>(+b.gv||0)-(+a.gv||0)||a.nome.localeCompare(b.nome));}
+function rankListGv(){return players.filter(x=>!x.archiviato&&(+x.gv||0)>0).sort((a,b)=>(+b.gv||0)-(+a.gv||0)||bySurname(a,b));}
 // Posizione per tutti: prima chi ha giocato (per game), poi chi non ha ancora giocato in ordine alfabetico
-function rankListAll(){const r=rankListGv(),ids=new Set(r.map(x=>x.id));return r.concat(players.filter(x=>!x.archiviato&&!ids.has(x.id)).sort((a,b)=>a.nome.localeCompare(b.nome)));}
+function rankListAll(){const r=rankListGv(),ids=new Set(r.map(x=>x.id));return r.concat(players.filter(x=>!x.archiviato&&!ids.has(x.id)).sort((a,b)=>bySurname(a,b)));}
 function avHtmlBig(p){return p&&p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p?p.nome:'?'))}</span>`;}
+// ordine alfabetico per cognome, poi per nome
+function bySurname(a,b){return surnameOf(a.nome).localeCompare(surnameOf(b.nome),"it")||String(a.nome).localeCompare(String(b.nome),"it");}
 function surnameOf(n){const p=String(n||'').trim().split(/\s+/);return p.length>1?p.slice(1).join(' '):p[0]||'';}
 function weekStar(){
   // Giocatore della settimana: dal lunedì premia la settimana PRECEDENTE (da lunedì a domenica);
@@ -2560,7 +2562,7 @@ function renderHomeFeat(){
   // 6 record. Se più giocatori sono a pari merito, la scheda li fa scorrere uno ogni 3 secondi.
   const act=players.filter(x=>!x.archiviato&&(+x.pg||0)>0);
   const wins=p=>{const m=String(p.storico||'').match(/(\d+)/);return m?+m[1]:0;};
-  const tiedBy=f=>{if(!act.length)return [];const mx=Math.max(...act.map(f));return act.filter(p=>Math.abs(f(p)-mx)<1e-9).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>({p,v:f(p)}));};
+  const tiedBy=f=>{if(!act.length)return [];const mx=Math.max(...act.map(f));return act.filter(p=>Math.abs(f(p)-mx)<1e-9).sort((a,b)=>bySurname(a,b)).map(p=>({p,v:f(p)}));};
   const R=[['PIÙ MATCH GIOCATI',p=>+p.pg||0,'#e8ff00',v=>v],['PIÙ VITTORIE',wins,'#22c55e',v=>v],['PIÙ GAME VINTI',p=>+p.gv||0,'#ff4fb8',v=>v],['MEDIA PIÙ ALTA',p=>+p.mg||0,'#22b8f0',v=>v.toFixed(2)]];
   const recs=R.map(([l,f,c,fm])=>({l:()=>l,c,items:tiedBy(f).map(x=>({p:x.p,v:fm(x.v)}))}));
   // record di partita: più game in una partita e maggior distacco (game vinti - game persi)
@@ -2572,7 +2574,7 @@ function renderHomeFeat(){
     const d=Math.abs(g1-g2);if(d>0)dList.push({id:g1>=g2?m.p1Id:m.p2Id,v:d,s:`${Math.max(g1,g2)}-${Math.min(g1,g2)}`});
   });
   const topOf=(list,mk)=>{if(!list.length)return [];const mx=Math.max(...list.map(x=>x.v));const seen=new Set();
-    return list.filter(x=>x.v===mx&&!seen.has(x.id+'|'+(x.s||''))&&seen.add(x.id+'|'+(x.s||''))).map(x=>({p:players.find(q=>q.id===x.id),v:mk(x),s:x.s})).filter(x=>x.p).sort((a,b)=>a.p.nome.localeCompare(b.p.nome));};
+    return list.filter(x=>x.v===mx&&!seen.has(x.id+'|'+(x.s||''))&&seen.add(x.id+'|'+(x.s||''))).map(x=>({p:players.find(q=>q.id===x.id),v:mk(x),s:x.s})).filter(x=>x.p).sort((a,b)=>bySurname(a.p,b.p));};
   recs.push({l:it=>'PIÙ GAME IN 1 PARTITA',c:'#ff8a00',items:topOf(gList,x=>x.v)});
   recs.push({l:it=>'MAGGIOR DISTACCO',c:'#a78bfa',items:topOf(dList,x=>'+'+x.v)});
   window._recs=recs;
@@ -2647,8 +2649,8 @@ function renderRank(){
   const sortKey=document.getElementById('rank-sort-sel')?document.getElementById('rank-sort-sel').value:'gv';
   document.querySelectorAll('#rank-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===sortKey));
   let list=players.filter(p=>!p.archiviato);
-  if(sortKey==='name')list.sort((a,b)=>a.nome.localeCompare(b.nome));
-  else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0)||a.nome.localeCompare(b.nome));
+  if(sortKey==='name')list.sort((a,b)=>bySurname(a,b));
+  else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0)||bySurname(a,b));
   const medal=['#f0c040','#c8ced8','#cd7c3f'];
   const av=p=>`<div class="mk-av">${p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`;
   const keyCls=k=>sortKey===k?' k':'';
@@ -2709,8 +2711,8 @@ function pdfOpenAndPrint(html,onDone){
 function exportRankPDF(){
   const sortKey=document.getElementById('rank-sort-sel')?document.getElementById('rank-sort-sel').value:'gv';
   let list=[...players];
-  if(sortKey==='name')list.sort((a,b)=>a.nome.localeCompare(b.nome));
-  else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0)||a.nome.localeCompare(b.nome));
+  if(sortKey==='name')list.sort((a,b)=>bySurname(a,b));
+  else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0)||bySurname(a,b));
   const rows=list.map((p,i)=>`<tr>
       <td style="font-size:15px;font-weight:800;text-align:center;color:${i===0?'#f0c040':i===1?'#9ca3b0':i===2?'#cd7c3f':'#888888'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
       <td style="font-size:15px;font-weight:700">${esc(pdfName(p.nome))}</td>
@@ -2830,7 +2832,7 @@ function renderTickerTape(){renderNextMatch();
   requestAnimationFrame(()=>{el.style.animationDuration=Math.max(20,Math.round(el.scrollWidth/2/75))+'s';});
 }
 // ═══ HIGHLIGHTS ═══
-function fillMSelects(){const opts='<option value="">— Seleziona —</option>'+players.filter(p=>!p.archiviato).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');document.getElementById('mm-p1').innerHTML=opts;document.getElementById('mm-p2').innerHTML=opts;}
+function fillMSelects(){const opts='<option value="">— Seleziona —</option>'+players.filter(p=>!p.archiviato).sort((a,b)=>bySurname(a,b)).map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');document.getElementById('mm-p1').innerHTML=opts;document.getElementById('mm-p2').innerHTML=opts;}
 function renderMatches(){const grid=document.getElementById('match-grid');if(!matches.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><span class="empty-icon">🎬</span>Nessun highlight ancora</div>';return;}grid.innerHTML=matches.map(m=>{const p1=players.find(p=>p.id===m.p1Id),p2=players.find(p=>p.id===m.p2Id);const ds=m.data?new Date(m.data).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'}):'—';const hv=!!m.videoUrl;return`<div class="mcard"><div class="mthumb" onclick="${hv?`playVid(${m.id})`:''}"> ${hv?`<video src="${m.videoUrl}" preload="metadata"></video><div class="moverlay"><div class="mplay">▶</div></div>`:`<div class="mthumb-ph"><span>🎾</span><span>Nessun video</span></div>`}</div><div class="mbody"><div class="mtitle">${esc(m.titolo)||'Partita'}</div><div class="mmeta"><span>${p1?esc(p1.nome):'—'}</span><span style="color:var(--text2)">vs</span><span>${p2?esc(p2.nome):'—'}</span>${m.risultato?`<span style="color:var(--accent2);font-weight:700">${esc(m.risultato)}</span>`:''}</div><div class="mmeta" style="margin-top:4px"><span style="background:var(--bg4);padding:2px 7px;border-radius:5px;font-size:11px">📅 ${ds}</span></div><div class="mactions"><label class="mbtn mbtn-p" style="cursor:pointer">📹 ${hv?'Sostituisci':'Carica Video'}<input type="file" accept="video/*" style="display:none" onchange="uploadVid(this,${m.id})"></label><button class="mbtn mbtn-g" onclick="openMatchModal(${m.id})">✏️</button>${hv?`<button class="mbtn mbtn-d" onclick="removeVid(${m.id})">🗑</button>`:''}</div><div class="vprog" id="vp-${m.id}"><div class="vprog-fill" id="vpf-${m.id}" style="width:0%"></div></div></div></div>`;}).join('');}
 function openMatchModal(id){if(_checkViewer())return;editMatchId=id||null;fillMSelects();if(id){const m=matches.find(x=>x.id===id);document.getElementById('mm-title').textContent='Modifica';document.getElementById('mm-titolo').value=m.titolo||'';document.getElementById('mm-p1').value=m.p1Id||'';document.getElementById('mm-p2').value=m.p2Id||'';document.getElementById('mm-data').value=m.data||'';document.getElementById('mm-risultato').value=m.risultato||'';document.getElementById('mm-note').value=m.note||'';document.getElementById('mm-del-btn').style.display='';}else{document.getElementById('mm-title').textContent='Nuovo';['mm-titolo','mm-data','mm-risultato','mm-note'].forEach(x=>document.getElementById(x).value='');document.getElementById('mm-p1').value='';document.getElementById('mm-p2').value='';document.getElementById('mm-del-btn').style.display='none';}document.getElementById('modal-match').classList.add('open');}
 function saveMatch(){const data={titolo:document.getElementById('mm-titolo').value.trim(),p1Id:+document.getElementById('mm-p1').value||null,p2Id:+document.getElementById('mm-p2').value||null,data:document.getElementById('mm-data').value,risultato:document.getElementById('mm-risultato').value.trim(),note:document.getElementById('mm-note').value.trim()};if(editMatchId){const idx=matches.findIndex(m=>m.id===editMatchId);matches[idx]={...matches[idx],...data};toast('✅ Aggiornato!');}else{matches.push({id:matchNextId++,...data});toast('✅ Aggiunto!');}save();document.getElementById('modal-match').classList.remove('open');renderMatches();}
@@ -2954,7 +2956,7 @@ function fillCalSelects(){
   }
   const opts='<option value="">— Seleziona —</option>'+
     [...players].filter(p=>!p.archiviato&&(!eligibleIds||eligibleIds.includes(p.id)))
-    .sort((a,b)=>a.nome.localeCompare(b.nome))
+    .sort((a,b)=>bySurname(a,b))
     .map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');
   document.getElementById('mc-p1').innerHTML=opts;
   document.getElementById('mc-p2').innerHTML=opts;
@@ -3593,7 +3595,7 @@ function openH2H(){
   // Fill select with all other players
   const sel=document.getElementById('h2h-select');
   sel.innerHTML='<option value="">— Scegli avversario —</option>'+
-    [...players].filter(p=>p.id!==profilePlayerId).sort((a,b)=>a.nome.localeCompare(b.nome))
+    [...players].filter(p=>p.id!==profilePlayerId).sort((a,b)=>bySurname(a,b))
     .map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');
   sel.value='';
   document.getElementById('h2h-content').innerHTML='';
@@ -4038,7 +4040,7 @@ function openEditTorneo(id){if(_checkViewer())return;
 function fillMtPlayers(selected){
   const el=document.getElementById('mt-players-list');if(!el)return;
   const s=document.getElementById('mt-search');if(s)s.value='';
-  el.innerHTML=players.filter(p=>!p.archiviato||selected.includes(p.id)).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>{
+  el.innerHTML=players.filter(p=>!p.archiviato||selected.includes(p.id)).sort((a,b)=>bySurname(a,b)).map(p=>{
     const checked=selected.includes(p.id);
     const ini=p.nome.split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
     return`<label class="mt-player-chip"><input type="checkbox" value="${p.id}" ${checked?'checked':''} onchange="updateMtCount()"><div class="mt-chip-av av-${p.id%8}">${ini}</div><span class="mt-chip-name">${esc(p.nome)}</span><div class="mt-chip-check">✓</div></label>`;
@@ -4799,7 +4801,7 @@ function openManualBracket(torneoId){
   let n=1;while(n<teamCount)n*=2;
   const mc=n/2;
   const sel='style="background:var(--bg4);border:1px solid var(--border);border-radius:7px;padding:7px;color:var(--text);font-size:13px;outline:none;width:100%"';
-  const opts='<option value="">—</option>'+[...players].filter(p=>t.players.includes(p.id)).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join('');
+  const opts='<option value="">—</option>'+[...players].filter(p=>t.players.includes(p.id)).sort((a,b)=>bySurname(a,b)).map(p=>'<option value="'+p.id+'">'+esc(p.nome)+'</option>').join('');
   document.getElementById('mbm-desc').textContent=(isDoppio?'4 giocatori per incontro':'2 giocatori per incontro')+' — '+mc+' incontri.';
   let h='';
   for(let i=0;i<mc;i++){
@@ -5092,7 +5094,7 @@ function autoAlboCheck(tid){
 function openExportPlayersModal(){
   const list=document.getElementById('export-players-list');
   if(!list)return;
-  const sorted=[...players].sort((a,b)=>a.nome.localeCompare(b.nome));
+  const sorted=[...players].sort((a,b)=>bySurname(a,b));
   list.innerHTML=sorted.map(p=>{
     const checked=true;
     return`<label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:5px;border-radius:4px;background:rgba(232,255,0,.06);border:1px solid transparent;" id="ep-lbl-${p.id}">
@@ -5119,7 +5121,7 @@ function updateExportCount(){
 function exportPlayersPDF(){
   const ids=Array.from(document.querySelectorAll('#export-players-list input:checked')).map(cb=>+cb.value);
   if(!ids.length){toast('❌ Seleziona almeno un giocatore');return;}
-  const sel=players.filter(p=>ids.includes(p.id)).sort((a,b)=>a.nome.localeCompare(b.nome));
+  const sel=players.filter(p=>ids.includes(p.id)).sort((a,b)=>bySurname(a,b));
 
   const half=Math.ceil(sel.length/2);
   const col1=sel.slice(0,half);
