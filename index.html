@@ -1146,6 +1146,14 @@ body.viewer .pcrd.pk{--lv:#ff8a00!important}
 .tk em{font-size:20px;padding:3px 10px;box-shadow:0 0 14px rgba(232,255,0,.45)}
 .tk-label{font-size:20px}
 @media(max-width:640px){.tk{font-size:17px;gap:7px}.tk em{font-size:15px}.tk u{font-size:11.5px}.tk-label{font-size:15px}.ticker-tape-content span{padding:8px 0!important}}
+/* MVP e locandina: stesso effetto 3D delle card (si inclinano e si alzano col mouse) */
+.hf-feat,.hf-poster{transition:transform .18s ease,box-shadow .18s ease;will-change:transform}
+.hf-feat::after,.hf-poster::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .2s;background:radial-gradient(320px circle at var(--gx,50%) var(--gy,0%),rgba(255,255,255,.14),transparent 60%)}
+.hf-feat.tilt,.hf-poster.tilt{box-shadow:0 22px 46px rgba(0,0,0,.55),0 0 26px color-mix(in srgb,var(--page) 25%,transparent)!important}
+.hf-feat.tilt::after,.hf-poster.tilt::after{opacity:1}
+/* Top 5: avatar molto più grandi su PC; spazio e riga leggera prima delle card */
+@media(min-width:641px){.hf-cc{height:170px}.hf-cc .mini{width:78px;height:78px;font-size:28px;top:14px;right:14px;box-shadow:0 0 0 3px rgba(255,255,255,.35)}}
+.hf-top5{padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:10px}
 </style>
 </head>
 <body class="viewer">
@@ -1968,15 +1976,16 @@ function countUp(root){
 // ═══ WOW 2: card che si inclinano in 3D e riflesso che segue il mouse (PC) ═══
 document.addEventListener('pointermove',e=>{
   if(e.pointerType!=='mouse'||_reduceMotion())return;
-  const c=e.target.closest&&e.target.closest('.pcrd');
-  document.querySelectorAll('.pcrd.tilt').forEach(o=>{if(o!==c){o.classList.remove('tilt');o.style.transform='';}});
+  const c=e.target.closest&&e.target.closest('.pcrd,.hf-feat,.hf-poster');
+  document.querySelectorAll('.tilt').forEach(o=>{if(o!==c){o.classList.remove('tilt');o.style.transform='';}});
   if(!c)return;
   const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
   c.classList.add('tilt');
-  c.style.transform=`perspective(700px) rotateX(${((.5-y)*8).toFixed(2)}deg) rotateY(${((x-.5)*10).toFixed(2)}deg) translateY(-3px)`;
+  const amp=r.width>520?.45:1; // i blocchi larghi (giocatore della settimana, locandina) si inclinano meno
+  c.style.transform=`perspective(${r.width>520?1400:700}px) rotateX(${((.5-y)*8*amp).toFixed(2)}deg) rotateY(${((x-.5)*10*amp).toFixed(2)}deg) translateY(-4px)`;
   c.style.setProperty('--gx',(x*100).toFixed(1)+'%');c.style.setProperty('--gy',(y*100).toFixed(1)+'%');
 },{passive:true});
-document.addEventListener('pointerleave',()=>document.querySelectorAll('.pcrd.tilt').forEach(o=>{o.classList.remove('tilt');o.style.transform='';}),true);
+document.addEventListener('pointerleave',()=>document.querySelectorAll('.tilt').forEach(o=>{o.classList.remove('tilt');o.style.transform='';}),true);
 // ═══ WOW 5: podio animato in cima a Classifiche ═══
 function podioHtml(list,sortKey){
   const top=list.slice(0,3).filter(p=>(+p.gv||0)>0);if(!top.length)return'';
@@ -2252,7 +2261,7 @@ function renderTickerTape(){renderNextMatch();
   void el.offsetWidth;
   el.style.animation='';
   // velocità costante (~45 px al secondo) qualunque sia la lunghezza
-  requestAnimationFrame(()=>{el.style.animationDuration=Math.max(30,Math.round(el.scrollWidth/2/45))+'s';});
+  requestAnimationFrame(()=>{el.style.animationDuration=Math.max(24,Math.round(el.scrollWidth/2/60))+'s';});
 }
 // ═══ HIGHLIGHTS ═══
 function fillMSelects(){const opts='<option value="">— Seleziona —</option>'+players.filter(p=>!p.archiviato).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');document.getElementById('mm-p1').innerHTML=opts;document.getElementById('mm-p2').innerHTML=opts;}
