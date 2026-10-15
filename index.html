@@ -1392,7 +1392,9 @@ body[data-tab="players"],body:not([data-tab]){--page:#ff2d3d}
 @media(max-width:640px){.cal-hd{gap:8px}.cal-nav{width:100%;justify-content:center}.cal-sub b{font-size:16px}}
 /* Albo d'Oro su telefono: un trofeo per riga a tutta larghezza */
 @media(max-width:640px){.albo-grid{grid-template-columns:1fr!important}}
-@media(max-width:640px){.cal-hd>div:first-child{align-items:flex-start!important;width:100%}.cal-hd>div:first-child>.cal-nbtn{margin-top:4px}.cal-titlebox{flex-direction:column;align-items:flex-start;gap:4px}.cal-title-big{font-size:34px!important}.cal-sub{padding:0;flex-direction:row;flex-wrap:wrap;align-items:baseline;column-gap:8px}}
+/* Calendario telefono: tutto su una riga (freccia, titolo, torneo), senza tipo e mese; frecce della settimana compatte */
+@media(max-width:640px){.cal-hd>div:first-child{align-items:center!important;width:100%;flex-wrap:nowrap!important;min-width:0}.cal-titlebox{flex-direction:row;align-items:baseline;gap:8px;flex-wrap:nowrap;min-width:0}.cal-title-big{font-size:30px!important;flex-shrink:0}.cal-sub{padding:0;min-width:0}.cal-sub b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#cal-torneo-tipo,#cal-big{display:none!important}.cal-nav{gap:6px!important;margin:0!important}.cal-wlbl{min-width:0!important;padding:0 2px!important}.cal-hd{margin-bottom:8px!important;gap:6px!important}}
+@media(max-width:640px){.tabs-mobile2 .tbar{overflow:hidden!important}.tabs-mobile2 .tbtn:not(.active){flex:1 1 0!important;min-width:34px!important}.tabs-mobile2 .tbtn.active{flex:0 1 auto!important;min-width:0}.tabs-mobile2 .tbtn.active .tl{overflow:hidden;text-overflow:ellipsis}}
 </style>
 </head>
 <body class="viewer">
@@ -1931,7 +1933,7 @@ body[data-tab="players"],body:not([data-tab]){--page:#ff2d3d}
 function _checkViewer(){return document.body.classList.contains('viewer');}
 // Lucchetto minimal giallo: chiuso = ospite, aperto = admin
 function LOCK_SVG(open){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="11" width="15" height="10" rx="2.5"/><path d="'+(open?'M8 11V7.5a4 4 0 0 1 7.6-1.7':'M8 11V7.5a4 4 0 0 1 8 0V11')+'"/></svg>';}
-function enableAdmin(){document.body.classList.remove('viewer');const btn=document.getElementById('admin-lock-btn');if(btn){btn.innerHTML=LOCK_SVG(true);btn.title='Admin attivo — clicca per uscire';btn.classList.add('is-admin');btn.onclick=adminLogout;}flushOrphanPurge();}
+function enableAdmin(){document.body.classList.remove('viewer');setTimeout(uploadLocalPhotos,4000);const btn=document.getElementById('admin-lock-btn');if(btn){btn.innerHTML=LOCK_SVG(true);btn.title='Admin attivo — clicca per uscire';btn.classList.add('is-admin');btn.onclick=adminLogout;}flushOrphanPurge();}
 // Partite (calendario/risultati) di tornei eliminati: spariscono ovunque.
 // Si filtrano in memoria per tutti; il salvataggio su Firestore lo fa solo
 // un admin e solo con dati letti dal server (mai da cache locale).
@@ -1974,7 +1976,7 @@ let _changeLog=[];
 
 function _lsCache(){try{localStorage.setItem('laurera_p',JSON.stringify(players.map(p=>{const{photoUrl,...r}=p;return r;})));localStorage.setItem('laurera_m',JSON.stringify(matches));localStorage.setItem('laurera_s',JSON.stringify(sched));localStorage.setItem('laurera_i',JSON.stringify({nextId,matchNextId,schedNextId}));}catch(e){}}
 function _lsLoad(){try{const rp=localStorage.getItem('laurera_p');if(rp)players=JSON.parse(rp);const rm=localStorage.getItem('laurera_m');if(rm)matches=JSON.parse(rm);const rs=localStorage.getItem('laurera_s');if(rs)sched=JSON.parse(rs);const ri=localStorage.getItem('laurera_i');if(ri){const x=JSON.parse(ri);nextId=x.nextId||100;matchNextId=x.matchNextId||200;schedNextId=x.schedNextId||300;}}catch(e){}}
-function _attachPhotos(){players.forEach(p=>{const ph=localStorage.getItem('laurera_ph_'+p.id);if(ph)p.photoUrl=ph;});matches.forEach(m=>{const v=localStorage.getItem('laurera_vid_'+m.id);if(v)m.videoUrl=v;});}
+function _attachPhotos(){players.forEach(p=>{const ph=(typeof fotoData!=="undefined"&&fotoData[p.id])||localStorage.getItem('laurera_ph_'+p.id);if(ph)p.photoUrl=ph;});matches.forEach(m=>{const v=localStorage.getItem('laurera_vid_'+m.id);if(v)m.videoUrl=v;});}
 
 function save(){
   const data={players:players.map(p=>{const{photoUrl,...r}=p;return r;}),matches,sched,nextId,matchNextId,schedNextId};
@@ -1991,8 +1993,31 @@ async function load(){
   }catch(e){_lsLoad();}
   _attachPhotos();
 }
-function savePh(id,u){try{localStorage.setItem('laurera_ph_'+id,u);}catch(e){toast('⚠️ Foto troppo grande');}}
-function delPh(id){try{localStorage.removeItem('laurera_ph_'+id);}catch(e){}}
+// ═══ FOTO GIOCATORI CONDIVISE: rimpicciolite (180×180 JPEG) e salvate nel documento "foto" di Firestore,
+// così si vedono su tutti i dispositivi. La copia locale resta come cache per l'apertura veloce.
+let fotoData={};
+function shrinkPhoto(dataUrl){return new Promise(res=>{try{const img=new Image();img.onload=()=>{const S=180,c=document.createElement('canvas');c.width=S;c.height=S;
+  const k=Math.max(S/img.width,S/img.height),w=img.width*k,h=img.height*k;const x=c.getContext('2d');x.fillStyle='#1e1f23';x.fillRect(0,0,S,S);x.drawImage(img,(S-w)/2,(S-h)/2,w,h);
+  res(c.toDataURL('image/jpeg',.74));};img.onerror=()=>res(dataUrl);img.src=dataUrl;}catch(e){res(dataUrl);}});}
+function savePh(id,u){
+  shrinkPhoto(u).then(s=>{
+    try{localStorage.setItem('laurera_ph_'+id,s);}catch(e){}
+    fotoData[id]=s;const p=players.find(x=>x.id===id);if(p)p.photoUrl=s;
+    if(!_checkViewer())_doc('foto').set({ph:{[id]:s}},{merge:true}).catch(e=>toast('⚠️ Foto non salvata online: '+(e&&e.message||'errore')));
+  });
+}
+function delPh(id){
+  try{localStorage.removeItem('laurera_ph_'+id);}catch(e){}
+  delete fotoData[id];
+  if(!_checkViewer())_doc('foto').set({ph:{[id]:firebase.firestore.FieldValue.delete()}},{merge:true}).catch(()=>{});
+}
+function applyFoto(){players.forEach(p=>{if(fotoData[p.id])p.photoUrl=fotoData[p.id];});}
+async function loadFoto(){try{const s=await _doc('foto').get();fotoData=(s.exists&&s.data().ph)||{};}catch(e){}applyFoto();}
+// una volta da admin: carica online le foto che esistono solo su questo dispositivo
+function uploadLocalPhotos(){
+  if(_checkViewer())return;
+  players.forEach(p=>{if(fotoData[p.id])return;const ph=localStorage.getItem('laurera_ph_'+p.id);if(ph)savePh(p.id,ph);});
+}
 function saveVid(id,u){try{localStorage.setItem('laurera_vid_'+id,u);}catch(e){toast('⚠️ Video troppo grande');}}
 function delVid(id){try{localStorage.removeItem('laurera_vid_'+id);}catch(e){}}
 // ═══ HELPERS ═══
@@ -4378,7 +4403,8 @@ document.body.dataset.tab=currentTab;initTheme();initAdmin();fillNazList();
     _attachPhotos();pruneOrphanSched();
     if(players.length){renderCards();renderTickerTape();updateHdrStats();}
   }catch(e){}
-  await Promise.all([loadTornei(),loadFanta(),loadAlbo(),load(),loadLog()]);
+  await Promise.all([loadTornei(),loadFanta(),loadAlbo(),load(),loadLog(),loadFoto()]);
+  _attachPhotos();
   pruneOrphanSched();
   migrateStoricoAll();
   renderLog();
@@ -4418,6 +4444,12 @@ document.body.dataset.tab=currentTab;initTheme();initAdmin();fillNazList();
     if(!snap.exists)return;
     alboData=snap.data().alboData||[];
     if(currentTab==='albo')renderAlbo();
+  });
+  _doc('foto').onSnapshot(snap=>{
+    if(snap.metadata.hasPendingWrites)return;
+    fotoData=(snap.exists&&snap.data().ph)||{};
+    Object.keys(fotoData).forEach(id=>{try{localStorage.setItem('laurera_ph_'+id,fotoData[id]);}catch(e){}});
+    _attachPhotos();renderCards();if(currentTab==='classifiche')renderRank();
   });
   _doc('log').onSnapshot(snap=>{
     if(snap.metadata.hasPendingWrites)return;

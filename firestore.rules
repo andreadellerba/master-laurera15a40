@@ -4,7 +4,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // L'app legge/scrive solo clubs/laurera15a40/data/{main,tornei,fanta,albo,log}
-    // (vedi _doc() in laurera15a40_11.html).
+    // (vedi _doc() in index.html). Progetto Firebase: laurera15a40-1d606
     match /clubs/{clubId}/data/{docId} {
       // Lettura pubblica: la app mostra i dati anche a chi non ha fatto login (modalità viewer).
       allow read: if true;
@@ -12,7 +12,7 @@ service cloud.firestore {
       // Scrittura solo da utente autenticato (solo l'admin conosce email/password)
       // e solo sui documenti effettivamente usati dall'app.
       allow write: if request.auth != null
-                   && docId in ['main', 'tornei', 'fanta', 'albo', 'log'];
+                   && docId in ['main', 'tornei', 'fanta', 'albo', 'log', 'foto'];
     }
 
     // Tutto il resto: negato di default.
