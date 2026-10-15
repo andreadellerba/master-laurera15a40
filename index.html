@@ -813,6 +813,40 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
   .next-pill.lv3 .np-full,.next-pill.lv3 .np-short,.next-pill.lv3 .np-day{display:none}
   .next-pill.lv4{display:none}
 }
+/* ═══ COLORE PER PAGINA (1) + LUCE DI SFONDO DELLA PAGINA (7) ═══
+   Ogni pagina ha la sua tinta: voce attiva del menu, lineetta del titolo e un
+   leggero bagliore in alto. Home resta gialla; ticker, card e pulsanti non cambiano. */
+body{--page:var(--accent)}
+body[data-tab="tornei"]{--page:#fb923c}
+body[data-tab="calendario"]{--page:#38bdf8}
+body[data-tab="risultati"]{--page:#22c55e}
+body[data-tab="classifiche"],body[data-tab="classifiche-torneo"]{--page:#a78bfa}
+body[data-tab="albo"]{--page:#fbbf24}
+body[data-tab="fanta"]{--page:#f472b6}
+body[data-tab="settings"]{--page:#94a3b8}
+body:not(.light){background:#000 radial-gradient(130% 480px at 50% -90px,color-mix(in srgb,var(--page) 16%,transparent),transparent 72%) no-repeat;transition:background .3s}
+body .hdr .tabs-inner .tab.active,body.viewer .hdr .tabs-inner .tab.active{color:var(--page)}
+.tabs-mobile2 .tbtn.active{color:var(--page)}
+.pg-title::before{background:var(--page);box-shadow:0 0 10px color-mix(in srgb,var(--page) 70%,transparent)}
+/* ═══ PODIO IN CLASSIFICHE (3) ═══ */
+body:not(.light) .rank-table tr.podio td{background:none}
+body:not(.light) .rank-table tr.podio-1 td{background:rgba(240,192,64,.14)}
+body:not(.light) .rank-table tr.podio-2 td{background:rgba(200,206,216,.11)}
+body:not(.light) .rank-table tr.podio-3 td{background:rgba(205,124,63,.13)}
+.rank-table tr.podio-1 td:first-child{box-shadow:inset 3px 0 0 #f0c040}
+.rank-table tr.podio-2 td:first-child{box-shadow:inset 3px 0 0 #c8ced8}
+.rank-table tr.podio-3 td:first-child{box-shadow:inset 3px 0 0 #cd7c3f}
+.rank-table tr.podio-1 .av{box-shadow:0 0 0 2px #f0c040,0 0 14px rgba(240,192,64,.55)}
+.rank-table tr.podio-2 .av{box-shadow:0 0 0 2px #c8ced8,0 0 12px rgba(200,206,216,.45)}
+.rank-table tr.podio-3 .av{box-shadow:0 0 0 2px #cd7c3f,0 0 12px rgba(205,124,63,.5)}
+.rk-bar{height:3px;margin:5px 0 0 42px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;max-width:220px}
+.rk-bar i{display:block;height:100%;border-radius:3px;background:var(--page);box-shadow:0 0 8px color-mix(in srgb,var(--page) 60%,transparent)}
+/* ═══ CALENDARIO A COLORI (5): da giocare giallo, giocata verde, in corso rosso che pulsa ═══ */
+.cdot-l{background:#ff3b3b;animation:liveDot 1.6s infinite}
+@keyframes liveDot{0%{box-shadow:0 0 0 0 rgba(255,59,59,.6)}70%{box-shadow:0 0 0 6px rgba(255,59,59,0)}100%{box-shadow:0 0 0 0 rgba(255,59,59,0)}}
+.cmc.live::before{background:#ff3b3b!important;animation:liveDot 1.6s infinite}
+body:not(.light) .cmc.oggi{border-color:rgba(232,255,0,.55)!important;box-shadow:0 0 16px rgba(232,255,0,.22),0 8px 28px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14)!important}
+body:not(.light) .cmc.live{border-color:rgba(255,59,59,.6)!important;box-shadow:0 0 18px rgba(255,59,59,.28),0 8px 28px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14)!important}
 </style>
 </head>
 <body class="viewer">
@@ -1445,7 +1479,7 @@ function toast(msg){const t=document.getElementById('toast-el');t.textContent=ms
 function applyTheme(){document.body.classList.remove('light');}
 function initTheme(){applyTheme();}
 // ═══ TAB ═══
-function switchTab(t){currentTab=t;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('fab').style.display=['players','calendario'].includes(t)?'flex':'none';if(t==='classifiche')renderRank();if(t==='fanta'){loadFanta();renderFantaPronostici();}if(t==='calendario'){loadTornei();renderCalTorneoSelector();}if(t==='risultati')renderRisultati();if(t==='tornei'){loadTornei();renderTornei();}if(t==='albo'){renderAlbo();}if(t==='classifiche-torneo'){loadTornei();renderRanking();}if(t==='settings'){renderLog();}if(t==='players')renderTickerTape();const activeBn=document.querySelector('.bn-item.active');if(activeBn)activeBn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
+function switchTab(t){currentTab=t;document.body.dataset.tab=t;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('fab').style.display=['players','calendario'].includes(t)?'flex':'none';if(t==='classifiche')renderRank();if(t==='fanta'){loadFanta();renderFantaPronostici();}if(t==='calendario'){loadTornei();renderCalTorneoSelector();}if(t==='risultati')renderRisultati();if(t==='tornei'){loadTornei();renderTornei();}if(t==='albo'){renderAlbo();}if(t==='classifiche-torneo'){loadTornei();renderRanking();}if(t==='settings'){renderLog();}if(t==='players')renderTickerTape();const activeBn=document.querySelector('.bn-item.active');if(activeBn)activeBn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
 function fabClick(){if(_checkViewer())return;if(currentTab==='players')openNewPlayer();else if(currentTab==='calendario')openCalModal();}
 // ═══ FILTERS ═══
 function clearSearch(){const i=document.getElementById('srch-input');i.value='';renderCards();i.focus();}
@@ -1649,9 +1683,11 @@ function renderRank(){
     const ph=p.photoUrl?`<img src="${p.photoUrl}" alt="" style="width:100%;height:100%;object-fit:cover">`:`<span style="font-family:'Bebas Neue',sans-serif;font-size:13px">${ini(p.nome)}</span>`;
     return `<div class="av ${avc(p.id)}" style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;flex-shrink:0">${ph}</div>`;
   };
-  const rows=list.map((p,i)=>`<tr>
+  // podio oro/argento/bronzo e, sotto il nome, una barretta con la media rispetto alla migliore
+  const _maxMg=Math.max(0.0001,...list.map(p=>+p.mg||0));
+  const rows=list.map((p,i)=>`<tr class="${i<3?'podio podio-'+(i+1):''}">
       <td style="text-align:center">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
-      <td><div style="display:flex;align-items:center;gap:8px;min-width:0"><span style="flex-shrink:0">${avHtml(p)}</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(dispName(p.nome))}</span></div></td>
+      <td><div style="display:flex;align-items:center;gap:8px;min-width:0"><span style="flex-shrink:0">${avHtml(p)}</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(dispName(p.nome))}</span></div><div class="rk-bar" title="Media rispetto alla migliore"><i style="width:${Math.round((+p.mg||0)/_maxMg*100)}%"></i></div></td>
       <td style="text-align:center;font-weight:700">${p.pg||0}</td>
       <td style="text-align:center">${normStorico(p.storico)}</td>
       <td style="text-align:center;font-weight:700;color:var(--accent2)">${(p.mg||0).toFixed(2)}</td>
@@ -1732,6 +1768,8 @@ function exportRankPDF(){
 // ═══ PC: pillola "prossima partita" nella barra del menu ═══
 // La prossima partita non ancora giocata (o quella in corso adesso). Si accorcia
 // da sola quando nella barra c'è poco spazio (fitNextPill: livelli lv1…lv4).
+// Partita in corso adesso: oggi, iniziata da meno di 1h40 e senza risultato
+function isLiveMatch(m){if(!m||m.risultato||!m.data||m.data!==fmtD(new Date()))return false;const [h,mi]=(m.ora||"00:00").split(":").map(Number);const s=new Date(m.data+"T00:00:00");s.setHours(h||0,mi||0,0,0);const n=Date.now();return n>=s.getTime()&&n<s.getTime()+100*60000;}
 function nextMatchInfo(){
   const now=new Date(),today=fmtD(now);
   const pn=id=>{const p=players.find(x=>x.id===id);return p?p.nome:null;};
@@ -1871,7 +1909,7 @@ function exitCalTorneo(){
   renderCalTorneoSelector();
 }
 
-function calRender(){const dates=getWeekDates();const d0=dates[0],d6=dates[6];const fmt=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'});document.getElementById('cal-wlbl').textContent=`${fmt(d0)} – ${fmt(d6)}`;const today=fmtD(new Date());document.getElementById('cal-strip').innerHTML=dates.map((d,i)=>{const ds=fmtD(d);const _schedStrip=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dm=_schedStrip.filter(m=>m.data===ds);const dots=dm.map(m=>`<div class="cdot ${m.risultato?'cdot-d':'cdot-s'}"></div>`).join('');return`<div class="cal-day${ds===calSelDate?' sel':''}${ds===today?' tod':''}" onclick="calSelDay('${ds}')"><div class="cal-dn">${DAY[i]}</div><div class="cal-dd">${d.getDate()}</div><div class="cal-dots">${dots}</div></div>`;}).join('');document.getElementById('cal-dh').textContent=fmtDIt(calSelDate);const _sched=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dayM=_sched.filter(m=>m.data===calSelDate).sort((a,b)=>a.ora.localeCompare(b.ora));const list=document.getElementById('cal-list');list.innerHTML=dayM.length?dayM.map(m=>cmcHtml(m)).join(''):'<div class="cal-empty">Nessun incontro. Premi + per aggiungerne uno.</div>';
+function calRender(){const dates=getWeekDates();const d0=dates[0],d6=dates[6];const fmt=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'});document.getElementById('cal-wlbl').textContent=`${fmt(d0)} – ${fmt(d6)}`;const today=fmtD(new Date());document.getElementById('cal-strip').innerHTML=dates.map((d,i)=>{const ds=fmtD(d);const _schedStrip=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dm=_schedStrip.filter(m=>m.data===ds);const dots=dm.map(m=>`<div class="cdot ${m.risultato?'cdot-d':isLiveMatch(m)?'cdot-l':'cdot-s'}"></div>`).join('');return`<div class="cal-day${ds===calSelDate?' sel':''}${ds===today?' tod':''}" onclick="calSelDay('${ds}')"><div class="cal-dn">${DAY[i]}</div><div class="cal-dd">${d.getDate()}</div><div class="cal-dots">${dots}</div></div>`;}).join('');document.getElementById('cal-dh').textContent=fmtDIt(calSelDate);const _sched=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dayM=_sched.filter(m=>m.data===calSelDate).sort((a,b)=>a.ora.localeCompare(b.ora));const list=document.getElementById('cal-list');list.innerHTML=dayM.length?dayM.map(m=>cmcHtml(m)).join(''):'<div class="cal-empty">Nessun incontro. Premi + per aggiungerne uno.</div>';
 }
 function calSelDay(ds){calSelDate=ds;calRender();}
 function calShiftDay(delta){
@@ -1910,7 +1948,7 @@ function cmcHtml(m){
   const win1=!!(m.risultato&&!isDraw&&win&&+m.winnerId===m.p1Id);
   const win2=!!(m.risultato&&!isDraw&&win&&+m.winnerId===m.p2Id);
   const nameCol=w=>w?'color:var(--green)':'color:var(--text)';
-  return`<div class="cmc ${m.risultato?'cd':'cs'}" onclick="openCalModal(${m.id})">
+  return`<div class="cmc ${m.risultato?'cd':isLiveMatch(m)?'cs live':'cs'}${!m.risultato&&m.data===fmtD(new Date())?' oggi':''}" onclick="openCalModal(${m.id})">
     <div class="cmc-time">${m.ora||'—'}</div>
     <div class="cmc-row" style="display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:hidden">
       <div class="cmc-player cmc-player-1" style="display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden">
@@ -3689,7 +3727,7 @@ function migrateStorageNamespace(){
   }catch(e){}
 }
 migrateStorageNamespace();
-initTheme();initAdmin();fillNazList();
+document.body.dataset.tab=currentTab;initTheme();initAdmin();fillNazList();
 (async()=>{
   initQuotes(); // citazioni subito, senza aspettare i dati dal database
   // Apertura veloce: si mostrano subito i giocatori dell'ultima visita (copia
