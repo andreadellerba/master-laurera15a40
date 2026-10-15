@@ -1471,6 +1471,22 @@ body[data-tab="players"],body:not([data-tab]){--page:#ff2d3d}
 .cal-title-big{margin:4px 0 0!important}
 @media(max-width:640px){.cmc.mk .mk-score{grid-column:3;grid-row:1 / span 2;font-size:19px}.cmc.mk .mk-score b{padding:4px 7px}#page-calendario .wrap{padding-top:16px!important}}
 .mk-score.draw b{background:#22b8f0;color:#111}
+/* ═══ SFONDO NERO + "aurora" continua dentro barre, pillole e card ═══
+   La sfumatura colorata è una sola, fissata allo schermo: ogni card/pillola ne mostra il pezzo
+   che le sta dietro, così sembra un'unica luce che attraversa tutto (non un colore per card). */
+:root{--aur:radial-gradient(38% 46% at 18% 30%,rgba(139,92,246,.55),transparent 72%),radial-gradient(40% 44% at 82% 70%,rgba(34,184,240,.42),transparent 72%),
+  radial-gradient(34% 36% at 60% 8%,rgba(255,45,61,.38),transparent 72%),radial-gradient(30% 34% at 40% 95%,rgba(34,197,94,.22),transparent 72%),linear-gradient(#141519,#141519)}
+html,body:not(.light){background:#000!important}
+body:not(.light)::before,body:not(.light)::after{display:none!important}
+.hdr,.tabs-mobile2 .tbar,.ticker-tape,.hl,.cmc.mk,.rs,.rk-row,.pcrd.pk .pk-bd,.tor-bd,.albo-card.albo-trophy,.rk-seg,body:not(.light) .cal-day,.profile-stats-row .pk-t,.mk-time{
+  background:var(--aur)!important;background-attachment:fixed!important;background-size:100vw 100vh!important}
+#hdr-next .ticker-tape{background:none!important}
+.pcrd.pk{background:#000!important}
+.hl .hf-feat{background:none!important}
+.cal-day.sel{background:var(--page)!important}
+.rk-row.top{background:linear-gradient(90deg,color-mix(in srgb,var(--m) 26%,transparent),transparent 60%),var(--aur)!important;background-attachment:fixed!important}
+/* bordi leggeri e uniformi */
+.hdr,.tabs-mobile2 .tbar,.ticker-tape,.hl,.cmc.mk,.rs,.rk-row,.rk-seg{border-color:rgba(255,255,255,.14)!important}
 </style>
 </head>
 <body class="viewer">
