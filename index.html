@@ -1627,6 +1627,13 @@ body .cards-grid .pcrd.k4c,body:is(:not([data-tab]),[data-tab="players"]) .pcrd.
 /* record: etichette lunghe su telefono vanno su due righe invece di essere tagliate */
 @media(max-width:640px){.hl-tx small{white-space:normal;overflow:visible;line-height:1.15;letter-spacing:.3px;margin-bottom:2px}}
 @media(max-width:380px){.hl-rc{gap:6px!important;padding:7px 7px!important}.hl-av{width:30px!important;height:30px!important}.hl-rc>span{font-size:15px!important}.hl-tx small{font-size:8px;letter-spacing:.2px}}
+/* ═══ TELEFONO: barra e ticker uniti in un'unica pillola (il ticker è la seconda riga della barra) ═══ */
+@media(max-width:640px){
+  .header .hdr{border-radius:24px!important;row-gap:0!important;padding-bottom:0!important;flex-wrap:wrap!important;min-height:0!important}
+  .hdr .ticker-tape{grid-column:1 / -1;flex:0 0 calc(100% + 24px);order:99;position:static!important;margin:6px -12px 0!important;width:auto;border-radius:0 0 24px 24px!important;
+    background:none!important;border:none!important;border-top:1px solid rgba(255,255,255,.1)!important;box-shadow:none!important;min-height:38px}
+}
+@media(max-width:640px){.header .hdr{padding-top:8px!important}.header .hdr .logo-img{margin:4px auto}.header .hdr .hdr-info,.header .hdr .hdr-players-mobile{top:33px!important}}
 </style>
 </head>
 <body class="viewer">
@@ -2589,7 +2596,7 @@ function placeTicker(){
   const pc=window.matchMedia('(min-width:641px)').matches;
   const slot=document.getElementById('hdr-next');
   if(pc&&slot&&tk.parentElement!==slot){slot.appendChild(tk);}
-  else if(!pc&&tk.parentElement===slot){document.querySelector('header.header').after(tk);}
+  else if(!pc){const h=document.querySelector('header.header .hdr');if(h&&tk.parentElement!==h)h.appendChild(tk);}
 }
 window.matchMedia('(min-width:641px)').addEventListener('change',placeTicker);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',placeTicker);else placeTicker();
