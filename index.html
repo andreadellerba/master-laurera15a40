@@ -1583,6 +1583,37 @@ html{background-color:#000!important}
   #page-albo .albo-year{text-align:center}
   .header{padding-top:calc(18px + env(safe-area-inset-top))!important;background:#000!important}
 }
+/* ═══ CARD GIOCATORI "4 — avatar che esce": compatta, colore solo su bordo, anello e # ═══ */
+.k4c{--cc:var(--lv)}
+body.viewer .k4c{--cc:var(--gc)}
+.cards-grid{row-gap:34px!important;padding-top:34px!important}
+.cards-grid .pcrd.k4c{width:100%}
+.pcrd.k4c{display:block!important;max-width:none;margin:0!important;padding:12px 14px 12px!important;overflow:visible!important;border-radius:22px!important;
+  background:var(--aur)!important;background-attachment:fixed!important;background-size:100vw 100vh!important;
+  border:1px solid color-mix(in srgb,var(--cc) 50%,rgba(255,255,255,.1))!important;box-shadow:0 10px 26px rgba(0,0,0,.45)!important}
+.pcrd.k4c::before{display:none!important}
+.k4-rk{position:absolute;top:10px;right:14px;font-family:"Anton",sans-serif;font-size:28px;line-height:1;color:var(--cc)}
+.k4-top{display:flex;align-items:flex-end;gap:12px}
+.k4-av{width:88px;height:88px;flex-shrink:0;margin-top:-38px;border-radius:50%;border:3px solid var(--cc);background:#16171c;overflow:hidden;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(0,0,0,.6)}
+.k4-av img{width:100%;height:100%;object-fit:cover}
+.k4-av span{font-family:"Bebas Neue",sans-serif;font-size:32px;color:#fff}
+.pcrd.k4c.foil .k4-av{border-color:#f0c040;box-shadow:0 0 16px rgba(240,192,64,.55),0 8px 20px rgba(0,0,0,.6)}
+.k4-nm{flex:1;min-width:0;padding:0 46px 4px 0}
+.k4-fn{font:700 11px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.55);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:13px}
+.k4-sn{font-family:"Anton",sans-serif;font-size:25px;line-height:1.05;color:#fff;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k4-adm{position:absolute;top:44px;right:14px;display:flex;align-items:center;gap:6px}
+.k4-adm .pk-lv{background:color-mix(in srgb,var(--cc) 20%,transparent);color:var(--cc)}
+.k4-st{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:10px;padding-top:9px;border-top:1px solid rgba(255,255,255,.08)}
+.k4-st .pk-t{background:none!important;border:none!important;box-shadow:none!important;padding:0 2px!important;gap:3px}
+.k4-st .pk-t>span{font:700 9.5px "DM Sans",sans-serif!important;letter-spacing:1px!important;color:#8d8d8d!important;text-transform:uppercase}
+.k4-st .pk-t b{font-size:23px!important}
+@media(max-width:640px){
+  .cards-grid{gap:34px!important;padding-top:30px!important}
+  .k4-av{width:80px;height:80px;margin-top:-34px}.k4-av span{font-size:29px}
+  .k4-sn{font-size:23px}.k4-rk{font-size:26px}
+  .k4-st .pk-t b{font-size:21px!important}
+}
 </style>
 </head>
 <body class="viewer">
@@ -3370,15 +3401,18 @@ function buildPlayerCardHTML(p,opts){
   // per chi non è admin un colore fisso per persona (non legato al livello, che resta nascosto)
   const GUEST=["#ff8a00","#22b8f0","#22c55e","#8b5cf6","#ff4fb8","#e8ff00","#14b8a6","#f43f5e","#f59e0b","#60a5fa"];
   const gc=GUEST[Math.abs((+p.id||0)*7)%GUEST.length];
-  return`<div class="pcrd pk ${d.isFoil?'foil':''}" style="--lv:${lvColor};--gc:${gc}">
-    <div class="pk-hd">
-      <div class="pk-ring"${ringClick}>${photoHtml}</div>
-      <div class="pk-nm">${esc(p.nome)}</div>
-      ${_checkViewer()?"":`<div class="pk-lv">LV${p.livello}</div>`}${editBtn}
-      <div class="pk-rank">${ri>=0?'#'+(ri+1):'#–'}</div>
+  // Card "avatar che esce" (4): avatar grande che sporge sopra, nome piccolo sopra il cognome, # in alto a destra;
+  // colore solo su bordo, anello e # (livello per l'admin, colore personale per gli altri).
+  const _w=String(p.nome||'').trim().split(/\s+/),fn=_w.length>1?_w[0]:'',sn=_w.length>1?_w.slice(1).join(' '):_w[0]||'';
+  return`<div class="pcrd k4c ${d.isFoil?'foil':''}" style="--lv:${lvColor};--gc:${gc}">
+    <div class="k4-rk">${ri>=0?'#'+(ri+1):'#–'}</div>
+    <div class="k4-top">
+      <div class="k4-av"${ringClick}>${photoHtml}</div>
+      <div class="k4-nm"><div class="k4-fn">${esc(fn)}</div><div class="k4-sn">${esc(sn)}</div></div>
     </div>
-    <div class="pk-bd">
-      ${tile('Match',+p.pg||0,'#e8ff00')}${tile('Storico',storicoHtml(p.storico),'#22c55e')}${tile('Game',+p.gv||0,'#ff4fb8')}${tile('Media game',(+p.mg||0).toFixed(2),'#22b8f0')}
+    ${_checkViewer()?'':`<div class="k4-adm"><span class="pk-lv">LV${p.livello}</span>${editBtn}</div>`}
+    <div class="k4-st">
+      ${tile('Partite',+p.pg||0,'#e8ff00')}${tile('Storico',storicoHtml(p.storico),'#fff')}${tile('Game',+p.gv||0,'#ff4fb8')}${tile('Media',(+p.mg||0).toFixed(2),'#22b8f0')}
     </div>
   </div>`;
 }
@@ -3507,7 +3541,7 @@ function openProfile(playerId){
   const _rk=document.getElementById('profile-rank');if(_rk)_rk.innerHTML=`${_ri>=0?'#'+(_ri+1):'#–'}<span>IN CLASSIFICA</span>`;
   const _t=(l,v,c)=>`<div class="pk-t" style="--tc:${c}"><span>${l}</span><b>${v}</b></div>`;
   document.getElementById('profile-stats-row').innerHTML=
-    _t('Match',+p.pg||0,'#e8ff00')+_t('Vittorie',ww,'#22c55e')+_t('Pareggi',dd,'#f59e0b')+_t('Sconfitte',ll,'#ef4444')+_t('Game',+p.gv||0,'#ff4fb8')+_t('Media game',(+p.mg||0).toFixed(2),'#22b8f0');
+    _t('Partite',+p.pg||0,'#e8ff00')+_t('Vittorie',ww,'#22c55e')+_t('Pareggi',dd,'#f59e0b')+_t('Sconfitte',ll,'#ef4444')+_t('Game',+p.gv||0,'#ff4fb8')+_t('Media game',(+p.mg||0).toFixed(2),'#22b8f0');
   // Upcoming
   const today=new Date();today.setHours(0,0,0,0);
   const upcoming=sched.filter(m=>(m.p1Id===playerId||m.p2Id===playerId)&&m.data&&new Date(m.data+'T12:00:00')>=today&&!m.risultato).sort((a,b)=>a.data.localeCompare(b.data)||a.ora.localeCompare(b.ora));
