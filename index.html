@@ -1518,6 +1518,11 @@ html{background-color:#000!important}
   .tk-win{-webkit-mask:linear-gradient(90deg,transparent,#000 26px,#000 calc(100% - 26px),transparent);mask:linear-gradient(90deg,transparent,#000 26px,#000 calc(100% - 26px),transparent)}
 }
 .hf-sub span{white-space:nowrap}
+/* 6 record: su PC 3 per riga, schede più compatte; sul telefono 2 per riga (le nuove sotto) */
+@media(min-width:641px){.hl-rec{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;min-width:0!important}.hl{grid-template-columns:minmax(0,.85fr) minmax(0,1.6fr)!important;gap:18px!important}.hl-rc{padding:8px 10px;gap:8px}.hl-rc>span{font-size:20px}.hl-tx b{font-size:16px}}
+@media(min-width:641px) and (max-width:1180px){.hl{grid-template-columns:1fr!important}}
+.hl-tx small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:640px){.hl-tx small{font-size:8.5px;letter-spacing:.5px}.hl-rc>span{font-size:16px}}
 </style>
 </head>
 <body class="viewer">
@@ -2427,8 +2432,21 @@ function renderHomeFeat(){
   const act=players.filter(x=>!x.archiviato&&(+x.pg||0)>0);
   const wins=p=>{const m=String(p.storico||'').match(/(\d+)/);return m?+m[1]:0;};
   const best=f=>act.slice().sort((a,b)=>f(b)-f(a)||a.nome.localeCompare(b.nome))[0];
-  const R=[['PIÙ MATCH',p=>+p.pg||0,'#e8ff00',v=>v],['PIÙ VITTORIE',wins,'#22c55e',v=>v],['PIÙ GAME',p=>+p.gv||0,'#ff4fb8',v=>v],['MEDIA PIÙ ALTA',p=>+p.mg||0,'#22b8f0',v=>v.toFixed(2)]];
-  const rec=act.length?`<div class="hl-rec">${R.map(([l,f,c,fm])=>{const p=best(f);return `<div class="hl-rc" style="--c:${c}" onclick="openProfile(${p.id})"><div class="hl-av">${avHtmlBig(p)}</div><div class="hl-tx"><small>${l}</small><b>${esc(dispName(p.nome))}</b></div><span>${fm(f(p))}</span></div>`;}).join('')}</div>`:'';
+  const R=[['PIÙ MATCH',p=>+p.pg||0,'#e8ff00',v=>v],['PIÙ VITTORIE',wins,'#22c55e',v=>v],['PIÙ GAME',p=>+p.gv||0,'#ff4fb8',v=>v],['MEDIA TOP',p=>+p.mg||0,'#22b8f0',v=>v.toFixed(2)]];
+  // record di partita: più game in una partita e maggior distacco (game vinti - game persi)
+  let topG=null,topD=null;
+  sched.filter(m=>m.risultato&&m.p1Id&&m.p2Id).forEach(m=>{
+    let g1=+m.gv1,g2=+m.gv2;
+    if(!(Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2))){const r=String(m.risultato).match(/(\d+)\s*[-–]\s*(\d+)/);if(!r)return;g1=+r[1];g2=+r[2];}
+    [[m.p1Id,g1],[m.p2Id,g2]].forEach(([id,g])=>{if(!topG||g>topG.v)topG={id,v:g};});
+    const d=Math.abs(g1-g2),wid=g1>=g2?m.p1Id:m.p2Id;
+    if(d>0&&(!topD||d>topD.v))topD={id:wid,v:d,s:`${Math.max(g1,g2)}-${Math.min(g1,g2)}`};
+  });
+  const recM=[];
+  if(topG){const p=players.find(x=>x.id===topG.id);if(p)recM.push(['GAME IN 1 PARTITA',p,topG.v,'#ff8a00']);}
+  if(topD){const p=players.find(x=>x.id===topD.id);if(p)recM.push(['DISTACCO '+topD.s,p,'+'+topD.v,'#a78bfa']);}
+  const recMHtml=recM.map(([l,p,v,c])=>`<div class="hl-rc" style="--c:${c}" onclick="openProfile(${p.id})"><div class="hl-av">${avHtmlBig(p)}</div><div class="hl-tx"><small>${l}</small><b>${esc(dispName(p.nome))}</b></div><span>${v}</span></div>`).join('');
+  const rec=act.length?`<div class="hl-rec">${R.map(([l,f,c,fm])=>{const p=best(f);return `<div class="hl-rc" style="--c:${c}" onclick="openProfile(${p.id})"><div class="hl-av">${avHtmlBig(p)}</div><div class="hl-tx"><small>${l}</small><b>${esc(dispName(p.nome))}</b></div><span>${fm(f(p))}</span></div>`;}).join('')}${recMHtml}</div>`:'';
   el.innerHTML=feat||rec?`<div class="hl">${feat}${rec}</div>`:'';
 }
 // PC: il ticker dei risultati scorre DENTRO la barra del menu (tra le voci e il lucchetto);
