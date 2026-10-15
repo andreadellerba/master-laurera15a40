@@ -1649,6 +1649,7 @@ body .cards-grid .pcrd.k4c,body:is(:not([data-tab]),[data-tab="players"]) .pcrd.
 .hf-chips{flex-wrap:nowrap!important;overflow:hidden;gap:6px}
 .hf-chips span{white-space:nowrap;flex-shrink:0;font-size:14px!important;padding:3px 9px!important;background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.12)}
 @media(max-width:640px){.hf-chips{display:none!important}}
+.hf-chips{gap:5px!important}.hf-chips span{font-size:13px!important;padding:2px 7px!important;letter-spacing:.3px!important;cursor:help}
 </style>
 </head>
 <body class="viewer">
@@ -2661,20 +2662,30 @@ function renderHomeFeat(){
   window._recs=recs;
   const tile=(r,k)=>{const it=r.items[0];return `<div class="hl-rc" data-rec="${k}" data-i="0" style="--c:${r.c}" onclick="openProfile(+this.dataset.pid)" data-pid="${it.p.id}"><div class="hl-av">${avHtmlBig(it.p)}</div><div class="hl-tx"><small>${esc(r.l(it))}</small><b>${esc(dispName(it.p.nome))}</b></div><span>${esc(String(it.v))}</span></div>`;};
   const rec=act.length?`<div class="hl-rec">${recs.map((r,k)=>r.items.length?tile(r,k):'').join('')}</div>`:'';
-  // badge del giocatore della settimana (solo PC, una riga): serie di vittorie, imbattuto, record, settimana
+  // badge del giocatore della settimana (solo PC, una riga): icona + una parola, spiegazione al passaggio del mouse
   if(ws&&feat){
     const p=ws.p,st=ws.st,ch=[];
-    const mine=sched.filter(m=>m.risultato&&(m.p1Id===p.id||m.p2Id===p.id)).sort((a,b)=>(b.data+(b.ora||'')).localeCompare(a.data+(a.ora||'')));
-    let streak=0;for(const m of mine){if(+m.winnerId===p.id)streak++;else break;}
-    const losses=mine.filter(m=>m.winnerId&&m.winnerId!=='draw'&&+m.winnerId!==p.id).length;
-    if(streak>=2)ch.push(`🔥 ${streak} VITTORIE DI FILA`);
-    if(mine.length>=2&&!losses&&streak<mine.length)ch.push('🛡️ IMBATTUTO');
-    const ri=rankListAll().findIndex(x=>x.id===p.id);if(ri===0)ch.push('🥇 PRIMO IN CLASSIFICA');
-    const short={'PIÙ MATCH GIOCATI':'PIÙ MATCH','PIÙ VITTORIE':'PIÙ VITTORIE','PIÙ GAME VINTI':'PIÙ GAME','MEDIA PIÙ ALTA':'MEDIA TOP','PIÙ GAME IN 1 PARTITA':'GAME IN 1 PARTITA','MAGGIOR DISTACCO':'MAGGIOR DISTACCO'};
-    recs.forEach(r=>{if(r.items.length===1&&r.items[0].p.id===p.id)ch.push('👑 RECORD '+(short[r.l(r.items[0])]||r.l(r.items[0])));});
-    if(st&&st.n>=2)ch.push(`🎾 ${st.n} PARTITE IN SETTIMANA`);
-    if(st&&st.g-st.o>0)ch.push(`⚡ SALDO GAME +${st.g-st.o}`);
-    feat=feat.replace('%%CHIPS%%',ch.length?`<div class="hf-chips">${ch.slice(0,4).map(c=>`<span>${esc(c)}</span>`).join('')}</div>`:'');
+    const mine=sched.filter(m=>m.risultato&&(m.p1Id===p.id||m.p2Id===p.id||m.p1Id2===p.id||m.p2Id2===p.id)).sort((a,b)=>(b.data+(b.ora||'')).localeCompare(a.data+(a.ora||'')));
+    const side=m=>m.p1Id===p.id||m.p1Id2===p.id?1:2;
+    const won=m=>m.winnerId&&m.winnerId!=='draw'&&(+m.winnerId===(side(m)===1?m.p1Id:m.p2Id));
+    const lost=m=>m.winnerId&&m.winnerId!=='draw'&&!won(m);
+    const gg=m=>{let g1=+m.gv1,g2=+m.gv2;if(!(g1||g2)){const r=String(m.risultato).match(/(\d+)\s*[-–]\s*(\d+)/);g1=r?+r[1]:0;g2=r?+r[2]:0;}return side(m)===1?[g1,g2]:[g2,g1];};
+    let streak=0;for(const m of mine){if(won(m))streak++;else break;}
+    const add=(ic,w,t)=>ch.push({ic,w,t});
+    if(streak>=2)add('🔥','STRISCIA',`${streak} vittorie di fila`);
+    if(mine.length>=2&&!mine.some(lost))add('🛡️','IMBATTUTO','Mai sconfitto');
+    const ri=rankListAll().findIndex(x=>x.id===p.id);
+    if(ri===0)add('🥇','CAPOLISTA','Primo in classifica');else if(ri>0&&ri<3)add('🏅','PODIO',`${ri+1}° in classifica`);
+    const RB={'PIÙ MATCH GIOCATI':['🎾','MARATONETA'],'PIÙ VITTORIE':['🏆','VINCENTE'],'PIÙ GAME VINTI':['💥','BOMBER'],'MEDIA PIÙ ALTA':['🎯','CECCHINO'],'PIÙ GAME IN 1 PARTITA':['⚡','SCATENATO'],'MAGGIOR DISTACCO':['🧹','SCHIACCIASASSI']};
+    recs.forEach(r=>{if(r.items.length===1&&r.items[0].p.id===p.id){const l=r.l(r.items[0]),b=RB[l];if(b)add(b[0],b[1],'Record: '+l.toLowerCase());}});
+    const conc=mine.length>=2?mine.reduce((s,m)=>s+gg(m)[1],0)/mine.length:99;
+    if(conc<=3)add('🧱','MURO',`Concede in media ${conc.toFixed(1)} game`);
+    if(mine.some(m=>won(m)&&Math.abs(gg(m)[0]-gg(m)[1])===1))add('🧊','CINICO','Ha vinto una partita per un game');
+    if(st&&st.g-st.o>=8)add('💪','DOMINATORE',`Saldo game della settimana +${st.g-st.o}`);
+    if(st&&st.n>=2)add('📅','COSTANTE',`${st.n} partite in settimana`);
+    if(mine.some(m=>m.p1Id2||m.p2Id2))add('🤝','DOPPISTA','Ha giocato in doppio');
+    if((+p.pg||0)<=2)add('🌱','ESORDIENTE','Prime partite nel circolo');
+    feat=feat.replace('%%CHIPS%%',ch.length?`<div class="hf-chips">${ch.slice(0,10).map(c=>`<span title="${esc(c.t)}">${c.ic} ${c.w}</span>`).join('')}</div>`:'');
   }
   feat=feat.replace('%%CHIPS%%','');
   el.innerHTML=feat||rec?`<div class="hl">${feat}${rec}</div>`:'';
