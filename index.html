@@ -1548,7 +1548,8 @@ function saveVid(id,u){try{localStorage.setItem('laurera_vid_'+id,u);}catch(e){t
 function delVid(id){try{localStorage.removeItem('laurera_vid_'+id);}catch(e){}}
 // ═══ HELPERS ═══
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const ini=n=>{const p=(n||'?').trim().split(/[\s.]+/);return p.length>1?p[0][0]+p[p.length-1][0]:(n||'?').slice(0,2).toUpperCase()};
+// Iniziali: prima lettera del nome + prima lettera del cognome (il cognome è tutto ciò che segue il nome: "Raffaele De Rosa" → RD)
+const ini=n=>{const p=(n||"?").trim().split(/[\s.]+/).filter(Boolean);return p.length>1?(p[0][0]+p[1][0]).toUpperCase():(n||"?").slice(0,2).toUpperCase()};
 const isMobileView=()=>window.matchMedia('(max-width:640px)').matches;
 // Su mobile: "Nome Cognome" -> "N. COGNOME" (prima parola = iniziale, resto = cognome). Gestisce anche coppie "Nome1 Cognome1 / Nome2 Cognome2".
 const mobileShortName=nome=>{
@@ -1908,7 +1909,7 @@ function renderNextMatch(){
   const el=document.getElementById('hdr-next');if(!el)return;
   const x=nextMatchInfo();
   if(!x){el.innerHTML='';return;}
-  const short=n=>esc(String(n).split(' / ').map(s=>{const p=s.trim().split(/\s+/);return p[p.length-1];}).join(' / '));
+  const short=n=>esc(String(n).split(' / ').map(s=>{const p=s.trim().split(/\s+/);return p.length>1?p.slice(1).join(" "):p[0];}).join(' / '));
   el.innerHTML=`<button type="button" class="next-pill${x.live?' is-live':''}" onclick="openNextMatch()" title="${esc(x.a)} vs ${esc(x.b)} · ${esc(x.when)} ${esc(x.ora)}">
     ${x.live?'<span class="np-live" aria-hidden="true"></span>':''}<span class="np-tag">${x.live?'IN CORSO':x.idx===0?'PROSSIMA':'IN PROGRAMMA'}</span>
     <b class="np-full">${esc(x.a)} vs ${esc(x.b)}</b><b class="np-short">${short(x.a)} – ${short(x.b)}</b>
@@ -1958,12 +1959,7 @@ function renderTickerTape(){renderNextMatch();
     const winVerb=wName.includes(' / ')?'BATTONO':'BATTE';
     items.push(`🏆 ${esc(wName.toUpperCase())} ${winVerb} ${esc(lName.toUpperCase())} ${esc(m.risultato)}`);
   });
-  const tod=new Date();tod.setHours(0,0,0,0);
-  sched.filter(m=>m.data&&new Date(m.data+'T12:00:00')>=tod&&!m.risultato&&m.p1Id&&m.p2Id).sort((a,b)=>a.data.localeCompare(b.data)).slice(0,6).forEach(m=>{
-    const n1=_gtn(m,m.p1Id),n2=_gtn(m,m.p2Id);
-    const d=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
-    items.push(`📅 ${esc(n1.toUpperCase())} VS ${esc(n2.toUpperCase())} · ${d}${m.ora?' '+m.ora:''}`);
-  });
+  // le prossime partite non stanno più nel ticker: si vedono nella pillola del menu
   if(!items.length)items.push('🎾 LAURERA 15A40 — LA NUOVA ERA DEL TENNIS INIZIA QUI!');
   const base=items.join('    •    ');
   // Ripete il testo finché non è abbastanza lungo da riempire lo schermo più largo,
