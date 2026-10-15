@@ -1155,6 +1155,40 @@ body.viewer .pcrd.pk{--lv:#ff8a00!important}
 /* Top 5: avatar molto più grandi su PC; spazio e riga leggera prima delle card */
 @media(min-width:641px){.hf-cc{height:170px}.hf-cc .mini{width:78px;height:78px;font-size:28px;top:14px;right:14px;box-shadow:0 0 0 3px rgba(255,255,255,.35)}}
 .hf-top5{padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:10px}
+/* ═══ MENU PC "N2": voci grandi in Anton senza icone; la attiva più grande e bianca con numero e sottolineatura sfumata ═══ */
+@media(min-width:641px){
+  .hdr{border-color:rgba(255,255,255,.12)!important}
+  .hdr .tabs-inner{counter-reset:nv;align-items:baseline!important;gap:18px!important}
+  .hdr .tabs-inner .tab{counter-increment:nv}
+  .hdr .tabs-inner .tab svg{display:none!important}
+  .hdr .tabs-inner .tab,body.viewer .hdr .tabs-inner .tab,body .hdr .tabs-inner .tab,body:not(.viewer) .hdr .tabs-inner .tab{
+    flex-direction:row!important;padding:4px 2px 8px!important;font-family:"Anton",sans-serif!important;font-weight:400!important;font-size:21px!important;letter-spacing:.6px!important;
+    color:rgba(255,255,255,.4)!important;text-transform:uppercase;border-radius:0!important;transition:none!important}
+  .hdr .tabs-inner .tab:hover{color:rgba(255,255,255,.75)!important;background:none!important}
+  .hdr .tabs-inner .tab.active,body .hdr .tabs-inner .tab.active{color:#fff!important;font-size:28px!important}
+  .hdr .tabs-inner .tab.active::before{content:counter(nv,decimal-leading-zero);position:absolute;top:-6px;right:-14px;font-family:"DM Sans",sans-serif;font-size:10px;font-weight:800;color:var(--page)}
+  .hdr .tabs-inner .tab.active::after{content:""!important;position:absolute;left:0!important;right:0!important;bottom:0!important;height:4px!important;border-radius:4px;background:linear-gradient(90deg,var(--page),transparent)!important;box-shadow:none!important}
+  body:not(.viewer) .hdr .tabs-inner{gap:13px!important}
+  body:not(.viewer) .hdr .tabs-inner .tab{font-size:17px!important}
+  body:not(.viewer) .hdr .tabs-inner .tab.active{font-size:22px!important}
+}
+@media(min-width:641px) and (max-width:1420px){body:not(.viewer) .hdr .tabs-inner{gap:10px!important}body:not(.viewer) .hdr .tabs-inner .tab{font-size:15px!important}body:not(.viewer) .hdr .tabs-inner .tab.active{font-size:19px!important}}
+@media(min-width:641px) and (max-width:1250px){.hdr .tabs-inner{gap:12px!important}.hdr .tabs-inner .tab,body.viewer .hdr .tabs-inner .tab{font-size:17px!important}.hdr .tabs-inner .tab.active{font-size:22px!important}
+  body:not(.viewer) .hdr .tabs-inner{gap:9px!important}body:not(.viewer) .hdr .tabs-inner .tab{font-size:14px!important}body:not(.viewer) .hdr .tabs-inner .tab.active{font-size:17px!important}}
+/* ═══ MENU TELEFONO "N3": icone già colorate, la voce attiva diventa una pillola piena nel colore della pagina con il nome ═══ */
+@media(max-width:640px){
+  .hdr{border-color:rgba(255,255,255,.12)!important}
+  .tabs-mobile2 .tbar{border-color:rgba(255,255,255,.14)!important;padding:5px!important;gap:3px}
+  .tabs-mobile2 .tbtn{border-radius:999px!important;padding:12px 0!important;transition:flex .25s ease!important;gap:6px}
+  .tabs-mobile2 .tbtn::before{display:none!important}
+  .tabs-mobile2 .tbtn .tl{display:none;font-family:"DM Sans",sans-serif;font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
+  .tabs-mobile2 .tbtn[data-tab="players"]{--tc:#e8ff00}.tabs-mobile2 .tbtn[data-tab="tornei"]{--tc:#fb923c}.tabs-mobile2 .tbtn[data-tab="calendario"]{--tc:#38bdf8}.tabs-mobile2 .tbtn[data-tab="risultati"]{--tc:#22c55e}.tabs-mobile2 .tbtn[data-tab="classifiche"]{--tc:#a78bfa}.tabs-mobile2 .tbtn[data-tab="albo"]{--tc:#fbbf24}
+  .tabs-mobile2 .tbtn{color:var(--tc)!important}
+  .tabs-mobile2 .tbtn svg{width:22px!important;height:22px!important}
+  .tabs-mobile2 .tbtn.active{flex:0 0 auto!important;padding:12px 16px!important;max-width:none!important;background:var(--tc)!important;color:#111!important;box-shadow:0 0 18px color-mix(in srgb,var(--tc) 55%,transparent)}
+  .tabs-mobile2 .tbtn.active .tl{display:inline}
+}
+@media(max-width:370px){.tabs-mobile2 .tbtn.active .tl{font-size:10.5px}.tabs-mobile2 .tbtn.active{padding:12px 12px!important}}
 </style>
 </head>
 <body class="viewer">
@@ -1205,13 +1239,13 @@ body.viewer .pcrd.pk{--lv:#ff8a00!important}
 <!-- Menu mobile: stile itstracker (pillola vetro con icone + pillola profilo a destra) -->
 <div class="tabs-mobile2">
   <div class="tbar pill-main">
-    <button type="button" class="tab tbtn" data-tab="players" onclick="switchTab('players')" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg></button>
-    <button type="button" class="tab tbtn" data-tab="tornei" onclick="switchTab('tornei')" title="Tornei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4"/><path d="M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/><path d="M12 14v3"/><path d="M8.5 21h7"/><path d="M9.5 17h5v4h-5z"/></svg></button>
-    <button type="button" class="tab tbtn" data-tab="calendario" onclick="switchTab('calendario')" title="Calendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg></button>
-    <button type="button" class="tab tbtn" data-tab="risultati" onclick="switchTab('risultati')" title="Risultati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M5.5 6.5c3 2 4 5.5 3 11"/><path d="M18.5 17.5c-3-2-4-5.5-3-11"/></svg></button>
-    <button type="button" class="tab tbtn" data-tab="classifiche-torneo" onclick="switchTab('classifiche-torneo')" title="Ranking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg></button>
-    <button type="button" class="tab tbtn" data-tab="classifiche" onclick="switchTab('classifiche')" title="Classifiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V12"/><path d="M12 21V5"/><path d="M19 21v-6"/></svg></button>
-    <button type="button" class="tab tbtn" data-tab="albo" onclick="switchTab('albo')" title="Albo d'Oro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5L3 7Z"/><path d="M5 21h14"/></svg></button>
+    <button type="button" class="tab tbtn" data-tab="players" onclick="switchTab('players')" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg><span class="tl">Home</span></button>
+    <button type="button" class="tab tbtn" data-tab="tornei" onclick="switchTab('tornei')" title="Tornei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4"/><path d="M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/><path d="M12 14v3"/><path d="M8.5 21h7"/><path d="M9.5 17h5v4h-5z"/></svg><span class="tl">Tornei</span></button>
+    <button type="button" class="tab tbtn" data-tab="calendario" onclick="switchTab('calendario')" title="Calendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span class="tl">Calendario</span></button>
+    <button type="button" class="tab tbtn" data-tab="risultati" onclick="switchTab('risultati')" title="Risultati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M5.5 6.5c3 2 4 5.5 3 11"/><path d="M18.5 17.5c-3-2-4-5.5-3-11"/></svg><span class="tl">Risultati</span></button>
+    <button type="button" class="tab tbtn" data-tab="classifiche-torneo" onclick="switchTab('classifiche-torneo')" title="Ranking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span class="tl">Ranking</span></button>
+    <button type="button" class="tab tbtn" data-tab="classifiche" onclick="switchTab('classifiche')" title="Classifiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V12"/><path d="M12 21V5"/><path d="M19 21v-6"/></svg><span class="tl">Classifiche</span></button>
+    <button type="button" class="tab tbtn" data-tab="albo" onclick="switchTab('albo')" title="Albo d'Oro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5L3 7Z"/><path d="M5 21h14"/></svg><span class="tl">Albo</span></button>
   </div>
 </div>
 
