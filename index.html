@@ -2755,11 +2755,11 @@ function pdfDarkStyle(){
 function pdfHeaderHtml(subtitle,extra){
   const date=new Date().toLocaleDateString('it-IT',{day:'2-digit',month:'long',year:'numeric'});
   const logoSrc=document.querySelector('.logo-img')?.src||'';
-  return `<div style="display:flex;align-items:center;gap:18px;padding:22px 24px 18px;border-bottom:3px solid #b8860b;margin-bottom:22px;">
+  // intestazione PDF: solo il logo (niente scritta LAURERA 15A40), con titolo e data centrati sotto
+  return `<div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:22px 24px 16px;border-bottom:3px solid #b8860b;margin-bottom:22px;">
     ${logoSrc?`<img src="${logoSrc}" style="height:58px;width:auto;max-width:260px;object-fit:contain;" alt="logo">`:''}
     <div>
-      <div style="font-family:'Bebas Neue',Arial,sans-serif;font-size:30px;letter-spacing:3px;color:#111111;">LAURERA 15A40</div>
-      <div style="font-size:13px;color:#b8860b;font-weight:700;letter-spacing:1.5px;margin-top:2px;text-transform:uppercase;">${subtitle}</div>
+      <div style="font-size:14px;color:#b8860b;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">${subtitle}</div>
       <div style="font-size:11px;color:#888888;margin-top:2px;">${date}${extra?' · '+extra:''}</div>
     </div>
   </div>`;
