@@ -1641,6 +1641,10 @@ body .cards-grid .pcrd.k4c,body:is(:not([data-tab]),[data-tab="players"]) .pcrd.
 .tk u{color:#a78bfa!important}
 /* ticker: punteggio e VS con lo stesso font e la stessa grandezza dei nomi */
 .tk em,.tk em.draw,.tk u,#hdr-next .tk em,#hdr-next .tk u,body:not(.viewer) #hdr-next .tk em,body:not(.viewer) #hdr-next .tk u{font-family:inherit!important;font-size:inherit!important;letter-spacing:inherit!important;line-height:1!important;top:0!important;text-transform:uppercase}
+/* PC largo: il ticker scende di 3px per stare alla stessa altezza delle voci del menu */
+@media(min-width:1251px){body.viewer #hdr-next .ticker-tape{transform:translateY(3px)}}
+@media(min-width:1421px){body:not(.viewer) #hdr-next .ticker-tape{transform:translateY(2.5px)}}
+@media(min-width:1251px) and (max-width:1420px){body:not(.viewer) #hdr-next .ticker-tape{transform:translateY(1.5px)}}
 </style>
 </head>
 <body class="viewer">
