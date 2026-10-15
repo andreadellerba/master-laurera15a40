@@ -7,7 +7,7 @@
 <link rel="icon" href="logo-192.jpg">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#141518">
+<!-- niente theme-color: così Safari colora la zona del notch con lo sfondo della pagina invece di una tinta fissa nera -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1366,6 +1366,9 @@ body:not(.light) .cmc.mk{display:grid!important;grid-template-columns:auto minma
 }
 @media(min-width:641px) and (max-width:1250px){.cards-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(min-width:641px) and (max-width:960px){.cards-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+/* sfondo a tutto schermo: html e body coprono anche la zona del notch (barra di stato trasparente) */
+html{min-height:100%;background:#141518 radial-gradient(70% 220px at 50% 0%,rgba(139,92,246,.35),transparent 75%) no-repeat}
+@supports(padding:env(safe-area-inset-top)){body:not(.light)::after{top:calc(-1 * env(safe-area-inset-top));height:calc(150px + env(safe-area-inset-top))}}
 </style>
 </head>
 <body class="viewer">
@@ -2585,8 +2588,7 @@ function cmcHtml(m){
   let col,stat,tag;
   if(m.risultato){col='#22c55e';stat=hasG?`${g1}-${g2}`:esc(m.risultato);tag='GIOCATA';}
   else if(live){col='#ff2d3d';stat='IN CORSO';tag='ORA';}
-  else if(isNext){col='#ff2d3d';stat='PROSSIMA';tag=m.data===today?'OGGI':'';}
-  else if(m.data===today){col='#22b8f0';stat='OGGI';tag='OGGI';}
+  else if(m.data===today){col='#22b8f0';stat='DA GIOCARE';tag='OGGI';}
   else{col='#8b5cf6';stat='DA GIOCARE';tag='';}
   if(!tag&&m.data)tag=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric'}).toUpperCase();
   const av=p=>p?`<div class="mk-av">${p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`:'';
