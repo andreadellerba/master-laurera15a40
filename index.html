@@ -847,6 +847,22 @@ body:not(.light) .rank-table tr.podio-3 td{background:rgba(205,124,63,.13)}
 .cmc.live::before{background:#ff3b3b!important;animation:liveDot 1.6s infinite}
 body:not(.light) .cmc.oggi{border-color:rgba(232,255,0,.55)!important;box-shadow:0 0 16px rgba(232,255,0,.22),0 8px 28px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14)!important}
 body:not(.light) .cmc.live{border-color:rgba(255,59,59,.6)!important;box-shadow:0 0 18px rgba(255,59,59,.28),0 8px 28px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.14)!important}
+/* ═══ PIÙ COLORE ═══ */
+/* sfondo: due luci colorate ben visibili (in alto il colore della pagina, in basso a destra il giallo) su un nero non piatto */
+body:not(.light){background:
+  radial-gradient(90% 520px at 50% -120px,color-mix(in srgb,var(--page) 34%,transparent),transparent 72%),
+  radial-gradient(60% 520px at 100% 100%,color-mix(in srgb,var(--accent) 12%,transparent),transparent 70%),
+  radial-gradient(55% 480px at 0% 60%,color-mix(in srgb,var(--page) 10%,transparent),transparent 70%),
+  #060708;background-attachment:fixed}
+/* riquadri di vetro con bordo e riflesso nel colore della pagina */
+body:not(.light) .pcrd,body:not(.light) .card,body:not(.light) .rcard,body:not(.light) .cmc,body:not(.light) .torneo-card,body:not(.light) .albo-card{
+  background:linear-gradient(180deg,color-mix(in srgb,var(--page) 14%,rgba(255,255,255,.08)) 0%,rgba(255,255,255,.04) 38%,color-mix(in srgb,var(--page) 5%,rgba(255,255,255,.03)) 100%)!important;
+  border:.5px solid color-mix(in srgb,var(--page) 45%,rgba(255,255,255,.2))!important}
+/* tessere della card giocatore colorate come il loro numero */
+.pcrd-row[style*="--tc"]{background:color-mix(in srgb,var(--tc) 15%,transparent);border-color:color-mix(in srgb,var(--tc) 45%,transparent)}
+.pcrd-row[style*="--tc"] .pcrd-row-lbl{color:color-mix(in srgb,var(--tc) 55%,#fff)}
+/* titoli di pagina nel colore della pagina */
+.pg-title{color:color-mix(in srgb,var(--page) 70%,#fff)}
 </style>
 </head>
 <body class="viewer">
@@ -2491,12 +2507,12 @@ function buildPlayerCardHTML(p,opts){
   const ringClick=opts.interactive?` onclick="openProfile(${p.id})" title="Apri profilo"`:'';
   const editBtn=opts.interactive?`<div class="pcrd-edit" onclick="event.stopPropagation();openEditPlayer(${p.id})" title="Modifica">✏️</div>`:'';
   const flg=flag(p.naz);
-  const rowItem=(lbl,valHtml)=>`<div class="pcrd-row"><span class="pcrd-row-lbl">${lbl}</span><span class="pcrd-row-val">${valHtml}</span></div>`;
+  const rowItem=(lbl,valHtml,tc)=>`<div class="pcrd-row"${tc?` style="--tc:${tc}"`:""}><span class="pcrd-row-lbl">${lbl}</span><span class="pcrd-row-val">${valHtml}</span></div>`;
   const valC=(val,col)=>col?`<span style="color:${col}">${val}</span>`:`<span>${val}</span>`;
   const rowsHtml=
-    rowItem('Match',valC(p.pg||0,'var(--accent)'))+
-    rowItem('Esiti',storicoHtml(p.storico))+
-    rowItem('Game',valC(p.gv||0,'#e620a0'));
+    rowItem('Match',valC(p.pg||0,'var(--accent)'),'#e8ff00')+
+    rowItem('Esiti',storicoHtml(p.storico),'#22c55e')+
+    rowItem('Game',valC(p.gv||0,'#e620a0'),'#e620a0');
   return`<div class="pcrd ${d.isFoil?'foil':''}">
     <div class="pcrd-ring" style="background:${ringBg};cursor:${opts.interactive?'pointer':'default'}"${ringClick}><div class="pcrd-ring-inner">${photoHtml}</div></div>
     <div class="pcrd-info">
