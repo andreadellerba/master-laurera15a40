@@ -794,8 +794,10 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
 /* ═══ PC: pillola "prossima partita" nella barra — si accorcia da sola se c'è poco spazio ═══ */
 .hdr-next{display:none}
 @media(min-width:641px){
-  .hdr .tabs{flex:0 1 auto}
-  .hdr-next{display:flex;flex:1;min-width:0;justify-content:center;container-type:inline-size}
+  /* logo, menu, prossima partita e numeri con lo stesso spazio tra loro */
+  .hdr{justify-content:space-between}
+  .hdr .tabs{flex:0 0 auto}
+  .hdr-next{display:flex;flex:0 0 auto;justify-content:center}
   .next-pill{display:flex;align-items:center;gap:8px;max-width:100%;overflow:hidden;padding:5px 12px 5px 5px;border-radius:999px;cursor:pointer;white-space:nowrap;font-family:inherit;color:#fff;
     background:rgba(232,255,0,.10);border:.5px solid rgba(232,255,0,.5);box-shadow:0 0 16px rgba(232,255,0,.35),inset 0 1px 0 rgba(255,255,255,.12);transition:box-shadow .2s,background .2s}
   .next-pill:hover{background:rgba(232,255,0,.16);box-shadow:0 0 22px rgba(232,255,0,.5)}
@@ -806,10 +808,10 @@ body.light .pcrd-hero b{color:#111;text-shadow:none;}
   .np-when{flex-shrink:0;font-size:12px;font-weight:600;color:#c9c9c9}
   .np-live{flex-shrink:0;width:8px;height:8px;margin-left:4px;border-radius:50%;background:#ff3b3b;animation:npPulse 1.6s infinite}
   @keyframes npPulse{0%{box-shadow:0 0 0 0 rgba(255,59,59,.6)}70%{box-shadow:0 0 0 8px rgba(255,59,59,0)}100%{box-shadow:0 0 0 0 rgba(255,59,59,0)}}
-  @container (max-width:430px){.np-full{display:none}.np-short{display:inline}}
-  @container (max-width:300px){.np-tag{display:none}.next-pill{padding-left:12px}}
-  @container (max-width:190px){.np-short,.np-day{display:none}}
-  @container (max-width:70px){.next-pill{display:none}}
+  .next-pill.lv1 .np-full{display:none}.next-pill.lv1 .np-short,.next-pill.lv2 .np-short{display:inline}.next-pill.lv2 .np-full{display:none}
+  .next-pill.lv2 .np-tag,.next-pill.lv3 .np-tag{display:none}.next-pill.lv2,.next-pill.lv3{padding-left:12px}
+  .next-pill.lv3 .np-full,.next-pill.lv3 .np-short,.next-pill.lv3 .np-day{display:none}
+  .next-pill.lv4{display:none}
 }
 </style>
 </head>
@@ -1729,7 +1731,7 @@ function exportRankPDF(){
 // ═══ TICKERS ═══
 // ═══ PC: pillola "prossima partita" nella barra del menu ═══
 // La prossima partita non ancora giocata (o quella in corso adesso). Si accorcia
-// da sola quando nella barra c'è poco spazio (vedi @container .hdr-next).
+// da sola quando nella barra c'è poco spazio (fitNextPill: livelli lv1…lv4).
 function nextMatchInfo(){
   const now=new Date(),today=fmtD(now);
   const pn=id=>{const p=players.find(x=>x.id===id);return p?p.nome:null;};
@@ -1753,7 +1755,25 @@ function renderNextMatch(){
     ${x.live?'<span class="np-live" aria-hidden="true"></span>':''}<span class="np-tag">${x.live?'IN CORSO':'PROSSIMA'}</span>
     <b class="np-full">${esc(x.a)} vs ${esc(x.b)}</b><b class="np-short">${short(x.a)} – ${short(x.b)}</b>
     <span class="np-when"><span class="np-day">${esc(x.when)} · </span>${esc(x.ora)}</span></button>`;
+  requestAnimationFrame(fitNextPill);
 }
+// Pillola della prossima partita: parte completa e scala di livello finché logo,
+// menu, pillola e numeri non stanno nella barra con almeno 12px tra uno e l'altro.
+function fitNextPill(){
+  const pill=document.querySelector('#hdr-next .next-pill');if(!pill)return;
+  const hdr=document.querySelector('.header .hdr');if(!hdr||!hdr.offsetWidth)return;
+  const kids=[...hdr.children].filter(k=>k.offsetParent!==null&&getComputedStyle(k).position!=='absolute');
+  const cs=getComputedStyle(hdr),inner=hdr.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+  const fits=()=>kids.reduce((s,k)=>s+k.getBoundingClientRect().width,0)+(kids.length-1)*12<=inner;
+  for(let lv=0;lv<=4;lv++){
+    pill.classList.remove('lv1','lv2','lv3','lv4');if(lv)pill.classList.add('lv'+lv);
+    if(fits())break;
+  }
+}
+window.addEventListener('resize',()=>requestAnimationFrame(fitNextPill));
+// si ricalcola anche quando cambiano le altre parti della barra (meteo, contatori, menu da admin, font caricati)
+if(window.ResizeObserver){const ro=new ResizeObserver(()=>requestAnimationFrame(fitNextPill));const watch=()=>{const h=document.querySelector('.header .hdr');if(!h)return;ro.observe(h);[...h.children].filter(k=>k.id!=='hdr-next').forEach(k=>ro.observe(k));};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watch);else watch();}
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>fitNextPill());
 function openNextMatch(){
   const x=nextMatchInfo();if(!x)return;
   const mon=d=>{const t=new Date(d);const k=t.getDay();t.setDate(t.getDate()-(k===0?6:k-1));t.setHours(0,0,0,0);return t;};
