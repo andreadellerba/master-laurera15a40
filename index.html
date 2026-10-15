@@ -1207,6 +1207,154 @@ body.viewer .pcrd.pk{--lv:var(--gc)!important}
 /* card giocatore: avatar più grande */
 .pk-ring{width:64px;height:64px;padding:3px}.pk-ring>*{font-size:22px}
 @media(max-width:640px){.pk-ring{width:54px;height:54px}.pk-ring>*{font-size:19px}}
+/* ═══ PROFILO GIOCATORE nello stile delle card nuove ═══ */
+.profile-modal{background:#141518}
+.profile-hero{border-bottom:none!important;padding:4px 20px 14px!important;max-width:960px;width:100%;margin:0 auto;align-items:stretch!important}
+.ph-band{display:flex;align-items:center;gap:16px;padding:16px 20px;border-radius:24px;text-align:left;
+  background:linear-gradient(110deg,var(--lv,#e8ff00),color-mix(in srgb,var(--lv,#e8ff00) 28%,#1a1b1f));box-shadow:0 14px 34px rgba(0,0,0,.4)}
+.ph-ring{width:96px;height:96px;flex-shrink:0;border-radius:50%;padding:4px;background:#111}
+.ph-ring .av{width:100%!important;height:100%!important;font-size:34px!important;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:"Bebas Neue",sans-serif}
+.ph-ring .av img{width:100%;height:100%;object-fit:cover}
+.ph-main{flex:1;min-width:0}
+.ph-band .profile-hero-name{font-family:"Anton",sans-serif!important;font-size:36px!important;font-weight:400!important;line-height:1;color:#111!important;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph-band #profile-lv{margin-top:6px}
+.ph-rank{flex-shrink:0;text-align:center;font-family:"Anton",sans-serif;font-size:46px;line-height:.9;color:#111}
+.ph-rank span{display:block;font-family:"DM Sans",sans-serif;font-size:9.5px;font-weight:800;letter-spacing:1.2px;margin-top:4px;color:rgba(0,0,0,.65)}
+.profile-h2h-btn{align-self:center;margin-top:12px;border-radius:999px!important;padding:9px 18px!important}
+.profile-stats-row{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:8px!important}
+.profile-stats-row .pk-t{padding:10px 4px}
+.profile-stats-row .pk-t span{font-size:13px}
+.profile-stats-row .pk-t b{font-size:26px}
+.profile-section{display:flex;align-items:center;gap:10px;font-family:"Bebas Neue",sans-serif;font-size:19px!important;font-weight:400!important;letter-spacing:2px!important;color:#d9d9d9!important}
+.profile-section::before{content:"";width:4px;height:18px;border-radius:4px;background:var(--accent)}
+.profile-back{border-radius:999px!important;background:rgba(255,255,255,.06)!important;border:.5px solid rgba(255,255,255,.2)!important}
+@media(max-width:640px){
+  .profile-hero{padding:4px 12px 12px!important}
+  .ph-band{gap:12px;padding:12px 14px;border-radius:20px}
+  .ph-ring{width:68px;height:68px;padding:3px}.ph-ring .av{font-size:24px!important}
+  .ph-band .profile-hero-name{font-size:24px!important;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .ph-rank{font-size:34px}.ph-rank span{font-size:8px;letter-spacing:.6px}
+  .profile-stats-row{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+  .profile-stats-row .pk-t b{font-size:21px}.profile-stats-row .pk-t span{font-size:11px}
+  .profile-body{padding:12px 12px 40px!important}
+}
+.profile-header,.profile-hero{background:transparent!important}
+/* ═══════ ALTRE PAGINE NEL NUOVO STILE ═══════ */
+/* titoli grandi: metà pieno, metà a contorno nel colore della pagina */
+.pg-title.pg-big,.cal-big{display:block;font-family:"Anton",sans-serif!important;font-weight:400!important;font-size:56px!important;line-height:.95!important;letter-spacing:.5px!important;
+  text-transform:uppercase;color:#fff!important;background:none!important;padding:0!important;margin:4px 0 14px!important;clip-path:none!important}
+.pg-title.pg-big::before{display:none!important}
+.pg-title.pg-big span,.cal-big span{color:transparent;-webkit-text-stroke:1.5px var(--page)}
+.cal-big{margin:10px 0 12px!important}
+@media(max-width:640px){.pg-title.pg-big,.cal-big{font-size:38px!important;margin:2px 0 10px!important}}
+
+/* ── CALENDARIO ── */
+.cal-strip{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px!important}
+body:not(.light) .cal-day{border-radius:18px!important;padding:10px 4px!important;background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.09)!important;box-shadow:none!important;text-align:center}
+.cal-dn{font-size:10px!important;font-weight:800!important;letter-spacing:1px!important;color:#9a9a9a!important;text-transform:uppercase}
+.cal-dd{font-family:"Anton",sans-serif!important;font-size:26px!important;font-weight:400!important;line-height:1.1!important}
+body:not(.light) .cal-day.sel{background:var(--page)!important;border-color:transparent!important;box-shadow:0 0 22px color-mix(in srgb,var(--page) 50%,transparent)!important}
+.cal-day.sel .cal-dn,.cal-day.sel .cal-dd{color:#111!important}
+.cal-day.sel .cdot{background:#111!important;animation:none!important}
+body:not(.light) .cal-day.tod:not(.sel){border-color:var(--accent)!important}
+.cal-dots{gap:3px!important;margin-top:4px!important}.cdot{width:6px!important;height:6px!important}
+.cal-dh{display:flex;align-items:center;gap:10px;margin:16px 0 10px!important;font-family:"Bebas Neue",sans-serif!important;font-size:19px!important;font-weight:400!important;letter-spacing:1.5px;color:#d6d6d6!important;text-transform:uppercase!important}
+.cal-dh::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.12)}
+.cal-list{display:flex;flex-direction:column;gap:10px}
+@media(max-width:640px){.cal-strip{gap:4px!important}body:not(.light) .cal-day{border-radius:14px!important;padding:8px 1px!important}.cal-dd{font-size:19px!important}.cal-dn{font-size:9px!important;letter-spacing:.4px!important}}
+
+/* partita come mini-locandina */
+body:not(.light) .cmc.mk{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr) auto;align-items:center;gap:14px!important;padding:10px 14px 10px 10px!important;border-radius:20px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02))!important;border:1px solid rgba(255,255,255,.12)!important;box-shadow:0 8px 22px rgba(0,0,0,.3)!important;cursor:pointer;transform:none}
+.cmc.mk::before{display:none!important}
+.mk-time{width:74px;height:58px;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:color-mix(in srgb,var(--mc) 22%,#18191d);border:1px solid color-mix(in srgb,var(--mc) 55%,transparent)}
+.mk-time b{font-family:"Anton",sans-serif;font-weight:400;font-size:21px;line-height:1;color:var(--mc)}
+.mk-time small{font-size:9px;font-weight:800;letter-spacing:1px;color:#c9c9c9;margin-top:3px;white-space:nowrap}
+.mk-pl{display:flex;align-items:center;gap:10px;min-width:0}.mk-pl.rt{justify-content:flex-end;text-align:right}
+.mk-av{width:42px;height:42px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:"Bebas Neue",sans-serif;font-size:16px;background:#1e1f23;border:2px solid var(--accent)}
+.mk-av img{width:100%;height:100%;object-fit:cover}
+.mk-nm{min-width:0}.mk-nm small{display:block;font-size:11px;font-weight:700;color:#9a9a9a;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mk-nm b{display:block;font-family:"Anton",sans-serif;font-weight:400;font-size:23px;line-height:1.05;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}
+.mk-nm.win b{color:#22c55e}.mk-nm.lose{opacity:.55}
+.mk-vs{font-family:"Anton",sans-serif;font-size:22px;color:var(--accent);transform:skew(-8deg);text-shadow:0 0 12px rgba(232,255,0,.45)}
+.mk-st{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.mk-st>span{font-size:11px;font-weight:800;letter-spacing:1px;padding:6px 11px;border-radius:999px;white-space:nowrap;background:var(--mc);color:#111}
+.cmc.mk .cmc-edit{font-size:13px;opacity:.55;cursor:pointer}
+.cmc.mk .add-res-btn{border-radius:999px}
+@media(max-width:640px){
+  body:not(.light) .cmc.mk{grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto auto;gap:3px 10px!important;padding:8px 10px 8px 8px!important}
+  .cmc.mk .mk-time{grid-row:1 / span 2;width:58px;height:58px}
+  .cmc.mk .mk-av,.cmc.mk .mk-vs,.cmc.mk .mk-nm small{display:none}
+  .cmc.mk .mk-pl{grid-column:2}.cmc.mk .mk-pl.rt{justify-content:flex-start;text-align:left}
+  .cmc.mk .mk-nm b{font-size:17px}
+  .cmc.mk .mk-st{grid-column:3;grid-row:1 / span 2;flex-direction:column;gap:4px}
+  .cmc.mk .mk-st>span{font-size:9.5px;padding:5px 8px;letter-spacing:.5px}
+}
+
+/* ── RISULTATI ── */
+.rs-day{display:flex;align-items:center;gap:10px;margin:18px 0 10px;font-family:"Bebas Neue",sans-serif;font-size:19px;letter-spacing:1.5px;color:#d6d6d6;text-transform:uppercase}
+.rs-day::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.12)}
+.rs-day:first-child{margin-top:0}
+.rs{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px;padding:12px 18px;margin-bottom:10px;border-radius:20px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 22px rgba(0,0,0,.3)}
+.rs::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#22c55e}.rs.draw::before{background:#22b8f0}
+.rs-side{display:flex;align-items:center;gap:10px;min-width:0}.rs-side.rt{justify-content:flex-end;text-align:right}
+.rs-nm{min-width:0}.rs-nm b{display:block;font-family:"Anton",sans-serif;font-weight:400;font-size:24px;line-height:1.05;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rs-nm .fn{display:block;font-size:11px;font-weight:700;letter-spacing:.5px;color:#9a9a9a;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rs-nm .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;margin-top:3px}
+.rs-side.w .lb{color:#22c55e}.rs.draw .lb{color:#22b8f0}.rs-side.l{opacity:.55}.rs.draw .rs-side.l{opacity:1}
+.rs-score{display:flex;align-items:center;gap:6px;font-family:"Anton",sans-serif;font-size:30px;line-height:1;margin-top:8px}
+.rs-score span{padding:6px 12px;border-radius:12px;background:#24252b}
+.rs-score span.win{background:var(--accent);color:#111;box-shadow:0 0 16px rgba(232,255,0,.4)}.rs-score span.dr{background:#22b8f0;color:#111}
+.rs-time{position:absolute;top:6px;left:50%;transform:translateX(-50%);font-size:9.5px;font-weight:800;letter-spacing:1px;color:#8d8d8d}
+@media(max-width:640px){
+  .rs{gap:8px;padding:12px 12px 10px}
+  .rs .mk-av{display:none}
+  .rs-nm b{font-size:17px}.rs-nm .fn{display:none}.rs-nm .lb{font-size:9px}
+  .rs-score{font-size:21px;gap:4px}.rs-score span{padding:5px 8px;border-radius:10px}
+}
+
+/* ── CLASSIFICHE ── */
+.rk-seg{display:flex;padding:4px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+.rk-seg button{border:0;background:none;color:#aaa;font-family:"DM Sans",sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:8px 14px;border-radius:999px;cursor:pointer}
+.rk-seg button.on{background:var(--page);color:#111}
+.rk-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.rk-row{display:grid;grid-template-columns:44px auto minmax(0,1fr) repeat(4,76px);align-items:center;gap:10px;padding:9px 14px;border-radius:16px;cursor:pointer;
+  background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);transition:transform .12s}
+.rk-row:hover{transform:translateY(-2px)}
+.rk-row.top{background:linear-gradient(90deg,color-mix(in srgb,var(--m) 22%,transparent),rgba(255,255,255,.03) 60%);border-color:color-mix(in srgb,var(--m) 50%,transparent)}
+.rk-p{font-family:"Anton",sans-serif;font-size:24px;text-align:center}.rk-row.top .rk-p{color:var(--m)}
+.rk-row .mk-av{width:38px;height:38px;font-size:14px;border-width:2px}.rk-row.top .mk-av{border-color:var(--m);box-shadow:0 0 12px color-mix(in srgb,var(--m) 50%,transparent)}
+.rk-n{font-family:"Bebas Neue",sans-serif;font-size:20px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rk-c{text-align:center}.rk-c b{display:block;font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:21px;line-height:1}.rk-c span{font-size:9px;color:#8d8d8d;letter-spacing:.6px}
+.rk-c.k b{text-shadow:0 0 12px currentColor}
+@media(max-width:640px){
+  #page-classifiche .wrap>div:first-child{flex-direction:column;align-items:stretch!important}
+  .rk-seg{justify-content:space-between}.rk-seg button{flex:1;padding:8px 4px;font-size:11.5px}
+  .rk-row{grid-template-columns:28px auto minmax(0,1fr) 62px;gap:8px;padding:8px 10px}
+  .rk-row .rk-c{display:none}.rk-row .rk-c.k{display:block}
+  .rk-by-name .rk-row .rk-c:last-child{display:block}
+  .rk-p{font-size:19px}.rk-row .mk-av{width:32px;height:32px;font-size:12px}.rk-n{font-size:16px}
+}
+
+/* ── ALBO D'ORO ── */
+.albo-year{font-family:"Anton",sans-serif!important;font-size:64px!important;line-height:.9!important;color:transparent!important;-webkit-text-stroke:1.5px rgba(240,192,64,.75);border:none!important;margin:10px 0 12px!important;letter-spacing:1px!important}
+@media(max-width:640px){.albo-year{font-size:46px!important}.albo-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}.albo-trophy .cup svg{width:54px}.albo-trophy div[style*="Bebas"]{font-size:15px!important}}
+
+/* ── TORNEI (admin) ── */
+.tor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.tor{border-radius:22px;overflow:hidden;cursor:pointer;background:#1a1b1f;border:1px solid rgba(255,255,255,.1);box-shadow:0 10px 26px rgba(0,0,0,.35);transition:transform .15s}
+.tor:hover{transform:translateY(-3px)}
+.tor-hd{position:relative;padding:14px 16px;background:linear-gradient(110deg,var(--tc),color-mix(in srgb,var(--tc) 25%,#1a1b1f));color:#111}
+.tor-hd small{font-size:10px;font-weight:800;letter-spacing:1.5px}.tor-hd b{display:block;font-family:"Anton",sans-serif;font-weight:400;font-size:26px;line-height:1.05;margin-top:3px;padding-right:96px;text-transform:uppercase}
+.tor-st{position:absolute;top:12px;right:40px;font-size:10px;font-weight:800;letter-spacing:1px;background:#111;color:var(--tc);padding:4px 9px;border-radius:999px}
+.tor-edit{position:absolute;top:8px;right:8px;border:0;background:none;font-size:14px;opacity:.6;cursor:pointer}
+.tor-bd{padding:12px 16px 14px;display:flex;flex-direction:column;gap:8px}
+.tor-meta{display:flex;gap:6px;flex-wrap:wrap}.tor-meta span{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.07)}
+.tor-win{font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:.5px;color:#f0c040}
+.tor-pt{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:#bbb}
+.tor-prog{height:7px;border-radius:7px;background:rgba(255,255,255,.08);overflow:hidden}.tor-prog i{display:block;height:100%;border-radius:7px;background:var(--tc);box-shadow:0 0 10px var(--tc)}
+@media(max-width:640px){.tor-grid{grid-template-columns:1fr}.tor-hd b{font-size:22px}}
 </style>
 </head>
 <body class="viewer">
@@ -1276,9 +1424,16 @@ body.viewer .pcrd.pk{--lv:var(--gc)!important}
 <div id="page-classifiche" class="page">
   <div class="wrap">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div class="pg-title" style="margin:0">📊 Classifiche</div>
+      <div class="pg-title pg-big" style="margin:0">CLASSI<span>FICHE</span></div>
       <div style="display:flex;align-items:center;gap:8px">
-        <select class="sort-sel" id="rank-sort-sel" onchange="renderRank()">
+        <!-- ordinamento a pillole (la tendina resta nascosta e tiene il valore scelto) -->
+        <div class="rk-seg" id="rank-seg">
+          <button type="button" data-k="gv" class="on" onclick="setRankSort('gv')">Game</button>
+          <button type="button" data-k="mg" onclick="setRankSort('mg')">Media</button>
+          <button type="button" data-k="pg" onclick="setRankSort('pg')">Partite</button>
+          <button type="button" data-k="name" onclick="setRankSort('name')">A–Z</button>
+        </div>
+        <select class="sort-sel" id="rank-sort-sel" onchange="renderRank()" hidden>
           <option value="gv">Game Totali ↓</option>
           <option value="mg">Media Game ↓</option>
           <option value="pg">Partite Giocate ↓</option>
@@ -1294,7 +1449,7 @@ body.viewer .pcrd.pk{--lv:var(--gc)!important}
 <div id="page-tornei" class="page">
   <div class="wrap">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <div class="pg-title" style="margin:0">🏆 Tornei</div>
+      <div class="pg-title pg-big" style="margin:0">TOR<span>NEI</span></div>
       <button class="btn btn-p" onclick="openNewTorneoModal()">+ Nuovo Torneo</button>
     </div>
     <div id="tornei-list"></div>
@@ -1306,7 +1461,7 @@ body.viewer .pcrd.pk{--lv:var(--gc)!important}
   <div class="wrap">
     <!-- Torneo selector shown when no torneo active -->
     <div id="cal-torneo-selector">
-      <div class="pg-title">📅 Calendario</div>
+      <div class="pg-title pg-big">CALEN<span>DARIO</span></div>
       <p style="color:var(--text2);font-size:13px;margin-bottom:14px">Seleziona un torneo per vedere il suo calendario.</p>
       <div id="cal-torneo-list" style="display:flex;flex-direction:column;gap:8px"></div>
       <div class="empty" id="cal-no-tornei" style="display:none"><span class="empty-icon">🏆</span>Nessun torneo ancora.<span class="adm-hint"><br><button class="btn btn-p" style="margin-top:14px" onclick="switchTab('tornei')">+ Vai a Tornei</button></span></div>
@@ -1331,6 +1486,7 @@ body.viewer .pcrd.pk{--lv:var(--gc)!important}
           <button class="btn btn-g" style="font-size:12px;padding:7px 10px" onclick="recalcStats()" title="Ricalcola statistiche">🔄</button>
         </div>
       </div>
+      <div class="cal-big" id="cal-big"></div>
       <div class="cal-strip" id="cal-strip"></div>
       <div class="cal-dh" id="cal-dh"></div>
       <div class="cal-list" id="cal-list"></div>
@@ -1344,7 +1500,7 @@ body.viewer .pcrd.pk{--lv:var(--gc)!important}
 
 <div id="page-risultati" class="page">
   <div class="wrap">
-    <div class="pg-title">🏅 Risultati</div>
+    <div class="pg-title pg-big">RISUL<span>TATI</span></div>
     <div id="ris-list"></div>
   </div>
 </div>
@@ -1362,7 +1518,7 @@ body.viewer .pcrd.pk{--lv:var(--gc)!important}
 </div>
 
 <div id="page-albo" class="page">
-  <div class="wrap"><div class="pg-hd" style="display:flex;align-items:center;justify-content:space-between"><span class="pg-title">👑 Albo d'Oro</span><div style="display:flex;gap:8px"><button class="pdf-btn" onclick="exportAlboPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button><button class="btn btn-p" onclick="openAlboModal()">+ Aggiungi Trofeo</button></div></div><div id="albo-list"></div></div>
+  <div class="wrap"><div class="pg-hd" style="display:flex;align-items:center;justify-content:space-between"><span class="pg-title pg-big">ALBO <span>D'ORO</span></span><div style="display:flex;gap:8px"><button class="pdf-btn" onclick="exportAlboPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button><button class="btn btn-p" onclick="openAlboModal()">+ Aggiungi Trofeo</button></div></div><div id="albo-list"></div></div>
 </div>
 
 <div id="page-settings" class="page">
@@ -1546,9 +1702,12 @@ body.viewer .pcrd.pk{--lv:var(--gc)!important}
     <button class="profile-back" onclick="closeProfile()">← Indietro</button>
   </div>
   <div class="profile-hero">
-    <div class="av av-0" id="profile-av" style="width:76px;height:76px;font-size:28px;"></div>
-    <div id="profile-name" class="profile-hero-name"></div>
-    <div id="profile-lv" style="margin:2px 0 4px"></div>
+    <!-- stile card nuova: testata colorata con avatar grande, nome e posizione in classifica -->
+    <div class="ph-band" id="profile-band">
+      <div class="ph-ring"><div class="av av-0" id="profile-av"></div></div>
+      <div class="ph-main"><div id="profile-name" class="profile-hero-name"></div><div id="profile-lv"></div></div>
+      <div class="ph-rank" id="profile-rank"></div>
+    </div>
     <button onclick="openH2H()" class="profile-h2h-btn">⚔️ Testa a Testa</button>
   </div>
   <div class="profile-body">
@@ -2132,29 +2291,27 @@ function deletePlayer(){
   const _delNome=p.nome;delPh(editPlayerId);players=players.filter(x=>x.id!==editPlayerId);save();addLog('🗑️','Eliminato giocatore: '+_delNome);document.getElementById('modal-player').classList.remove('open');renderCards();toast('🗑️ Eliminato');
 }
 // ═══ RANK ═══
+function setRankSort(k){const s=document.getElementById('rank-sort-sel');if(s)s.value=k;document.querySelectorAll('#rank-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));renderRank();}
 function renderRank(){
+  // Righe "da classifica TV": posizione grande, avatar, nome, poi Partite · Esiti · Media · Game.
+  // I primi 3 con fascia oro/argento/bronzo; sul telefono resta la colonna dell'ordinamento scelto.
   const sortKey=document.getElementById('rank-sort-sel')?document.getElementById('rank-sort-sel').value:'gv';
+  document.querySelectorAll('#rank-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===sortKey));
   let list=players.filter(p=>!p.archiviato);
   if(sortKey==='name')list.sort((a,b)=>a.nome.localeCompare(b.nome));
   else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0));
-  const avHtml=p=>{
-    const ph=p.photoUrl?`<img src="${p.photoUrl}" alt="" style="width:100%;height:100%;object-fit:cover">`:`<span style="font-family:'Bebas Neue',sans-serif;font-size:13px">${ini(p.nome)}</span>`;
-    return `<div class="av ${avc(p.id)}" style="width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;flex-shrink:0">${ph}</div>`;
-  };
-  // podio oro/argento/bronzo e, sotto il nome, una barretta con la media rispetto alla migliore
-  const _maxMg=Math.max(0.0001,...list.map(p=>+p.mg||0));
-  const rows=list.map((p,i)=>`<tr class="${i<3?'podio podio-'+(i+1):''}">
-      <td style="text-align:center">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
-      <td><div style="display:flex;align-items:center;gap:8px;min-width:0"><span style="flex-shrink:0">${avHtml(p)}</span><span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(dispName(p.nome))}</span></div><div class="rk-bar" title="Media rispetto alla migliore"><i style="width:${Math.round((+p.mg||0)/_maxMg*100)}%"></i></div></td>
-      <td style="text-align:center;font-weight:700">${p.pg||0}</td>
-      <td style="text-align:center">${normStorico(p.storico)}</td>
-      <td style="text-align:center;font-weight:700;color:var(--accent2)">${(p.mg||0).toFixed(2)}</td>
-      <td style="text-align:center;font-weight:800;color:var(--accent)">${p.gv||0}</td>
-    </tr>`).join('');
-  document.getElementById('rank-body').innerHTML=podioHtml(list,sortKey)+`<div class="card" style="padding:0;overflow-x:auto;overflow-y:hidden"><table class="girone-table rank-table">
-      <thead><tr><th>#</th><th>Giocatore</th><th>PG</th><th>V/P/S</th><th>Media</th><th>TOT</th></tr></thead>
-      <tbody>${rows||'<tr><td colspan="6" style="text-align:center;color:var(--text2);padding:24px">Nessun giocatore</td></tr>'}</tbody>
-    </table></div>`;
+  const medal=['#f0c040','#c8ced8','#cd7c3f'];
+  const av=p=>`<div class="mk-av">${p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`;
+  const keyCls=k=>sortKey===k?' k':'';
+  const rows=list.map((p,i)=>{const top=sortKey!=='name'&&i<3&&(+p[sortKey]||0)>0;
+    return `<div class="rk-row${top?' top':''}"${top?` style="--m:${medal[i]}"`:''} onclick="openProfile(${p.id})">
+      <span class="rk-p">${sortKey==='name'?'':i+1}</span>${av(p)}<span class="rk-n">${esc(dispName(p.nome))}</span>
+      <div class="rk-c${keyCls('pg')}"><b>${+p.pg||0}</b><span>PARTITE</span></div>
+      <div class="rk-c rk-e"><b>${esc(normStorico(p.storico))}</b><span>ESITI</span></div>
+      <div class="rk-c${keyCls('mg')}"><b style="color:#22b8f0">${(+p.mg||0).toFixed(2)}</b><span>MEDIA</span></div>
+      <div class="rk-c${keyCls('gv')}"><b style="color:#e8ff00">${+p.gv||0}</b><span>GAME</span></div>
+    </div>`;}).join('');
+  document.getElementById('rank-body').innerHTML=(sortKey==='name'?'':podioHtml(list,sortKey))+`<div class="rk-list rk-by-${sortKey}">${rows||'<div class="cal-empty">Nessun giocatore</div>'}</div>`;
   countUp(document.getElementById('rank-body'));
 }
 // ═══ PDF EXPORT — STILE CONDIVISO (tema scuro/neon dell'app) ═══
@@ -2375,7 +2532,14 @@ function exitCalTorneo(){
   renderCalTorneoSelector();
 }
 
-function calRender(){const dates=getWeekDates();const d0=dates[0],d6=dates[6];const fmt=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'});document.getElementById('cal-wlbl').textContent=`${fmt(d0)} – ${fmt(d6)}`;const today=fmtD(new Date());document.getElementById('cal-strip').innerHTML=dates.map((d,i)=>{const ds=fmtD(d);const _schedStrip=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dm=_schedStrip.filter(m=>m.data===ds);const dots=dm.map(m=>`<div class="cdot ${m.risultato?'cdot-d':isLiveMatch(m)?'cdot-l':'cdot-s'}"></div>`).join('');return`<div class="cal-day${ds===calSelDate?' sel':''}${ds===today?' tod':''}" onclick="calSelDay('${ds}')"><div class="cal-dn">${DAY[i]}</div><div class="cal-dd">${d.getDate()}</div><div class="cal-dots">${dots}</div></div>`;}).join('');document.getElementById('cal-dh').textContent=fmtDIt(calSelDate);const _sched=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dayM=_sched.filter(m=>m.data===calSelDate).sort((a,b)=>a.ora.localeCompare(b.ora));const list=document.getElementById('cal-list');list.innerHTML=dayM.length?dayM.map(m=>cmcHtml(m)).join(''):'<div class="cal-empty">Nessun incontro. Premi + per aggiungerne uno.</div>';
+// Titolo grande del mese (metà pieno e metà a contorno), es. OTTOBRE o OTT / NOV a cavallo di due mesi
+function calBig(d0,d6){
+  const el=document.getElementById('cal-big');if(!el)return;
+  const m0=d0.toLocaleDateString('it-IT',{month:'long'}).toUpperCase(),m1=d6.toLocaleDateString('it-IT',{month:'long'}).toUpperCase();
+  const half=s=>{const k=Math.ceil(s.length/2);return `${esc(s.slice(0,k))}<span>${esc(s.slice(k))}</span>`;};
+  el.innerHTML=m0===m1?half(m0):`${esc(m0.slice(0,3))}<span> / ${esc(m1.slice(0,3))}</span>`;
+}
+function calRender(){const dates=getWeekDates();const d0=dates[0],d6=dates[6];const fmt=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'});document.getElementById('cal-wlbl').textContent=`${fmt(d0)} – ${fmt(d6)}`;calBig(d0,d6);const today=fmtD(new Date());document.getElementById('cal-strip').innerHTML=dates.map((d,i)=>{const ds=fmtD(d);const _schedStrip=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dm=_schedStrip.filter(m=>m.data===ds);const dots=dm.map(m=>`<div class="cdot ${m.risultato?'cdot-d':isLiveMatch(m)?'cdot-l':'cdot-s'}"></div>`).join('');return`<div class="cal-day${ds===calSelDate?' sel':''}${ds===today?' tod':''}" onclick="calSelDay('${ds}')"><div class="cal-dn">${DAY[i]}</div><div class="cal-dd">${d.getDate()}</div><div class="cal-dots">${dots}</div></div>`;}).join('');document.getElementById('cal-dh').textContent=fmtDIt(calSelDate);const _sched=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dayM=_sched.filter(m=>m.data===calSelDate).sort((a,b)=>a.ora.localeCompare(b.ora));const list=document.getElementById('cal-list');list.innerHTML=dayM.length?dayM.map(m=>cmcHtml(m)).join(''):'<div class="cal-empty">Nessun incontro. Premi + per aggiungerne uno.</div>';
 }
 function calSelDay(ds){calSelDate=ds;calRender();}
 function calShiftDay(delta){
@@ -2388,47 +2552,43 @@ function calShiftDay(delta){
   calRender();
 }
 function cmcHtml(m){
+  // Partita come mini-locandina: orario in un blocco colorato, cognomi grandi, VS e stato a destra.
   const p1=players.find(p=>p.id===m.p1Id),p2=players.find(p=>p.id===m.p2Id);
-  const win=(m.winnerId&&m.winnerId!=='draw')?players.find(p=>p.id===m.winnerId):null;
-  const av=p=>{if(!p)return'';const ph=p.photoUrl?`<img src="${p.photoUrl}" alt="">`:ini(p.nome);return`<div class="av ${avc(p.id)} cmc-av" style="width:32px;height:32px;font-size:12px;flex-shrink:0">${ph}</div>`;};
-  // For doppio tornei: show team names
   const getTeamName=pid=>{
     if(!m.torneoId)return null;
     const t=tornei.find(x=>x.id===m.torneoId);
     if(!t||t.format!=='doppio'||!t.bracket)return null;
-    for(const rnd of t.bracket.rounds){
-      for(const bm of rnd){
-        const entries=[bm.p1,bm.p2];
-        for(const entry of entries){
-          if(!entry)continue;
-          const ids=Array.isArray(entry)?entry:[entry];
-          if(ids.includes(pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / ');
-        }
-      }
-    }
+    for(const rnd of t.bracket.rounds){for(const bm of rnd){for(const entry of [bm.p1,bm.p2]){
+      if(!entry)continue;const ids=Array.isArray(entry)?entry:[entry];
+      if(ids.includes(pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / ');
+    }}}
     return null;
   };
   const n1=getTeamName(m.p1Id)||(p1?p1.nome:m.teamName1)||'?';
   const n2=getTeamName(m.p2Id)||(p2?p2.nome:m.teamName2)||'?';
-  const isDraw=m.winnerId==='draw';
-  const win1=!!(m.risultato&&!isDraw&&win&&+m.winnerId===m.p1Id);
-  const win2=!!(m.risultato&&!isDraw&&win&&+m.winnerId===m.p2Id);
-  const nameCol=w=>w?'color:var(--green)':'color:var(--text)';
-  return`<div class="cmc ${m.risultato?'cd':isLiveMatch(m)?'cs live':'cs'}${!m.risultato&&m.data===fmtD(new Date())?' oggi':''}" onclick="openCalModal(${m.id})">
-    <div class="cmc-time">${m.ora||'—'}</div>
-    <div class="cmc-row" style="display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:hidden">
-      <div class="cmc-player cmc-player-1" style="display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden">
-        ${av(p1)}<span class="cmc-name" style="font-size:14px;font-weight:600;${nameCol(win1)};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:1;min-width:0">${esc(dispName(n1))}</span>
-        <span class="cmc-vs" style="font-size:11px;color:var(--text2);flex-shrink:0">vs</span>
-      </div>
-      <div class="cmc-player cmc-player-2" style="display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden">
-        ${av(p2)}<span class="cmc-name" style="font-size:14px;font-weight:600;${nameCol(win2)};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:1;min-width:0">${esc(dispName(n2))}</span>
-      </div>
-    </div>
-    <div class="cmc-right" style="flex-shrink:0">${m.risultato
-      ?`<div class="cmc-res"><div class="cmc-score">${esc(m.risultato)}</div><div class="cmc-winner">${isDraw?'<span class="cmc-winner-emoji">🤝</span> Pareggio':win?'<span class="cmc-winner-emoji">🏆</span><span class="cmc-winner-name"> '+esc(dispName(win1?n1:n2))+'</span>':'—'}</div></div>`
-      :`<button class="add-res-btn" onclick="event.stopPropagation();openCalModalRes(${m.id})"><span class="add-res-full">+ Risultato</span><span class="add-res-short">+</span></button>`
-    }<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
+  const isDraw=m.winnerId==='draw'||(!m.winnerId&&!!m.risultato);
+  const win1=!!(m.risultato&&!isDraw&&+m.winnerId===m.p1Id),win2=!!(m.risultato&&!isDraw&&+m.winnerId===m.p2Id);
+  const today=fmtD(new Date()),live=isLiveMatch(m);
+  const nx=nextMatchesAll()[0],isNext=!m.risultato&&nx&&nx.m.id===m.id;
+  const g1=+m.gv1,g2=+m.gv2,hasG=Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2);
+  let col,stat,tag;
+  if(m.risultato){col='#22c55e';stat=hasG?`${g1}-${g2}`:esc(m.risultato);tag='GIOCATA';}
+  else if(live){col='#ff2d3d';stat='IN CORSO';tag='ORA';}
+  else if(isNext){col='#ff2d3d';stat='PROSSIMA';tag=m.data===today?'OGGI':'';}
+  else if(m.data===today){col='#22b8f0';stat='OGGI';tag='OGGI';}
+  else{col='#8b5cf6';stat='DA GIOCARE';tag='';}
+  if(!tag&&m.data)tag=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric'}).toUpperCase();
+  const av=p=>p?`<div class="mk-av">${p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`:'';
+  const nm=(n,w,l)=>{const dbl=String(n).includes(' / ');const sn=String(n).split(' / ').map(surnameOf).join(' / ');const fn=dbl?'':String(n).trim().split(/\s+/)[0];
+    return `<div class="mk-nm${w?' win':''}${l?' lose':''}">${fn&&fn!==sn?`<small>${esc(fn)}</small>`:''}<b>${esc(sn)}</b></div>`;};
+  const admin=!m.risultato
+    ?`<button class="add-res-btn" onclick="event.stopPropagation();openCalModalRes(${m.id})"><span class="add-res-full">+ Risultato</span><span class="add-res-short">+</span></button>`:'';
+  return`<div class="cmc mk ${m.risultato?'cd':live?'cs live':'cs'}${!m.risultato&&m.data===today?' oggi':''}" style="--mc:${col}" onclick="openCalModal(${m.id})">
+    <div class="mk-time"><b>${esc(m.ora||'—')}</b><small>${esc(tag)}</small></div>
+    <div class="mk-pl">${av(p1)}${nm(n1,win1,win2)}</div>
+    <span class="mk-vs">VS</span>
+    <div class="mk-pl rt">${nm(n2,win2,win1)}${av(p2)}</div>
+    <div class="mk-st"><span>${stat}</span>${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
   </div>`;
 }
 // ═══ CAL MODAL ═══
@@ -2643,68 +2803,38 @@ function openExportCalModal(){const dates=getWeekDates();document.getElementById
 function exportCalendarPDF(){const from=document.getElementById('exp-from').value,to=document.getElementById('exp-to').value;if(!from||!to){toast('❌ Seleziona le date');return;}const filtered=sched.filter(m=>m.data>=from&&m.data<=to).sort((a,b)=>a.data.localeCompare(b.data)||a.ora.localeCompare(b.ora));if(!filtered.length){toast('ℹ️ Nessun incontro nel periodo');return;}const byDate={};filtered.forEach(m=>{if(!byDate[m.data])byDate[m.data]=[];byDate[m.data].push(m);});const fmtD2=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const _gtn=(m,pid)=>{if(!pid)return'—';const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){const entries=[bm.p1,bm.p2];for(const e of entries){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(+pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?pdfName(p.nome):'?';}).join(' / ');}}}}const p=players.find(x=>x.id===+pid);if(p)return pdfName(p.nome);if(m.teamName1&&+pid===m.p1Id)return pdfName(m.teamName1);if(m.teamName2&&+pid===m.p2Id)return pdfName(m.teamName2);return'—';};const blocks=Object.keys(byDate).sort().map(date=>{const rows=byDate[date].map(m=>{const n1=_gtn(m,m.p1Id),n2=_gtn(m,m.p2Id);const win=m.winnerId&&m.winnerId!=='draw'?_gtn(m,m.winnerId):null;return`<tr><td style="color:#b8860b;font-weight:600">${m.ora||'—'}</td><td style="font-weight:700">${n1}</td><td style="color:#888888;text-align:center">vs</td><td style="font-weight:700">${n2}</td><td style="color:${m.risultato?'#15803d':'#666666'};font-weight:${m.risultato?700:400}">${m.risultato||'—'}</td><td style="color:#b8860b">${win?'🏆 '+win:''}</td></tr>`;}).join('');return`<div style="margin-bottom:22px;padding:0 24px"><h3 style="font-size:16px;margin:0 0 8px;color:#111111;border-bottom:2px solid #b8860b;padding-bottom:6px;text-transform:capitalize">${fmtD2(date)}</h3><table><thead><tr><th>Ora</th><th>G1</th><th></th><th>G2</th><th>Risultato</th><th>Vincitore</th></tr></thead><tbody>${rows}</tbody></table></div>`;}).join('');const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Calendario</title>${pdfFontsLink()}<style>${pdfDarkStyle()}</style></head><body>${pdfHeaderHtml('CALENDARIO PARTITE',filtered.length+' incontri')}${blocks}${pdfFooterHtml()}</body></html>`;pdfOpenAndPrint(html,()=>{document.getElementById('modal-exp-cal').classList.remove('open');});}
 // ═══ RISULTATI ═══
 function renderRisultati(){
+  // Ogni partita come un tabellone: vincitore a sinistra (VINCE), sconfitto attenuato a destra (PERDE),
+  // punteggio grande col game del vincitore su giallo; pareggi in azzurro. Raggruppati per giorno.
   const cont=document.getElementById('ris-list');if(!cont)return;
-  const done=sched.filter(m=>!!m.risultato).sort((a,b)=>b.data.localeCompare(a.data)||b.ora.localeCompare(a.ora));
+  const done=sched.filter(m=>!!m.risultato).sort((a,b)=>b.data.localeCompare(a.data)||(b.ora||'').localeCompare(a.ora||''));
   if(!done.length){cont.innerHTML='<div class="empty"><span class="empty-icon">🏅</span>Nessun risultato ancora.'+(_checkViewer()?'':`<br><button class="btn btn-p" style="margin-top:14px" onclick="switchTab('calendario')">→ Vai al Calendario</button>`)+'</div>';return;}
-  // Group by week
-  const weeks={};
-  done.forEach(m=>{
-    const md=new Date(m.data+'T12:00:00'),mday=md.getDay();
-    const mon=new Date(md);mon.setDate(md.getDate()-(mday===0?6:mday-1));
-    const wk=fmtD(mon);
-    if(!weeks[wk])weeks[wk]=[];weeks[wk].push(m);
-  });
-  // Row builder — same style as renderResSlide
-  const av=p=>{if(!p)return'';const ph=p.photoUrl?`<img src="${p.photoUrl}" alt="">`:ini(p.nome);return`<div class="av ${avc(p.id)}" style="width:40px;height:40px;font-size:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;flex-shrink:0">${ph}</div>`;};
-  const makeRow=m=>{
-    const isDraw=m.winnerId==='draw'||(!m.winnerId&&!!m.risultato);
-    const p1=players.find(p=>p.id===m.p1Id),p2=players.find(p=>p.id===m.p2Id);
-    const _gt=pid=>{const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){const entries=[bm.p1,bm.p2];for(const e of entries){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(pid))return dispName(ids.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / '));}}}}const p=players.find(x=>x.id===pid);return dispName(p?p.nome:'?');};
-    const winner=isDraw?null:(m.winnerId?players.find(p=>p.id===m.winnerId):null);
-    const loser=isDraw?null:(winner?(m.winnerId===m.p1Id?p2:p1):null);
-    const d=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
-    const ora=m.ora?`<span style="font-size:10px;color:var(--text2)"> ${m.ora}</span>`:'';
-    if(isDraw){
-      const n1t=_gt(m.p1Id);
-      return`<div class="rcard">
-        <div class="rcard-date">${d}${ora}</div>
-        <div class="rcard-row" style="display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:hidden">
-          <div class="rcard-player rcard-player-w" style="display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden">
-            ${av(p1)}
-            <span class="rcard-name" style="font-size:14px;font-weight:700;color:var(--gold);overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0;white-space:nowrap">${esc(n1t)}</span>
-          </div>
-          <span class="rcard-vs" style="font-size:12px;color:var(--text2);flex-shrink:0">${n1t.includes(' / ')?'hanno pareggiato con':'ha pareggiato con'}</span>
-          <div class="rcard-player rcard-player-l" style="display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden">
-            ${av(p2)}
-            <span class="rcard-name" style="font-size:14px;font-weight:700;color:var(--gold);overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0;white-space:nowrap">${esc(_gt(m.p2Id))}</span>
-          </div>
-          <span class="rcard-score" style="font-size:12px;color:var(--accent2);font-weight:700;flex-shrink:0;margin-left:4px;white-space:nowrap">${esc(m.risultato)}</span>
-          <span class="rcard-trophy" style="font-size:20px;flex-shrink:0;margin-left:auto">🤝</span>
-        </div>
-      </div>`;
-    }
-    const wNameT=winner?_gt(winner.id):'?';
-    return`<div class="rcard">
-      <div class="rcard-date">${d}${ora}</div>
-      <div class="rcard-row" style="display:flex;align-items:center;gap:5px;flex:1;min-width:0;overflow:hidden">
-        <div class="rcard-player rcard-player-w" style="display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden">
-          ${av(winner)}
-          <span class="rcard-name" style="font-size:14px;font-weight:700;color:var(--green);overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0;white-space:nowrap">${esc(wNameT)}</span>
-        </div>
-        <span class="rcard-vs" style="font-size:12px;color:var(--text2);flex-shrink:0">${wNameT.includes(' / ')?'hanno battuto':'ha battuto'}</span>
-        <div class="rcard-player rcard-player-l" style="display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden">
-          ${av(loser)}
-          <span class="rcard-name" style="font-size:14px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0;white-space:nowrap">${esc(loser?_gt(loser.id):'?')}</span>
-        </div>
-        <span class="rcard-score" style="font-size:12px;color:var(--accent2);font-weight:700;flex-shrink:0;margin-left:4px;white-space:nowrap">${esc(m.risultato)}</span>
-        <span class="rcard-trophy" style="font-size:20px;flex-shrink:0;margin-left:auto">🏆</span>
-      </div>
+  const teamOf=(m,pid)=>{const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;
+    if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){for(const e of [bm.p1,bm.p2]){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / ');}}}}
+    const p=players.find(x=>x.id===pid);return p?p.nome:(pid===m.p1Id?m.teamName1:m.teamName2)||'?';};
+  const av=pid=>{const p=players.find(x=>x.id===pid);return p?`<div class="mk-av">${p.photoUrl?`<img src="${p.photoUrl}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`:'';};
+  const nm=(n,lbl)=>{const dbl=String(n).includes(' / ');const sn=String(n).split(' / ').map(surnameOf).join(' / ');const fn=dbl?'':String(n).trim().split(/\s+/)[0];
+    return `<div class="rs-nm">${fn&&fn!==sn?`<small class="fn">${esc(fn)}</small>`:''}<b>${esc(sn)}</b><small class="lb">${lbl}</small></div>`;};
+  const row=m=>{
+    const draw=m.winnerId==='draw'||!m.winnerId;
+    const g1=+m.gv1,g2=+m.gv2,hasG=Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2);
+    const parts=String(m.risultato).match(/(\d+)\s*[-–]\s*(\d+)/);
+    const wIsP1=!draw&&+m.winnerId===m.p1Id;
+    const L=draw?m.p1Id:(wIsP1?m.p1Id:m.p2Id),R=draw?m.p2Id:(wIsP1?m.p2Id:m.p1Id);
+    let sL,sR;
+    if(hasG){sL=L===m.p1Id?g1:g2;sR=R===m.p1Id?g1:g2;}
+    else if(parts){sL=draw?parts[1]:Math.max(+parts[1],+parts[2]);sR=draw?parts[2]:Math.min(+parts[1],+parts[2]);}
+    else{sL=esc(m.risultato);sR='';}
+    return `<div class="rs${draw?' draw':''}">
+      <div class="rs-side w">${av(L)}${nm(teamOf(m,L),draw?'PAREGGIO':'VINCE')}</div>
+      <div class="rs-score"><span class="${draw?'dr':'win'}">${sL}</span>${sR!==''?`<span class="${draw?'dr':''}">${sR}</span>`:''}</div>
+      <div class="rs-side l rt">${nm(teamOf(m,R),draw?'PAREGGIO':'PERDE')}${av(R)}</div>
+      ${m.ora?`<div class="rs-time">${esc(m.ora)}</div>`:''}
     </div>`;
   };
-  cont.innerHTML=Object.keys(weeks).sort((a,b)=>b.localeCompare(a)).map(wk=>{
-    const wd=new Date(wk+'T12:00:00'),we=new Date(wd);we.setDate(wd.getDate()+6);
-    const lbl=wd.toLocaleDateString('it-IT',{day:'numeric',month:'short'})+' – '+we.toLocaleDateString('it-IT',{day:'numeric',month:'short'});
-    return`<div class="ris-wk"><div class="ris-wk-title">Settimana ${lbl}</div>${weeks[wk].map(makeRow).join('')}</div>`;
+  const days={};done.forEach(m=>{(days[m.data]=days[m.data]||[]).push(m);});
+  cont.innerHTML=Object.keys(days).sort((a,b)=>b.localeCompare(a)).map(d=>{
+    const lbl=new Date(d+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
+    return `<div class="rs-day">${esc(lbl)}</div>${days[d].map(row).join('')}`;
   }).join('');
 }
 // ═══ IMPORT / EXPORT ═══
@@ -3098,11 +3228,15 @@ function openProfile(playerId){
   const mm=(p.storico||'0-0-0').match(/(\d+)[\-\/](\d+)(?:[\-\/](\d+))?/)||['','0','0'];
   const hasD=mm[3]!==undefined;
   const ww=mm[1],dd=hasD?mm[2]:0,ll=hasD?mm[3]:mm[2];
-  document.getElementById('profile-stats-row').innerHTML=`
-    <div class="psbox"><span class="psval">${p.pg}</span><span class="pslbl">Partite</span></div>
-    <div class="psbox"><span class="psval" style="color:var(--green)">${ww}</span><span class="pslbl">Vittorie</span></div>
-    <div class="psbox"><span class="psval" style="color:var(--gold)">${dd}</span><span class="pslbl">Pareggi</span></div>
-    <div class="psbox"><span class="psval" style="color:var(--red)">${ll}</span><span class="pslbl">Sconfitte</span></div>`;
+  // stile card nuova: colore della testata (livello per l'admin, colore personale per gli ospiti) e posizione
+  const _GUEST=["#ff8a00","#22b8f0","#22c55e","#8b5cf6","#ff4fb8","#e8ff00","#14b8a6","#f43f5e","#f59e0b","#60a5fa"];
+  const _band=document.getElementById('profile-band');
+  if(_band)_band.style.setProperty('--lv',_checkViewer()?_GUEST[Math.abs((+p.id||0)*7)%_GUEST.length]:(caC[p.livello]||'#e8ff00'));
+  const _rl=rankListGv(),_ri=_rl.findIndex(x=>x.id===p.id);
+  const _rk=document.getElementById('profile-rank');if(_rk)_rk.innerHTML=`${_ri>=0?'#'+(_ri+1):'#–'}<span>IN CLASSIFICA</span>`;
+  const _t=(l,v,c)=>`<div class="pk-t" style="--tc:${c}"><span>${l}</span><b>${v}</b></div>`;
+  document.getElementById('profile-stats-row').innerHTML=
+    _t('Match',+p.pg||0,'#e8ff00')+_t('Vittorie',ww,'#22c55e')+_t('Pareggi',dd,'#f59e0b')+_t('Sconfitte',ll,'#ef4444')+_t('Game',+p.gv||0,'#ff4fb8')+_t('Media game',(+p.mg||0).toFixed(2),'#22b8f0');
   // Upcoming
   const today=new Date();today.setHours(0,0,0,0);
   const upcoming=sched.filter(m=>(m.p1Id===playerId||m.p2Id===playerId)&&m.data&&new Date(m.data+'T12:00:00')>=today&&!m.risultato).sort((a,b)=>a.data.localeCompare(b.data)||a.ora.localeCompare(b.ora));
@@ -3499,24 +3633,29 @@ function calcOVR(p,rankPtsMap){
   return Math.max(40,Math.min(99,ovr));
 }
 function renderTornei(){
+  // Ogni torneo come card con testata nel colore della categoria, stato, tipo, iscritti e barra di avanzamento.
   const el=document.getElementById('tornei-list');if(!el)return;
   if(!tornei.length){
     el.innerHTML='<div class="empty"><span class="empty-icon">🏆</span>Nessun torneo ancora.'+(_checkViewer()?'':`<br><button class="btn btn-p" style="margin-top:14px" onclick="openNewTorneoModal()">+ Nuovo Torneo</button>`)+'</div>';
     return;
   }
-  el.innerHTML='<div class="torneo-grid">'+tornei.map(t=>{
-    const tipo=t.tipo==='girone'?'🔄 Campionato':t.tipo==='misto'?'🔀 Girone+Eliminazione':'⚡ Eliminazione';
+  const CAT={master:['#e8ff00','⭐ MASTER'],grandslam:['#f0c040','🏆 GRAND SLAM'],libero:['#22c55e','🆓 LIBERO'],challenger:['#22b8f0','🎾 CHALLENGER']};
+  el.innerHTML='<div class="tor-grid">'+tornei.map(t=>{
+    const tipo=t.tipo==='girone'?'🔄 Campionato':t.tipo==='misto'?'🔀 Girone + elim.':'⚡ Eliminazione';
     const esito=getTorneoEsito(t);
-    const stato=esito.finished?'tb-done':'tb-active';
-    const statoLbl=esito.finished?'Concluso':'LIVE';
-    const winnerHtml=esito.winnerName?`<div style="margin-top:8px;font-size:13px;font-weight:700;color:var(--gold)">🏆 ${esc(esito.winnerName)}</div>`:'';
-    return`<div class="torneo-card" onclick="openTorneoDetail(${t.id})">
-      <div class="torneo-card-title">${esc(t.nome)}</div>
-      <div class="torneo-card-meta">${tipo} · ${t.format==='doppio'?'👥 Doppio':'🎾 Singolo'} · ${t.players.length} iscritti</div>
-      <div class="torneo-card-meta">${t.dataStart||'—'} → ${t.dataEnd||'—'}</div>
-      <span class="torneo-card-badge ${stato}">${statoLbl}</span>
-      ${winnerHtml}
-      <button onclick="event.stopPropagation();openEditTorneo(${t.id})" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:14px;opacity:.4;cursor:pointer">✏️</button>
+    const c=CAT[t.categoria]||CAT.challenger;
+    const ms=sched.filter(m=>m.torneoId===t.id),gioc=ms.filter(m=>m.risultato).length;
+    const pct=esito.finished?100:(ms.length?Math.round(gioc/ms.length*100):0);
+    const stato=esito.finished?'CONCLUSO':ms.length?'IN CORSO':'IN PROGRAMMA';
+    return`<div class="tor" style="--tc:${c[0]}" onclick="openTorneoDetail(${t.id})">
+      <div class="tor-hd"><small>${c[1]}</small><b>${esc(t.nome)}</b><span class="tor-st">${stato}</span>
+        <button class="tor-edit" onclick="event.stopPropagation();openEditTorneo(${t.id})" title="Modifica">✏️</button></div>
+      <div class="tor-bd">
+        <div class="tor-meta"><span>${tipo}</span><span>${t.format==='doppio'?'👥 Doppio':'🎾 Singolo'}</span><span>👥 ${t.players.length} iscritti</span>${t.dataStart?`<span>📅 ${esc(t.dataStart)}${t.dataEnd?' → '+esc(t.dataEnd):''}</span>`:''}</div>
+        ${esito.winnerName?`<div class="tor-win">🏆 ${esc(esito.winnerName)}</div>`:''}
+        <div class="tor-pt"><span>Avanzamento · ${gioc}/${ms.length} partite</span><span>${pct}%</span></div>
+        <div class="tor-prog"><i style="width:${pct}%"></i></div>
+      </div>
     </div>`;
   }).join('')+'</div>';
 }
