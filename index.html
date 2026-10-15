@@ -1388,7 +1388,7 @@ body[data-tab="players"],body:not([data-tab]){--page:#ff2d3d}
 #cal-big.cal-big{font-family:"Bebas Neue",sans-serif!important;font-size:15px!important;letter-spacing:1.5px!important;color:#fff!important;margin:0!important;line-height:1.1!important}
 .cal-strip{margin-top:0!important}
 .cal-dh{margin:12px 0 8px!important}
-#page-calendario .wrap{padding-top:6px}
+
 @media(max-width:640px){.cal-hd{gap:8px}.cal-nav{width:100%;justify-content:center}.cal-sub b{font-size:16px}}
 /* Albo d'Oro su telefono: un trofeo per riga a tutta larghezza */
 @media(max-width:640px){.albo-grid{grid-template-columns:1fr!important}}
@@ -1431,6 +1431,46 @@ body[data-tab="players"],body:not([data-tab]){--page:#ff2d3d}
 }
 .profile-modal{padding-top:env(safe-area-inset-top)}
 @media(max-width:640px){#cal-big.cal-title-big{display:block!important;font-size:38px!important;text-align:center}.cal-titlebox{width:100%}.cal-hd>div:first-child{width:100%}}
+/* ═══ PC: ticker DENTRO la barra (proposta 2), solo lucchetto a destra ═══ */
+@media(min-width:641px){
+  .header .hdr{grid-template-columns:auto auto minmax(0,1fr) auto!important;gap:22px}
+  .hdr .tabs{grid-column:2!important}
+  #hdr-next{display:flex!important;grid-column:3;min-width:0;overflow:hidden}
+  .hdr-info{grid-column:4!important}
+  .hdr .hdr-info-stack{display:none!important}
+  #hdr-next .ticker-tape{position:static!important;margin:0!important;width:100%;min-width:0;background:none!important;border:none!important;box-shadow:none!important;border-radius:0!important;
+    -webkit-mask:linear-gradient(90deg,#000 88%,transparent);mask:linear-gradient(90deg,#000 88%,transparent)}
+  #hdr-next .tk-label{background:none!important;box-shadow:none!important;padding:0 10px 0 0!important;font-size:0!important}
+  #hdr-next .tk-label::before{display:none}
+  #hdr-next .tk-label i{width:8px;height:8px}
+  #hdr-next .ticker-tape-content span{padding:0!important}
+  #hdr-next .tk{font-size:17px;gap:7px;margin-right:24px}
+  #hdr-next .tk em{font-size:15px;padding:1px 7px}
+  #hdr-next .tk::after{margin-left:18px}
+}
+/* ═══ HOME: blocco unico giocatore della settimana + 4 record ═══ */
+.hl{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;align-items:center;border-radius:24px;padding:14px;
+  background:linear-gradient(120deg,rgba(42,15,61,.92),rgba(15,42,61,.88) 60%,rgba(16,42,25,.88));border:.5px solid rgba(255,255,255,.16);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.hl .hf-feat{background:none!important;border:none!important;box-shadow:none!important;padding:4px!important;min-height:0!important}
+.hl .hf-big{font-size:110px}
+.hl-rec{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hl-rc{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:16px;cursor:pointer;min-width:0;
+  background:color-mix(in srgb,var(--c) 15%,rgba(0,0,0,.28));border:1px solid color-mix(in srgb,var(--c) 45%,transparent);transition:transform .12s}
+.hl-rc:hover{transform:translateY(-2px)}
+.hl-av{width:42px;height:42px;border-radius:50%;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-family:"Bebas Neue",sans-serif;font-size:15px;background:#111;border:2px solid var(--c)}
+.hl-av img{width:100%;height:100%;object-fit:cover}
+.hl-tx{min-width:0;flex:1}.hl-tx small{display:block;font-size:9.5px;font-weight:800;letter-spacing:1px;color:var(--c)}
+.hl-tx b{display:block;font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:18px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hl-rc>span{font-family:"Anton",sans-serif;font-size:22px;color:var(--c);flex-shrink:0}
+@media(max-width:640px){.hl{grid-template-columns:1fr;padding:12px}.hl-rec{gap:6px}.hl-rc{padding:7px 8px;gap:7px}.hl-av{width:34px;height:34px}.hl-tx b{font-size:15px}.hl-rc>span{font-size:18px}}
+/* ═══ CALENDARIO: punteggio al posto del VS, titolo alla stessa altezza delle altre pagine ═══ */
+.mk-score{display:flex;gap:5px;justify-self:center;font-family:"Anton",sans-serif;font-size:24px;line-height:1}
+.mk-score b{font-weight:400;padding:5px 10px;border-radius:10px;background:#24252b;color:#ddd}
+.mk-score b.w{background:var(--accent);color:#111;box-shadow:0 0 14px rgba(232,255,0,.4)}
+#page-calendario .wrap{padding-top:16px!important}
+.cal-title-big{margin:4px 0 0!important}
+@media(max-width:640px){.cmc.mk .mk-score{grid-column:3;grid-row:1 / span 2;font-size:19px}.cmc.mk .mk-score b{padding:4px 7px}#page-calendario .wrap{padding-top:16px!important}}
+.mk-score.draw b{background:#22b8f0;color:#111}
 </style>
 </head>
 <body class="viewer">
@@ -2336,11 +2376,25 @@ function renderHomeFeat(){
       <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}</div><div class="hf-sub">${esc(sub)}</div>
       <div class="hf-chips">${ps?`<span>${ps}° IN CLASSIFICA</span>`:''}${st&&st.w>=2?'<span>🔥 IN FORMA</span>':''}</div></div></div>`;
   }
-  const top=rl.slice(0,5),cols=['#e8ff00','#22b8f0','#22c55e','#8b5cf6','#ff4fb8'],ink=['#111','#fff','#111','#fff','#fff'];
-  const t5=top.length?`<div class="hf-top5">${top.map((p,i)=>`<div class="hf-cc" style="--c:${cols[i]};color:${ink[i]}" onclick="openProfile(${p.id})"><span class="no">${i+1}</span><span class="mini">${avHtmlBig(p)}</span>${String(p.nome).trim().split(/\s+/).length>1?`<em class="cc-fn">${esc(String(p.nome).trim().split(/\s+/)[0])}</em>`:""}<b>${esc(surnameOf(p.nome))}</b><small>${(+p.mg||0).toFixed(2)} MEDIA · ${+p.gv||0} GAME</small></div>`).join('')}</div>`:'';
-  el.innerHTML=`<div class="hf-top2">${feat}<div id="home-poster"></div></div>${t5}`;
-  renderHomePoster();
+  // 4 record: più match, più vittorie, più game, media game più alta (solo chi ha giocato)
+  const act=players.filter(x=>!x.archiviato&&(+x.pg||0)>0);
+  const wins=p=>{const m=String(p.storico||'').match(/(\d+)/);return m?+m[1]:0;};
+  const best=f=>act.slice().sort((a,b)=>f(b)-f(a)||a.nome.localeCompare(b.nome))[0];
+  const R=[['PIÙ MATCH',p=>+p.pg||0,'#e8ff00',v=>v],['PIÙ VITTORIE',wins,'#22c55e',v=>v],['PIÙ GAME',p=>+p.gv||0,'#ff4fb8',v=>v],['MEDIA PIÙ ALTA',p=>+p.mg||0,'#22b8f0',v=>v.toFixed(2)]];
+  const rec=act.length?`<div class="hl-rec">${R.map(([l,f,c,fm])=>{const p=best(f);return `<div class="hl-rc" style="--c:${c}" onclick="openProfile(${p.id})"><div class="hl-av">${avHtmlBig(p)}</div><div class="hl-tx"><small>${l}</small><b>${esc(dispName(p.nome))}</b></div><span>${fm(f(p))}</span></div>`;}).join('')}</div>`:'';
+  el.innerHTML=feat||rec?`<div class="hl">${feat}${rec}</div>`:'';
 }
+// PC: il ticker dei risultati scorre DENTRO la barra del menu (tra le voci e il lucchetto);
+// sul telefono torna sotto la barra.
+function placeTicker(){
+  const tk=document.querySelector('.ticker-tape');if(!tk)return;
+  const pc=window.matchMedia('(min-width:641px)').matches;
+  const slot=document.getElementById('hdr-next');
+  if(pc&&slot&&tk.parentElement!==slot){slot.appendChild(tk);}
+  else if(!pc&&tk.parentElement===slot){document.querySelector('header.header').after(tk);}
+}
+window.matchMedia('(min-width:641px)').addEventListener('change',placeTicker);
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',placeTicker);else placeTicker();
 function renderHomePoster(){
   const el=document.getElementById('home-poster');if(!el)return;
   const x=nextMatchInfo();
@@ -2504,7 +2558,8 @@ function nextMatchesAll(){
 }
 function nextMatchInfo(){const all=nextMatchesAll();if(!all.length)return null;const i=_npIdx%all.length;return Object.assign({idx:i,total:all.length},all[i]);}
 function renderNextMatch(){
-  const el=document.getElementById('hdr-next');if(!el)return;
+  const el=document.getElementById('hdr-next-pill'); // la pillola non c'è più: al suo posto nella barra scorre il ticker
+  if(!el){renderHomePoster();return;}
   const x=nextMatchInfo();
   if(!x){el.innerHTML='';renderHomePoster();return;}
   const short=n=>esc(String(n).split(' / ').map(s=>{const p=s.trim().split(/\s+/);return p.length>1?p.slice(1).join(" "):p[0];}).join(' / '));
@@ -2670,9 +2725,9 @@ function cmcHtml(m){
   return`<div class="cmc mk ${m.risultato?'cd':live?'cs live':'cs'}${!m.risultato&&m.data===today?' oggi':''}" style="--mc:${col}" onclick="openCalModal(${m.id})">
     <div class="mk-time"><b>${esc(m.ora||'—')}</b><small>${esc(tag)}</small></div>
     <div class="mk-pl">${av(p1)}${nm(n1,win1,win2)}</div>
-    <span class="mk-vs">VS</span>
+    ${m.risultato?`<span class="mk-score${!win1&&!win2?' draw':''}"><b class="${win1?'w':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</b><b class="${win2?'w':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</b></span>`:'<span class="mk-vs">VS</span>'}
     <div class="mk-pl rt">${nm(n2,win2,win1)}${av(p2)}</div>
-    <div class="mk-st"><span>${stat}</span>${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
+    <div class="mk-st">${live?'<span>IN CORSO</span>':''}${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
   </div>`;
 }
 // ═══ CAL MODAL ═══
