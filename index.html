@@ -1650,6 +1650,7 @@ body .cards-grid .pcrd.k4c,body:is(:not([data-tab]),[data-tab="players"]) .pcrd.
 .hf-chips span{white-space:nowrap;flex-shrink:0;font-size:14px!important;padding:3px 9px!important;background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.12)}
 @media(max-width:640px){.hf-chips{display:none!important}}
 .hf-chips{gap:5px!important}.hf-chips span{font-size:13px!important;padding:2px 7px!important;letter-spacing:.3px!important;cursor:help}
+.chip-tip{position:fixed;z-index:6000;display:none;pointer-events:none;max-width:240px;padding:6px 10px;border-radius:10px;background:#0d0e12;border:1px solid rgba(255,255,255,.18);box-shadow:0 8px 22px rgba(0,0,0,.6);font:600 12px "DM Sans",sans-serif;color:#fff;white-space:nowrap}
 </style>
 </head>
 <body class="viewer">
@@ -2625,6 +2626,15 @@ setInterval(()=>{const R=window._recs;if(!R)return;
       el.querySelector('.hl-tx b').textContent=dispName(it.p.nome);el.querySelector(':scope>span').textContent=it.v;el.classList.remove('hl-swap');},220);});
 },3000);
 // i badge restano su una riga: quelli che non ci stanno interi vengono nascosti
+// spiegazione dei badge al passaggio del mouse (fumetto sopra il badge)
+(function(){
+  let tip=null;
+  const show=s=>{if(!tip){tip=document.createElement('div');tip.className='chip-tip';document.body.appendChild(tip);}
+    tip.textContent=s.dataset.tip;tip.style.display='block';const r=s.getBoundingClientRect(),t=tip.getBoundingClientRect();
+    tip.style.left=Math.max(8,Math.min(innerWidth-t.width-8,r.left+r.width/2-t.width/2))+'px';tip.style.top=(r.top-t.height-8)+'px';};
+  document.addEventListener('mouseover',e=>{const s=e.target.closest&&e.target.closest('.hf-chips span[data-tip]');if(s)show(s);else if(tip)tip.style.display='none';});
+  window.addEventListener('scroll',()=>{if(tip)tip.style.display='none';},{passive:true});
+})();
 function fitChips(){requestAnimationFrame(()=>document.querySelectorAll('.hf-chips').forEach(c=>{
   const s=[...c.children];s.forEach(x=>x.style.display='');const r=c.getBoundingClientRect();
   s.forEach(x=>{if(x.getBoundingClientRect().right>r.right+0.5)x.style.display='none';});}));}
@@ -2685,7 +2695,7 @@ function renderHomeFeat(){
     if(st&&st.n>=2)add('📅','COSTANTE',`${st.n} partite in settimana`);
     if(mine.some(m=>m.p1Id2||m.p2Id2))add('🤝','DOPPISTA','Ha giocato in doppio');
     if((+p.pg||0)<=2)add('🌱','ESORDIENTE','Prime partite nel circolo');
-    feat=feat.replace('%%CHIPS%%',ch.length?`<div class="hf-chips">${ch.slice(0,10).map(c=>`<span title="${esc(c.t)}">${c.ic} ${c.w}</span>`).join('')}</div>`:'');
+    feat=feat.replace('%%CHIPS%%',ch.length?`<div class="hf-chips">${ch.slice(0,10).map(c=>`<span data-tip="${esc(c.t)}">${c.ic} ${c.w}</span>`).join('')}</div>`:'');
   }
   feat=feat.replace('%%CHIPS%%','');
   el.innerHTML=feat||rec?`<div class="hl">${feat}${rec}</div>`:'';
