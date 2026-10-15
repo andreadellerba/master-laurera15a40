@@ -1523,6 +1523,27 @@ html{background-color:#000!important}
 @media(min-width:641px) and (max-width:1180px){.hl{grid-template-columns:1fr!important}}
 .hl-tx small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media(max-width:640px){.hl-tx small{font-size:8.5px;letter-spacing:.5px}.hl-rc>span{font-size:16px}}
+/* ═══ PC: ticker con lo stesso font e grandezza delle voci di menu non selezionate; sfuma subito dopo il pallino ═══ */
+@media(min-width:641px){
+  #hdr-next .ticker-tape{-webkit-mask:none!important;mask:none!important}
+  #hdr-next .tk-win{-webkit-mask:linear-gradient(90deg,transparent,#000 48px,#000 85%,transparent);mask:linear-gradient(90deg,transparent,#000 48px,#000 85%,transparent)}
+  #hdr-next .tk,#hdr-next .tk em{font-family:"Anton",sans-serif!important;font-weight:400;font-size:21px!important;letter-spacing:.6px!important;text-transform:uppercase}
+  #hdr-next .tk b{color:rgba(255,255,255,.85);text-shadow:none}
+  #hdr-next .tk s{color:rgba(255,255,255,.4)}
+  #hdr-next .tk u{font-family:"Anton",sans-serif;font-size:15px;letter-spacing:.6px;text-transform:uppercase}
+  #hdr-next .tk em{font-size:17px!important;padding:1px 8px;line-height:1.2;box-shadow:none}
+  body:not(.viewer) #hdr-next .tk{font-size:17px!important}
+  body:not(.viewer) #hdr-next .tk em{font-size:14px!important}
+  body:not(.viewer) #hdr-next .tk u{font-size:12px}
+}
+@media(min-width:641px) and (max-width:1420px){body:not(.viewer) #hdr-next .tk{font-size:15px!important}body:not(.viewer) #hdr-next .tk em{font-size:13px!important}}
+@media(min-width:641px) and (max-width:1250px){#hdr-next .tk{font-size:17px!important}#hdr-next .tk em{font-size:14px!important}
+  body:not(.viewer) #hdr-next .tk{font-size:14px!important}body:not(.viewer) #hdr-next .tk em{font-size:12px!important}}
+/* record a pari merito: cambio giocatore con dissolvenza + contatore */
+.hl-rc{position:relative}
+.hl-rc .hl-av,.hl-rc .hl-tx,.hl-rc>span{transition:opacity .22s ease}
+.hl-rc.hl-swap .hl-av,.hl-rc.hl-swap .hl-tx,.hl-rc.hl-swap>span{opacity:0}
+.hl-n{position:absolute;top:6px;right:9px;font-style:normal;font:600 9.5px "DM Sans",sans-serif;letter-spacing:.4px;color:rgba(255,255,255,.45)}
 </style>
 </head>
 <body class="viewer">
@@ -2416,6 +2437,13 @@ function weekStar(){
   if(!p)return null;
   return {p,st:best?s[best]:null};
 }
+// pari merito nei record: ogni 3 secondi la scheda mostra il giocatore successivo
+setInterval(()=>{const R=window._recs;if(!R)return;
+  document.querySelectorAll('.hl-rc[data-rec]').forEach(el=>{const r=R[+el.dataset.rec];if(!r||r.items.length<2)return;
+    const i=(+el.dataset.i+1)%r.items.length,it=r.items[i];el.dataset.i=i;el.dataset.pid=it.p.id;
+    el.classList.add('hl-swap');setTimeout(()=>{el.querySelector('.hl-av').innerHTML=avHtmlBig(it.p);el.querySelector('.hl-tx small').textContent=r.l(it);
+      el.querySelector('.hl-tx b').textContent=dispName(it.p.nome);el.querySelector(':scope>span').textContent=it.v;const n=el.querySelector('.hl-n');if(n)n.textContent=(i+1)+'/'+r.items.length;el.classList.remove('hl-swap');},220);});
+},3000);
 function renderHomeFeat(){
   const el=document.getElementById('home-feat');if(!el)return;
   const rl=rankListGv(),pos=p=>{const i=rl.findIndex(x=>x.id===p.id);return i<0?null:i+1;};
@@ -2428,25 +2456,27 @@ function renderHomeFeat(){
       <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}${ri>=0?` <em class="hf-rk">#${ri+1}</em>`:''}</div><div class="hf-sub">${sub}</div>
       ${st&&st.w>=2?'<div class="hf-chips"><span>🔥 IN FORMA</span></div>':''}</div></div>`;
   }
-  // 4 record: più match, più vittorie, più game, media game più alta (solo chi ha giocato)
+  // 6 record. Se più giocatori sono a pari merito, la scheda li fa scorrere uno ogni 3 secondi.
   const act=players.filter(x=>!x.archiviato&&(+x.pg||0)>0);
   const wins=p=>{const m=String(p.storico||'').match(/(\d+)/);return m?+m[1]:0;};
-  const best=f=>act.slice().sort((a,b)=>f(b)-f(a)||a.nome.localeCompare(b.nome))[0];
+  const tiedBy=f=>{if(!act.length)return [];const mx=Math.max(...act.map(f));return act.filter(p=>Math.abs(f(p)-mx)<1e-9).sort((a,b)=>a.nome.localeCompare(b.nome)).map(p=>({p,v:f(p)}));};
   const R=[['PIÙ MATCH',p=>+p.pg||0,'#e8ff00',v=>v],['PIÙ VITTORIE',wins,'#22c55e',v=>v],['PIÙ GAME',p=>+p.gv||0,'#ff4fb8',v=>v],['MEDIA TOP',p=>+p.mg||0,'#22b8f0',v=>v.toFixed(2)]];
+  const recs=R.map(([l,f,c,fm])=>({l:()=>l,c,items:tiedBy(f).map(x=>({p:x.p,v:fm(x.v)}))}));
   // record di partita: più game in una partita e maggior distacco (game vinti - game persi)
-  let topG=null,topD=null;
+  const gList=[],dList=[];
   sched.filter(m=>m.risultato&&m.p1Id&&m.p2Id).forEach(m=>{
     let g1=+m.gv1,g2=+m.gv2;
     if(!(Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2))){const r=String(m.risultato).match(/(\d+)\s*[-–]\s*(\d+)/);if(!r)return;g1=+r[1];g2=+r[2];}
-    [[m.p1Id,g1],[m.p2Id,g2]].forEach(([id,g])=>{if(!topG||g>topG.v)topG={id,v:g};});
-    const d=Math.abs(g1-g2),wid=g1>=g2?m.p1Id:m.p2Id;
-    if(d>0&&(!topD||d>topD.v))topD={id:wid,v:d,s:`${Math.max(g1,g2)}-${Math.min(g1,g2)}`};
+    gList.push({id:m.p1Id,v:g1},{id:m.p2Id,v:g2});
+    const d=Math.abs(g1-g2);if(d>0)dList.push({id:g1>=g2?m.p1Id:m.p2Id,v:d,s:`${Math.max(g1,g2)}-${Math.min(g1,g2)}`});
   });
-  const recM=[];
-  if(topG){const p=players.find(x=>x.id===topG.id);if(p)recM.push(['GAME IN 1 PARTITA',p,topG.v,'#ff8a00']);}
-  if(topD){const p=players.find(x=>x.id===topD.id);if(p)recM.push(['DISTACCO '+topD.s,p,'+'+topD.v,'#a78bfa']);}
-  const recMHtml=recM.map(([l,p,v,c])=>`<div class="hl-rc" style="--c:${c}" onclick="openProfile(${p.id})"><div class="hl-av">${avHtmlBig(p)}</div><div class="hl-tx"><small>${l}</small><b>${esc(dispName(p.nome))}</b></div><span>${v}</span></div>`).join('');
-  const rec=act.length?`<div class="hl-rec">${R.map(([l,f,c,fm])=>{const p=best(f);return `<div class="hl-rc" style="--c:${c}" onclick="openProfile(${p.id})"><div class="hl-av">${avHtmlBig(p)}</div><div class="hl-tx"><small>${l}</small><b>${esc(dispName(p.nome))}</b></div><span>${fm(f(p))}</span></div>`;}).join('')}${recMHtml}</div>`:'';
+  const topOf=(list,mk)=>{if(!list.length)return [];const mx=Math.max(...list.map(x=>x.v));const seen=new Set();
+    return list.filter(x=>x.v===mx&&!seen.has(x.id+'|'+(x.s||''))&&seen.add(x.id+'|'+(x.s||''))).map(x=>({p:players.find(q=>q.id===x.id),v:mk(x),s:x.s})).filter(x=>x.p).sort((a,b)=>a.p.nome.localeCompare(b.p.nome));};
+  recs.push({l:it=>'GAME IN 1 PARTITA',c:'#ff8a00',items:topOf(gList,x=>x.v)});
+  recs.push({l:it=>'DISTACCO '+(it&&it.s||''),c:'#a78bfa',items:topOf(dList,x=>'+'+x.v)});
+  window._recs=recs;
+  const tile=(r,k)=>{const it=r.items[0];return `<div class="hl-rc" data-rec="${k}" data-i="0" style="--c:${r.c}" onclick="openProfile(+this.dataset.pid)" data-pid="${it.p.id}"><div class="hl-av">${avHtmlBig(it.p)}</div><div class="hl-tx"><small>${esc(r.l(it))}</small><b>${esc(dispName(it.p.nome))}</b></div><span>${esc(String(it.v))}</span>${r.items.length>1?`<i class="hl-n">1/${r.items.length}</i>`:''}</div>`;};
+  const rec=act.length?`<div class="hl-rec">${recs.map((r,k)=>r.items.length?tile(r,k):'').join('')}</div>`:'';
   el.innerHTML=feat||rec?`<div class="hl">${feat}${rec}</div>`:'';
 }
 // PC: il ticker dei risultati scorre DENTRO la barra del menu (tra le voci e il lucchetto);
