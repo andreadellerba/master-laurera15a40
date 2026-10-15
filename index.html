@@ -1369,6 +1369,30 @@ body:not(.light) .cmc.mk{display:grid!important;grid-template-columns:auto minma
 /* sfondo a tutto schermo: html e body coprono anche la zona del notch (barra di stato trasparente) */
 html{min-height:100%;background:#141518 radial-gradient(70% 220px at 50% 0%,rgba(139,92,246,.35),transparent 75%) no-repeat}
 @supports(padding:env(safe-area-inset-top)){body:not(.light)::after{top:calc(-1 * env(safe-area-inset-top));height:calc(150px + env(safe-area-inset-top))}}
+/* HOME in rosso (menu, sottolineatura, neon, pillola telefono, luci) */
+body[data-tab="players"],body:not([data-tab]){--page:#ff2d3d}
+@media(min-width:641px){.hdr .tab[data-tab="players"] svg{color:#ff2d3d}}
+.tabs-mobile2 .tbtn[data-tab="players"]{--tc:#ff2d3d!important}
+/* sottomenu centrati nello spazio libero (Classifiche) */
+#page-classifiche .wrap>div:first-child{display:grid!important;grid-template-columns:auto 1fr auto;align-items:center;gap:12px}
+#page-classifiche .wrap>div:first-child>div:last-child{display:contents!important}
+#rank-seg{justify-self:center}
+@media(max-width:640px){#page-classifiche .wrap>div:first-child{grid-template-columns:1fr}#page-classifiche .pdf-btn{display:none}#rank-seg{justify-self:stretch}}
+/* Calendario aperto: titolo grande con accanto torneo e mese, meno spazi vuoti */
+.cal-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px!important}
+.cal-titlebox{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.cal-title-big{margin:0!important}
+.cal-sub{display:flex;flex-direction:column;gap:2px;padding-bottom:4px}
+.cal-sub b{font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:19px;letter-spacing:1px;color:var(--page)}
+.cal-sub span{font-size:11px;color:#9a9a9a}
+#cal-big.cal-big{font-family:"Bebas Neue",sans-serif!important;font-size:15px!important;letter-spacing:1.5px!important;color:#fff!important;margin:0!important;line-height:1.1!important}
+.cal-strip{margin-top:0!important}
+.cal-dh{margin:12px 0 8px!important}
+#page-calendario .wrap{padding-top:6px}
+@media(max-width:640px){.cal-hd{gap:8px}.cal-nav{width:100%;justify-content:center}.cal-sub b{font-size:16px}}
+/* Albo d'Oro su telefono: un trofeo per riga a tutta larghezza */
+@media(max-width:640px){.albo-grid{grid-template-columns:1fr!important}}
+@media(max-width:640px){.cal-hd>div:first-child{align-items:flex-start!important;width:100%}.cal-hd>div:first-child>.cal-nbtn{margin-top:4px}.cal-titlebox{flex-direction:column;align-items:flex-start;gap:4px}.cal-title-big{font-size:34px!important}.cal-sub{padding:0;flex-direction:row;flex-wrap:wrap;align-items:baseline;column-gap:8px}}
 </style>
 </head>
 <body class="viewer">
@@ -1419,7 +1443,7 @@ html{min-height:100%;background:#141518 radial-gradient(70% 220px at 50% 0%,rgba
 <!-- Menu mobile: stile itstracker (pillola vetro con icone + pillola profilo a destra) -->
 <div class="tabs-mobile2">
   <div class="tbar pill-main">
-    <button type="button" class="tab tbtn" data-tab="players" onclick="switchTab('players')" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg><span class="tl">Home</span></button>
+    <button type="button" class="tab tbtn active" data-tab="players" onclick="switchTab('players')" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg><span class="tl">Home</span></button>
     <button type="button" class="tab tbtn" data-tab="tornei" onclick="switchTab('tornei')" title="Tornei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4"/><path d="M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/><path d="M12 14v3"/><path d="M8.5 21h7"/><path d="M9.5 17h5v4h-5z"/></svg><span class="tl">Tornei</span></button>
     <button type="button" class="tab tbtn" data-tab="calendario" onclick="switchTab('calendario')" title="Calendario"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg><span class="tl">Calendario</span></button>
     <button type="button" class="tab tbtn" data-tab="risultati" onclick="switchTab('risultati')" title="Risultati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M5.5 6.5c3 2 4 5.5 3 11"/><path d="M18.5 17.5c-3-2-4-5.5-3-11"/></svg><span class="tl">Risultati</span></button>
@@ -1485,10 +1509,8 @@ html{min-height:100%;background:#141518 radial-gradient(70% 220px at 50% 0%,rgba
       <div class="cal-hd">
         <div style="display:flex;align-items:center;gap:8px">
           <button class="cal-nbtn" onclick="exitCalTorneo()" title="Cambia torneo">←</button>
-          <div>
-            <div class="pg-title" style="margin:0;font-size:16px" id="cal-torneo-name">Torneo</div>
-            <div class="cal-torneo-tipo" style="font-size:11px;color:var(--text2)" id="cal-torneo-tipo"></div>
-          </div>
+          <!-- titolo grande CALENDARIO con accanto il torneo (e il mese) -->
+          <div class="cal-titlebox"><div class="pg-title pg-big cal-title-big">CALEN<span>DARIO</span></div><div class="cal-sub"><b id="cal-torneo-name">Torneo</b><span id="cal-torneo-tipo"></span><span class="cal-big" id="cal-big"></span></div></div>
         </div>
         <div class="cal-nav">
           <button class="cal-nbtn" onclick="calPrev()">‹</button>
@@ -1500,7 +1522,7 @@ html{min-height:100%;background:#141518 radial-gradient(70% 220px at 50% 0%,rgba
           <button class="btn btn-g" style="font-size:12px;padding:7px 10px" onclick="recalcStats()" title="Ricalcola statistiche">🔄</button>
         </div>
       </div>
-      <div class="cal-big" id="cal-big"></div>
+
       <div class="cal-strip" id="cal-strip"></div>
       <div class="cal-dh" id="cal-dh"></div>
       <div class="cal-list" id="cal-list"></div>
@@ -2551,7 +2573,7 @@ function calBig(d0,d6){
   const el=document.getElementById('cal-big');if(!el)return;
   const m0=d0.toLocaleDateString('it-IT',{month:'long'}).toUpperCase(),m1=d6.toLocaleDateString('it-IT',{month:'long'}).toUpperCase();
   const half=s=>{const k=Math.ceil(s.length/2);return `${esc(s.slice(0,k))}<span>${esc(s.slice(k))}</span>`;};
-  el.innerHTML=m0===m1?half(m0):`${esc(m0.slice(0,3))}<span> / ${esc(m1.slice(0,3))}</span>`;
+  el.textContent=m0===m1?m0:m0.slice(0,3)+' / '+m1.slice(0,3);
 }
 function calRender(){const dates=getWeekDates();const d0=dates[0],d6=dates[6];const fmt=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'});document.getElementById('cal-wlbl').textContent=`${fmt(d0)} – ${fmt(d6)}`;calBig(d0,d6);const today=fmtD(new Date());document.getElementById('cal-strip').innerHTML=dates.map((d,i)=>{const ds=fmtD(d);const _schedStrip=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dm=_schedStrip.filter(m=>m.data===ds);const dots=dm.map(m=>`<div class="cdot ${m.risultato?'cdot-d':isLiveMatch(m)?'cdot-l':'cdot-s'}"></div>`).join('');return`<div class="cal-day${ds===calSelDate?' sel':''}${ds===today?' tod':''}" onclick="calSelDay('${ds}')"><div class="cal-dn">${DAY[i]}</div><div class="cal-dd">${d.getDate()}</div><div class="cal-dots">${dots}</div></div>`;}).join('');document.getElementById('cal-dh').textContent=fmtDIt(calSelDate);const _sched=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dayM=_sched.filter(m=>m.data===calSelDate).sort((a,b)=>a.ora.localeCompare(b.ora));const list=document.getElementById('cal-list');list.innerHTML=dayM.length?dayM.map(m=>cmcHtml(m)).join(''):'<div class="cal-empty">Nessun incontro. Premi + per aggiungerne uno.</div>';
 }
