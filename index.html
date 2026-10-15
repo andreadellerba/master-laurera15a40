@@ -3145,6 +3145,8 @@ function refreshAll(){
 }
 function saveCalMatch(){
   // Normal calendar match save
+  // un secondo tocco ravvicinato su Salva viene ignorato (evita di contare due volte lo stesso risultato)
+  if(saveCalMatch._busy)return;saveCalMatch._busy=true;setTimeout(()=>{saveCalMatch._busy=false;},1500);
   const p1Id=+document.getElementById('mc-p1').value||null;
   const p2Id=+document.getElementById('mc-p2').value||null;
   if(!p1Id||!p2Id){toast('❌ Seleziona entrambi i giocatori');return;}
@@ -3400,34 +3402,16 @@ function cleanOrphanData(){
   toast(removed?`🧹 Rimossi ${removed} elementi orfani`:'✅ Nessun dato orfano trovato');
 }
 function recalcStats(){
-  // Reset all player stats and recompute from sched ground truth
+  // Azzera e ricalcola le statistiche di tutti dalle partite del calendario, con le stesse regole del salvataggio:
+  // doppi (anche il compagno), tornei senza statistiche esclusi, tornei "libero" solo con le statistiche scelte.
   players.forEach(p=>{p.pg=0;p.gv=0;p.storico='0-0-0';p.mg=0;});
-  sched.filter(m=>m.risultato).forEach(m=>{
-    const isDraw=m.winnerId==='draw'||(!m.winnerId&&!!m.risultato);
-    if(isDraw){
-      [m.p1Id,m.p2Id].forEach((id,i)=>{
-        const idx=players.findIndex(p=>p.id===id);if(idx<0)return;
-        const p=players[idx];
-        const mm=normStorico(p.storico).split('-').map(Number);
-        const w=mm[0],pv=mm[1],l=mm[2];
-        const gvD=i===0?(+(m.gv1)||0):(+(m.gv2)||0);
-        players[idx]={...p,storico:`${w}-${pv+1}-${l}`,pg:p.pg+1,gv:p.gv+gvD,mg:calcMg(p.gv+gvD,p.pg+1)};
-        if(p.photoUrl)players[idx].photoUrl=p.photoUrl;
-      });
-    } else if(m.winnerId){
-      const loserId=m.winnerId===m.p1Id?m.p2Id:m.p1Id;
-      const wGv=m.winnerId===m.p1Id?+(m.gv1)||0:+(m.gv2)||0;
-      const lGv=m.winnerId===m.p1Id?+(m.gv2)||0:+(m.gv1)||0;
-      [{id:+m.winnerId,gvD:wGv,w:true},{id:loserId,gvD:lGv,w:false}].forEach(({id,gvD,w:isWin})=>{
-        const idx=players.findIndex(p=>p.id===id);if(idx<0)return;
-        const p=players[idx];
-        const mm=normStorico(p.storico).split('-').map(Number);
-        const ww=mm[0],pv=mm[1],ll=mm[2];
-        const newStor=`${ww+(isWin?1:0)}-${pv}-${ll+(isWin?0:1)}`;
-        players[idx]={...p,storico:newStor,pg:p.pg+1,gv:p.gv+gvD,mg:calcMg(p.gv+gvD,p.pg+1)};
-        if(p.photoUrl)players[idx].photoUrl=p.photoUrl;
-      });
-    }
+  sched.filter(m=>m.risultato&&m.p1Id&&m.p2Id).forEach(m=>{
+    const ct=m.torneoId?tornei.find(t=>t.id===m.torneoId):null;
+    if(ct&&ct.classifica==='no')return;
+    const w=m.winnerId==='draw'||m.winnerId==='DRAW'||!m.winnerId?'draw':+m.winnerId;
+    const gv1=+m.gv1||0,gv2=+m.gv2||0,lo=ct&&ct.liberoOpts;
+    if(lo){if(lo.vps)applyResultVPS(m.p1Id,m.p2Id,w,m.p1Id2,m.p2Id2);if(lo.mediagame)applyResultGames(m.p1Id,m.p2Id,gv1,gv2,m.p1Id2,m.p2Id2);}
+    else applyResult(m.p1Id,m.p2Id,w,gv1,gv2,m.p1Id2,m.p2Id2);
   });
   save();addLog('📊','Ricalcolate le statistiche dal calendario');renderCards();renderTickerTape();if(currentTab==='classifiche')renderRank();
   toast('✅ Statistiche ricalcolate da calendario!');
