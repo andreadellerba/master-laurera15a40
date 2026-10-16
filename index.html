@@ -1809,6 +1809,23 @@ html{background:#000!important}
 @media(min-width:641px){.mk-c.played .mk-c-sc{font-size:34px;margin-top:0;gap:6px}.mk-c.played small{color:#a78bfa;margin-top:5px}}
 /* telefono: dietro la pillola in alto il nero della notch sfuma nello sfondo, senza bordo netto */
 @media(max-width:640px){.header{background:linear-gradient(180deg,#000 0,#000 calc(env(safe-area-inset-top) + 12px),rgba(0,0,0,.85) calc(env(safe-area-inset-top) + 40px),rgba(0,0,0,0) 100%)!important}}
+/* giocatore della settimana più compatto (PC e telefono) */
+.hl{padding:10px 12px!important;gap:12px!important}
+.hl .hf-feat{gap:14px!important}
+.hl .hf-ph{width:84px!important;height:84px!important}
+.hl .hf-nm{font-size:30px!important;margin-top:2px!important}
+.hl .hf-sub{margin-top:4px!important}.hf-sub span{line-height:1.35!important}
+.hl .hf-chips{margin-top:6px!important}
+.hl-rec{gap:6px!important}
+.hl-rc{padding:6px 10px!important}
+@media(max-width:640px){
+  .hl{padding:10px!important;gap:10px!important}
+  .hl .hf-feat{gap:10px!important}
+  .hl .hf-ph{width:58px!important;height:58px!important}
+  .hl .hf-nm{font-size:clamp(18px,5.6vw,22px)!important}
+  .hl .hf-sub{font-size:11px!important}
+  .hl-rc{padding:5px 7px!important}
+}
 </style>
 </head>
 <body class="viewer">
@@ -2993,7 +3010,7 @@ function renderHomeFeat(){
     const p=ws.p,st=ws.st,rl2=rankListAll(),ri=rl2.findIndex(x=>x.id===p.id);
     const sub=`<span>MATCH ${+p.pg||0} · V-P-S ${esc(normStorico(p.storico))}</span><span>GAME ${+p.gv||0} · MEDIA ${(+p.mg||0).toFixed(2)}</span>`;
     feat=`<div class="hf-feat" onclick="openProfile(${p.id})"><div class="hf-ph">${avHtmlBig(p)}</div>
-      <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA <span class="hf-per">'+ws.per+'</span>':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}${ri>=0?` <em class="hf-rk">#${ri+1}</em>`:''}</div><div class="hf-sub">${sub}</div>
+      <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}${ri>=0?` <em class="hf-rk">#${ri+1}</em>`:''}</div><div class="hf-sub">${sub}</div>
       %%CHIPS%%</div></div>`;
   }
   // 6 record. Se più giocatori sono a pari merito, la scheda li fa scorrere uno ogni 3 secondi.
