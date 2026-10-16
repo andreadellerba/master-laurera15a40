@@ -1826,6 +1826,11 @@ html{background:#000!important}
   .hl .hf-sub{font-size:11px!important}
   .hl-rc{padding:5px 7px!important}
 }
+/* partita in corso: l'orario lampeggia di rosso (niente badge) */
+.cmc.mk.live .mk-c b,.cmc.mk.live .mk-time b{animation:liveBlink 1s ease-in-out infinite;color:#ff2d3d!important}
+.cmc.mk.live .mk-c,.cmc.mk.live .mk-time{border-color:#ff2d3d!important;animation:liveBox 1s ease-in-out infinite}
+@keyframes liveBlink{0%,100%{opacity:1;text-shadow:0 0 12px rgba(255,45,61,.8)}50%{opacity:.35;text-shadow:none}}
+@keyframes liveBox{0%,100%{box-shadow:0 0 0 0 rgba(255,45,61,0)}50%{box-shadow:0 0 16px 2px rgba(255,45,61,.45)}}
 </style>
 </head>
 <body class="viewer">
@@ -3392,7 +3397,7 @@ function cmcHtml(m){
     <div class="mk-c${m.risultato?" played":""}">${m.risultato?"":`<b>${esc(m.ora||"—")}</b>`}${m.risultato?`<span class="mk-c-sc ${!win1&&!win2?'d':''}"><i class="${win1?'w':win2?'l':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</i><u>-</u><i class="${win2?'w':win1?'l':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</i></span><small>${m.ora?esc(m.ora)+" · ":""}${esc(tag)}</small>`:(!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`)}</div>
     ${m.risultato?`<span class="mk-score${!win1&&!win2?' draw':''}"><b class="${win1?'w':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</b><b class="${win2?'w':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</b></span>`:'<span class="mk-vs">VS</span>'}
     <div class="mk-pl rt">${nm(n2,win2,win1)}${av(p2)}</div>
-    <div class="mk-st">${live?'<span>IN CORSO</span>':''}${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
+    <div class="mk-st">${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
   </div>`;
 }
 // ═══ CAL MODAL ═══
