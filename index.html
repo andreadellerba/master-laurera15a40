@@ -1806,6 +1806,7 @@ html{background:#000!important}
 }
 /* orario delle partite sempre viola (giocate e da giocare) */
 .cmc.mk .mk-time,.cmc.mk .mk-c{--mc:#a78bfa}
+@media(min-width:641px){.mk-c.played .mk-c-sc{font-size:34px;margin-top:0;gap:6px}.mk-c.played small{color:#a78bfa;margin-top:5px}}
 </style>
 </head>
 <body class="viewer">
@@ -3369,7 +3370,7 @@ function cmcHtml(m){
   return`<div class="cmc mk ${m.risultato?'cd':live?'cs live':'cs'}${!m.risultato&&m.data===today?' oggi':''}" style="--mc:${col}" onclick="cmcClick(${m.id})">
     <div class="mk-time"><b>${esc(m.ora||'—')}</b>${!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`}</div>
     <div class="mk-pl">${av(p1)}${nm(n1,win1,win2)}</div>
-    <div class="mk-c"><b>${esc(m.ora||'—')}</b>${m.risultato?`<span class="mk-c-sc ${!win1&&!win2?'d':''}"><i class="${win1?'w':win2?'l':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</i><u>-</u><i class="${win2?'w':win1?'l':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</i></span><small>${esc(tag)}</small>`:(!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`)}</div>
+    <div class="mk-c${m.risultato?" played":""}">${m.risultato?"":`<b>${esc(m.ora||"—")}</b>`}${m.risultato?`<span class="mk-c-sc ${!win1&&!win2?'d':''}"><i class="${win1?'w':win2?'l':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</i><u>-</u><i class="${win2?'w':win1?'l':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</i></span><small>${m.ora?esc(m.ora)+" · ":""}${esc(tag)}</small>`:(!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`)}</div>
     ${m.risultato?`<span class="mk-score${!win1&&!win2?' draw':''}"><b class="${win1?'w':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</b><b class="${win2?'w':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</b></span>`:'<span class="mk-vs">VS</span>'}
     <div class="mk-pl rt">${nm(n2,win2,win1)}${av(p2)}</div>
     <div class="mk-st">${live?'<span>IN CORSO</span>':''}${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
