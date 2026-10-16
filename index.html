@@ -1651,6 +1651,24 @@ body .cards-grid .pcrd.k4c,body:is(:not([data-tab]),[data-tab="players"]) .pcrd.
 @media(max-width:640px){.hf-chips{display:none!important}}
 .hf-chips{gap:5px!important}.hf-chips span{font-size:13px!important;padding:2px 7px!important;letter-spacing:.3px!important;cursor:help}
 .chip-tip{position:fixed;z-index:6000;display:none;pointer-events:none;max-width:240px;padding:6px 10px;border-radius:10px;background:#0d0e12;border:1px solid rgba(255,255,255,.18);box-shadow:0 8px 22px rgba(0,0,0,.6);font:600 12px "DM Sans",sans-serif;color:#fff;white-space:nowrap}
+/* ═══ COERENZA: profilo nello stile delle card nuove, VS viola, partite del calendario con la sfumatura ═══ */
+.profile-modal,body .profile-modal,.profile-header{background:#000!important}
+.profile-header{max-width:960px;width:100%;margin:0 auto;padding-left:20px!important;padding-right:20px!important}
+.ph-band{background:radial-gradient(60% 90% at 12% 20%,rgba(139,92,246,.5),transparent 70%),radial-gradient(55% 80% at 55% 0%,rgba(255,45,61,.42),transparent 70%),
+  radial-gradient(55% 90% at 95% 85%,rgba(34,184,240,.4),transparent 70%),radial-gradient(40% 60% at 30% 100%,rgba(34,197,94,.2),transparent 70%),#141519!important;
+  border:1px solid color-mix(in srgb,var(--lv) 55%,rgba(255,255,255,.1))!important}
+.ph-ring{background:none!important;padding:0!important;border:3px solid var(--lv);box-shadow:0 8px 20px rgba(0,0,0,.6)}
+.ph-band .profile-hero-name{color:#fff!important;text-shadow:0 2px 10px rgba(0,0,0,.55);display:block!important}
+.ph-band .profile-hero-name small{display:block;font:700 12px "DM Sans",sans-serif;letter-spacing:1.4px;color:rgba(255,255,255,.75);margin-bottom:2px}
+.ph-rank{color:var(--lv)!important;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+.ph-rank span{color:rgba(255,255,255,.6)!important}
+.profile-stats-row{background:rgba(0,0,0,.42);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:10px 6px!important}
+.profile-stats-row .pk-t{background:none!important;border:none!important;box-shadow:none!important}
+.profile-stats-row .pk-t>span{font:700 10.5px "DM Sans",sans-serif!important;letter-spacing:1px!important;color:#b4b4b4!important;text-transform:uppercase}
+@media(max-width:640px){.ph-band .profile-hero-name small{font-size:10.5px}.profile-stats-row{row-gap:12px!important}}
+.mk-vs{color:#a78bfa!important;text-shadow:0 0 12px rgba(167,139,250,.45)!important}
+body:not(.light) .cmc.mk{background:var(--aur)!important;background-attachment:fixed!important;background-size:100vw 100vh!important}
+.hf-per{display:block!important;margin:2px 0 0!important}
 </style>
 </head>
 <body class="viewer">
@@ -3662,7 +3680,8 @@ function openProfile(playerId){
   const av=document.getElementById('profile-av');
   av.className=`av ${avc(p.id)}`;
   av.innerHTML=phUrl(p)?`<img src="${phUrl(p)}" alt="">`:ini(p.nome);
-  document.getElementById('profile-name').textContent=p.nome;
+  { const _w=String(p.nome||'').trim().split(/\s+/),_fn=_w.length>1?_w[0]:'',_sn=_w.length>1?_w.slice(1).join(' '):_w[0]||'';
+    document.getElementById('profile-name').innerHTML=(_fn?`<small>${esc(_fn)}</small>`:'')+esc(_sn); }
   // niente livello né bandiera nel profilo: il livello è solo per l'admin
   const _lvEl=document.getElementById('profile-lv');if(_lvEl)_lvEl.innerHTML='';
   // Stats
@@ -5048,7 +5067,7 @@ function renderAlbo(){
       html+='<div class="albo-card albo-trophy" style="animation-delay:'+(ei*0.08)+'s">'+ALBO_CUP
         +(function(){
   var _vn=(a.vincitore||'').split('/')[0].trim();
-  var _vp=null; for(var _pi=0;_pi<players.length;_pi++){if(players[_pi].nome.trim()===_vn){_vp=players[_pi];break;}}
+  var _vp=null; for(var _pi=0;_pi<players.length;_pi++){if(players[_pi].nome.trim().toUpperCase()===_vn.toUpperCase()){_vp=players[_pi];break;}}
   var _ini=_vn.split(/\s+/).map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase();
   var _avcls='av-'+((_vp?_vp.id:0)%8);
   return _vp&&phUrl(_vp)
