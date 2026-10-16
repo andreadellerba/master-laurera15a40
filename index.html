@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
 <title>LAURERA 15A40 — Centro Sportivo</title>
+<link rel="preload" as="image" href="https://www.laurera15a40.com/uploads/1/5/0/6/150685976/editor/logo-tipo-long-def.png?1725893045">
 <link rel="icon" href="logo-192.jpg">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="manifest" href="manifest.json">
@@ -1793,6 +1794,20 @@ html{background:#000!important}
 .rs.motw{padding-top:30px!important}.rs.motw .rs-time{top:20px}
 @media(max-width:640px){.hf-chips.pr-badges{display:flex!important}}
 .k4-fn{display:flex;align-items:center;gap:7px}.k4-nm .l5{margin-top:0!important}
+/* calendario PC: l'orario prende il posto del VS al centro, così i nomi restano centrati ai lati (telefono invariato) */
+.mk-c{display:none}
+@media(min-width:641px){
+  body:not(.light) .cmc.mk{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto!important;padding:10px 14px!important}
+  .cmc.mk .mk-time,.cmc.mk>.mk-vs,.cmc.mk>.mk-score{display:none!important}
+  .cmc.mk .mk-c{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:120px;padding:6px 16px;border-radius:14px;
+    background:rgba(0,0,0,.35);border:1px solid color-mix(in srgb,var(--mc) 45%,rgba(255,255,255,.1))}
+  .mk-c b{font-family:"Anton",sans-serif;font-weight:400;font-size:26px;line-height:1;color:var(--mc)}
+  .mk-c small{font:800 10px "DM Sans",sans-serif;letter-spacing:1px;color:#b4b4b4;margin-top:4px;text-transform:uppercase}
+  .mk-c small.cdn{color:#ff2d3d}
+  .mk-c-sc{display:flex;align-items:center;gap:4px;margin-top:4px;font-family:"Anton",sans-serif;font-size:20px;line-height:1}
+  .mk-c-sc i{font-style:normal}.mk-c-sc i.w{color:#22c55e}.mk-c-sc i.l{color:#ef4444}.mk-c-sc.d i{color:#38bdf8}.mk-c-sc u{text-decoration:none;color:rgba(255,255,255,.4)}
+  .cmc.mk .mk-pl:not(.rt){justify-content:flex-start}.cmc.mk .mk-pl.rt{justify-content:flex-end}
+}
 </style>
 </head>
 <body class="viewer">
@@ -2336,7 +2351,7 @@ html{background:#000!important}
 function _checkViewer(){return document.body.classList.contains('viewer');}
 // Lucchetto minimal giallo: chiuso = ospite, aperto = admin
 function LOCK_SVG(open){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="11" width="15" height="10" rx="2.5"/><path d="'+(open?'M8 11V7.5a4 4 0 0 1 7.6-1.7':'M8 11V7.5a4 4 0 0 1 8 0V11')+'"/></svg>';}
-function enableAdmin(){document.body.classList.remove('viewer');setTimeout(uploadLocalPhotos,4000);const btn=document.getElementById('admin-lock-btn');if(btn){btn.innerHTML=LOCK_SVG(true);btn.title='Admin attivo — clicca per uscire';btn.classList.add('is-admin');btn.onclick=adminLogout;}flushOrphanPurge();}
+function enableAdmin(){document.body.classList.remove('viewer');const btn=document.getElementById('admin-lock-btn');if(btn){btn.innerHTML=LOCK_SVG(true);btn.title='Admin attivo — clicca per uscire';btn.classList.add('is-admin');btn.onclick=adminLogout;}flushOrphanPurge();}
 // Partite (calendario/risultati) di tornei eliminati: spariscono ovunque.
 // Si filtrano in memoria per tutti; il salvataggio su Firestore lo fa solo
 // un admin e solo con dati letti dal server (mai da cache locale).
@@ -2379,7 +2394,10 @@ let _changeLog=[];
 
 function _lsCache(){try{localStorage.setItem('laurera_p',JSON.stringify(players.map(p=>{const{photoUrl,...r}=p;return r;})));localStorage.setItem('laurera_m',JSON.stringify(matches));localStorage.setItem('laurera_s',JSON.stringify(sched));localStorage.setItem('laurera_i',JSON.stringify({nextId,matchNextId,schedNextId}));}catch(e){}}
 function _lsLoad(){try{const rp=localStorage.getItem('laurera_p');if(rp)players=JSON.parse(rp);const rm=localStorage.getItem('laurera_m');if(rm)matches=JSON.parse(rm);const rs=localStorage.getItem('laurera_s');if(rs)sched=JSON.parse(rs);const ri=localStorage.getItem('laurera_i');if(ri){const x=JSON.parse(ri);nextId=x.nextId||100;matchNextId=x.matchNextId||200;schedNextId=x.schedNextId||300;}}catch(e){}}
-function _attachPhotos(){players.forEach(p=>{const ph=(typeof fotoData!=="undefined"&&fotoData[p.id])||localStorage.getItem('laurera_ph_'+p.id);if(ph)p.photoUrl=ph;});matches.forEach(m=>{const v=localStorage.getItem('laurera_vid_'+m.id);if(v)m.videoUrl=v;});}
+// foto: quando l'elenco online è arrivato comanda lui (una foto tolta sparisce anche dove era salvata in locale);
+// prima di allora si usa la copia salvata sul dispositivo per mostrare subito le foto
+let _fotoOnline=false;
+function _attachPhotos(){players.forEach(p=>{const ph=(typeof fotoData!=="undefined"&&fotoData[p.id])||(_fotoOnline?null:localStorage.getItem('laurera_ph_'+p.id));if(ph)p.photoUrl=ph;else if(_fotoOnline)delete p.photoUrl;});matches.forEach(m=>{const v=localStorage.getItem('laurera_vid_'+m.id);if(v)m.videoUrl=v;});}
 
 function save(){
   const data={players:players.map(p=>{const{photoUrl,...r}=p;return r;}),matches,sched,nextId,matchNextId,schedNextId};
@@ -2416,11 +2434,6 @@ function delPh(id){
 }
 function applyFoto(){players.forEach(p=>{if(fotoData[p.id])p.photoUrl=fotoData[p.id];});}
 async function loadFoto(){try{const s=await _doc('foto').get();fotoData=(s.exists&&s.data().ph)||{};}catch(e){}applyFoto();}
-// una volta da admin: carica online le foto che esistono solo su questo dispositivo
-function uploadLocalPhotos(){
-  if(_checkViewer())return;
-  players.forEach(p=>{if(fotoData[p.id])return;const ph=localStorage.getItem('laurera_ph_'+p.id);if(ph)savePh(p.id,ph);});
-}
 function saveVid(id,u){try{localStorage.setItem('laurera_vid_'+id,u);}catch(e){toast('⚠️ Video troppo grande');}}
 function delVid(id){try{localStorage.removeItem('laurera_vid_'+id);}catch(e){}}
 // ═══ HELPERS ═══
@@ -2952,7 +2965,9 @@ document.addEventListener('click',e=>{if(!navigator.vibrate||!matchMedia('(point
   if(e.target.closest&&e.target.closest('button,.tbtn,.tab,.cal-day,.pcrd,.rk-row,.rs,.cmc,.hl-rc,.tk,.mv-pl'))navigator.vibrate(8);},{passive:true});
 
 // ═══ SCHERMATA DI CARICAMENTO: sparisce appena arrivano i giocatori (al massimo dopo 8 secondi) ═══
-function hideBoot(){const b=document.getElementById('boot');if(!b||b.classList.contains('out'))return;b.classList.add('out');setTimeout(()=>b.remove(),600);}
+function hideBoot(){const b=document.getElementById('boot');if(!b||b.classList.contains('out'))return;
+  // resta visibile almeno 1,8 secondi dall'apertura, così il logo si vede anche quando i dati arrivano subito
+  const wait=1800-performance.now();if(wait>0){clearTimeout(hideBoot._t);hideBoot._t=setTimeout(hideBoot,wait);return;}b.classList.add('out');setTimeout(()=>b.remove(),600);}
 setTimeout(hideBoot,8000);
 // i badge restano su una riga: quelli che non ci stanno interi vengono nascosti
 // spiegazione dei badge al passaggio del mouse (fumetto sopra il badge)
@@ -3356,6 +3371,7 @@ function cmcHtml(m){
   return`<div class="cmc mk ${m.risultato?'cd':live?'cs live':'cs'}${!m.risultato&&m.data===today?' oggi':''}" style="--mc:${col}" onclick="cmcClick(${m.id})">
     <div class="mk-time"><b>${esc(m.ora||'—')}</b>${!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`}</div>
     <div class="mk-pl">${av(p1)}${nm(n1,win1,win2)}</div>
+    <div class="mk-c"><b>${esc(m.ora||'—')}</b>${m.risultato?`<span class="mk-c-sc ${!win1&&!win2?'d':''}"><i class="${win1?'w':win2?'l':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</i><u>-</u><i class="${win2?'w':win1?'l':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</i></span><small>${esc(tag)}</small>`:(!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`)}</div>
     ${m.risultato?`<span class="mk-score${!win1&&!win2?' draw':''}"><b class="${win1?'w':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</b><b class="${win2?'w':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</b></span>`:'<span class="mk-vs">VS</span>'}
     <div class="mk-pl rt">${nm(n2,win2,win1)}${av(p2)}</div>
     <div class="mk-st">${live?'<span>IN CORSO</span>':''}${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
@@ -5147,6 +5163,8 @@ document.body.dataset.tab=currentTab;initTheme();initAdmin();fillNazList();
     if(snap.metadata.hasPendingWrites)return;
     fotoData=(snap.exists&&snap.data().ph)||{};
     Object.keys(fotoData).forEach(id=>{try{localStorage.setItem('laurera_ph_'+id,fotoData[id]);}catch(e){}});
+    if(!snap.metadata.fromCache){_fotoOnline=true;
+      try{Object.keys(localStorage).filter(k=>k.startsWith('laurera_ph_')&&!fotoData[k.slice(11)]).forEach(k=>localStorage.removeItem(k));}catch(e){}}
     _attachPhotos();renderCards();if(currentTab==='classifiche')renderRank();
   });
   _doc('log').onSnapshot(snap=>{
