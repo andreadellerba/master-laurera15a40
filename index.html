@@ -2876,7 +2876,7 @@ function matchOfWeek(){
 }
 
 // ═══ CONTO ALLA ROVESCIA per le partite di oggi ═══
-function cdText(at){const ms=at-Date.now();if(ms<=0)return'ORA';const m=Math.round(ms/60000),h=Math.floor(m/60);return h?`TRA ${h}H ${m%60}M`:`TRA ${m} MIN`;}
+function cdText(at){const ms=at-Date.now();if(ms<=0)return'ORA';const m=Math.round(ms/60000),h=Math.floor(m/60);return h?`${h}H ${m%60}MIN`:`${m}MIN`;}
 function matchTs(m){if(!m.data)return 0;const[h,mi]=(m.ora||'00:00').split(':').map(Number);const d=new Date(m.data+'T00:00:00');d.setHours(h||0,mi||0,0,0);return d.getTime();}
 setInterval(()=>document.querySelectorAll('.cdn[data-at]').forEach(e=>{e.textContent=cdText(+e.dataset.at);}),30000);
 
