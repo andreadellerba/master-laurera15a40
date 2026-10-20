@@ -1900,9 +1900,16 @@ html{background:#000!important}
    Solo tema scuro: il tema chiaro resta com'è. L'aurora diventa un blu notte pieno, così header, menu,
    barra risultati, righe classifica e card prendono tutti lo stesso colore. */
 body:not(.light){--aur:linear-gradient(#0e1c33,#0e1c33);--bg:#24507f;--bg2:#0b1830;--bg3:#0e1c33;--bg4:#172a4b;--border:#24385c;--border2:#2f4670;--text2:#9fb0c8;--header-bg:#24507f}
-html:has(body:not(.light)),body:not(.light),body:not(.light) .page,body:not(.light) #page-players,body:not(.light) .wrap,
+html:has(body:not(.light)),body:not(.light),
 body:not(.light) .header,body:not(.light) .profile-modal,body:not(.light) .profile-header{background:#24507f!important;background-image:none!important}
+/* le pagine sono trasparenti, così si vede il campo disegnato dietro */
+body:not(.light) .page,body:not(.light) #page-players,body:not(.light) .wrap{background:transparent!important;background-image:none!important}
 html body:not(.light) .pcrd.k4c,html body:not(.light) .pcrd.pk{background:#0e1c33!important}
+/* campo da tennis in prospettiva sullo sfondo (proposta 14): righe bianche leggere, misure vere, fermo mentre si scorre */
+#court-bg{position:fixed!important;left:-10vw;right:-10vw;top:22vh;bottom:-80vh;z-index:0!important;pointer-events:none;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-40 -40 1177 2457'%3E%3Cg fill='none' stroke='%23fff' stroke-opacity='.13' stroke-linecap='square'%3E%3Cpath stroke-width='9' d='M0 0H1097V2377H0Z M137 0V2377 M960 0V2377 M137 548.5H960 M137 1828.5H960 M548.5 548.5V1828.5 M548.5 0V30 M548.5 2347V2377'/%3E%3Cpath stroke-width='16.2' d='M-91 1188.5H1188'/%3E%3C/g%3E%3C/svg%3E") center top/contain no-repeat;
+  transform:perspective(800px) rotateX(52deg);transform-origin:50% 0}
+body.light #court-bg{display:none}
 /* titoli delle pagine (LISTA GIOCATORI, CALENDARIO…): la parte colorata diventa piena, blu notte come le card */
 html body:not(.light) :is(.hf-list-title,.pg-title.pg-big,.cal-big) span{color:#0e1c33!important;-webkit-text-stroke:0!important}
 /* riquadri "vetro" (impostazioni, albo, tornei…): sul blu sembravano slavati, diventano blu notte come le card */
@@ -1918,6 +1925,7 @@ html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:#0e1c
 </style>
 </head>
 <body class="viewer">
+<div id="court-bg" aria-hidden="true"></div>
 <!-- schermata di caricamento: logo e pallina che rimbalza, sparisce quando arrivano i giocatori -->
 <div id="boot" aria-hidden="true"><img src="https://www.laurera15a40.com/uploads/1/5/0/6/150685976/editor/logo-tipo-long-def.png?1725893045" alt=""><div class="boot-by">by Andrea Dellerba</div><div class="boot-court"><div class="boot-ball"></div><div class="boot-shadow"></div></div></div>
 <!-- sfumatura dello sfondo che si muove piano -->
