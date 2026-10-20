@@ -3129,7 +3129,8 @@ async function shareMatch(id){
   const row=async(pid,name,g,res,Y)=>{
     const p=players.find(z=>z.id===pid),win=res==='w',H=170,mid=Y+H/2;
     x.save();rr(60,Y,960,H,28);x.fillStyle='rgba(14,28,51,.9)';x.fill();
-    if(win){const gr=x.createLinearGradient(60,0,700,0);gr.addColorStop(0,'rgba(34,197,94,.22)');gr.addColorStop(1,'rgba(34,197,94,0)');x.fillStyle=gr;x.fill();x.clip();x.fillStyle=WIN;x.fillRect(60,Y,12,H);}
+    // sfumatura: verde su chi vince, rossa su chi perde (niente barra laterale)
+    if(win||res==='l'){const rgb=win?'34,197,94':'239,68,68',gr=x.createLinearGradient(60,0,700,0);gr.addColorStop(0,`rgba(${rgb},.24)`);gr.addColorStop(1,`rgba(${rgb},0)`);x.fillStyle=gr;x.fill();}
     x.restore();
     // posizione in classifica (scritta dopo il nome)
     const pos=p?rl.findIndex(z=>z.id===p.id)+1:0;
@@ -3137,10 +3138,10 @@ async function shareMatch(id){
     const img=await _loadImg(p?phUrl(p):null),R=62,cx=150;
     x.save();x.beginPath();x.arc(cx,mid,R+6,0,Math.PI*2);x.fillStyle=win?WIN:res==='d'?'#38bdf8':'rgba(255,255,255,.4)';x.fill();
     x.beginPath();x.arc(cx,mid,R,0,Math.PI*2);x.fillStyle='#16171c';x.fill();x.clip();if(img)x.drawImage(img,cx-R,mid-R,R*2,R*2);x.restore();
-    // nome (rimpicciolito se lungo) ed etichetta VINCE
+    // nome (rimpicciolito se lungo) e posizione in classifica
     const sn=dispName(name).toUpperCase();let fs=86;x.font=fs+'px Anton';while(x.measureText(sn).width>470&&fs>40){fs-=2;x.font=fs+'px Anton';}
-    x.textAlign='left';x.fillStyle=win||res==='d'?'#ffffff':'rgba(255,255,255,.72)';const ny=win?mid+14:mid+30;x.fillText(sn,240,ny);if(pos){const nw=x.measureText(sn).width;x.fillStyle='rgba(255,255,255,.55)';x.font='58px "Bebas Neue"';x.fillText('#'+pos,240+nw+18,ny);}
-    if(win){x.fillStyle=WIN;x.font='800 22px "DM Sans"';x.fillText('✓  VINCE',242,mid+56);}
+    x.textAlign='left';x.fillStyle=win||res==='d'?'#ffffff':'rgba(255,255,255,.72)';const ny=mid+30;x.fillText(sn,240,ny);if(pos){const nw=x.measureText(sn).width;x.fillStyle='rgba(255,255,255,.55)';x.font='58px "Bebas Neue"';x.fillText('#'+pos,240+nw+18,ny);}
+
     // punteggio
     rr(856,mid-66,146,132,24);x.fillStyle=win?LIME:'rgba(255,255,255,.1)';x.fill();
     x.textAlign='center';x.fillStyle=win?NV:'rgba(255,255,255,.85)';x.font='140px "Bebas Neue"';x.fillText(String(g),929,mid+50);
@@ -3149,7 +3150,18 @@ async function shareMatch(id){
   x.textAlign='center';x.fillStyle='rgba(255,255,255,.45)';x.font='700 24px "DM Sans"';x.fillText('LA NUOVA ERA DEL TENNIS INIZIA QUI',S/2,1040);
   const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob){toast('❌ Immagine non creata');return;}
   const name=`risultato-${(teamLabel(m,1)+'-'+teamLabel(m,2)).toLowerCase().replace(/[^a-z0-9]+/g,'-')}.png`,file=new File([blob],name,{type:'image/png'});
-  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Risultato Laurera 15A40'});return;}catch(e){if(e&&e.name==='AbortError')return;}}
+  // messaggio con emoji che parte insieme all'immagine (su WhatsApp *testo* = grassetto)
+  const n1=dispName(teamLabel(m,1)).toUpperCase(),n2=dispName(teamLabel(m,2)).toUpperCase();
+  const wn=r1==='l'?n2:n1,ln=r1==='l'?n1:n2,gw=r1==='l'?g2:g1,gl=r1==='l'?g1:g2;
+  const pos1=rl.findIndex(z=>z.id===m.p1Id)+1,pos2=rl.findIndex(z=>z.id===m.p2Id)+1;
+  const giorno=d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
+  const text=(r1==='d'?`🎾 *${n1}* e *${n2}* pareggiano *${g1}-${g2}* 🤝`:`🎾 *${wn}* batte ${ln} *${gw}-${gl}* 🏆🔥`)
+    +`\n${t?'🏟️ '+t.nome+' · ':''}📅 ${giorno}${m.ora?' · ⏰ '+m.ora:''}`
+    +(pos1&&pos2?`\n📊 In classifica: ${n1} #${pos1} · ${n2} #${pos2}`:'')
+    +`\n👉 Classifica e risultati: ${location.origin+location.pathname}`;
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Risultato Laurera 15A40',text});return;}catch(e){if(e&&e.name==='AbortError')return;}}
+  // dal PC: scarica l'immagine e copia il messaggio, da incollare in WhatsApp Web
+  try{await navigator.clipboard.writeText(text);toast('📋 Messaggio copiato: incollalo insieme all\'immagine');}catch(e){}
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
 }
 
