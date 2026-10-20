@@ -1602,7 +1602,7 @@ html{background-color:#000!important}
 /* ═══ CARD GIOCATORI "4 — avatar che esce": compatta, colore solo su bordo, anello e # ═══ */
 .k4c{--cc:var(--lv)}
 body.viewer .k4c{--cc:var(--gc)}
-.cards-grid{row-gap:34px!important;padding-top:34px!important}
+.cards-grid{row-gap:22px!important;padding-top:20px!important}   /* l'avatar sporge ~9px: restano ~13px di spazio vero */
 .cards-grid .pcrd.k4c{width:100%}
 body .cards-grid .pcrd.k4c{display:block!important;max-width:none;margin:0!important;padding:12px 14px 12px!important;overflow:visible!important;border-radius:22px!important;
   background:var(--aur)!important;background-attachment:fixed!important;background-size:100vw 100vh!important;
@@ -1629,7 +1629,7 @@ body .cards-grid .pcrd.k4c{display:block!important;max-width:none;margin:0!impor
 .k4-st .pk-t>span{font:700 9.5px "DM Sans",sans-serif!important;letter-spacing:1px!important;color:#8d8d8d!important;text-transform:uppercase}
 .k4-st .pk-t b{font-size:23px!important}
 @media(max-width:640px){
-  .cards-grid{gap:34px!important;padding-top:30px!important}
+  .cards-grid{gap:20px!important;padding-top:18px!important}
   .k4-av{width:80px;height:80px;margin-top:-34px}.k4-av span{font-size:29px}
   .k4-sn{font-size:23px}.k4-rk{font-size:26px}
   .k4-st .pk-t b{font-size:21px!important}
@@ -1644,7 +1644,7 @@ body .cards-grid .pcrd.k4c,body:is(:not([data-tab]),[data-tab="players"]) .pcrd.
 .k4-st{background:rgba(0,0,0,.42);border-top:none;border-radius:14px;padding:8px 4px 7px;margin-top:12px;border:1px solid rgba(255,255,255,.06)}
 .k4-st .pk-t>span{color:#b4b4b4!important}
 /* ═══ Card giocatore compatta (G) ═══ */
-body .cards-grid .pcrd.k4c.k4g{display:flex!important;align-items:center;gap:14px;padding:12px 16px 12px 14px!important;margin-top:18px!important;container-type:inline-size}
+body .cards-grid .pcrd.k4c.k4g{display:flex!important;align-items:center;gap:14px;padding:12px 16px 12px 14px!important;margin-top:0!important;container-type:inline-size}
 .k4g .k4-av{width:72px;height:72px;margin-top:-22px;align-self:flex-start}
 .k4g-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .k4g-h{display:flex;align-items:center;gap:10px;min-width:0}
