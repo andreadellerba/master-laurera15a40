@@ -1736,6 +1736,7 @@ body:not(.light) .cmc.mk{background:var(--aur)!important;background-attachment:f
 /* 11 · anello con la percentuale di vittorie attorno all'avatar del profilo */
 .ph-ring.has-pct{border:none!important;padding:5px!important;background:conic-gradient(var(--lv) calc(var(--pct)*1%),rgba(255,255,255,.14) 0)!important;position:relative}
 .ph-ring.has-pct .av{border:3px solid #000}
+.ph-ring.has-pct{transform:translateY(-4.5px)}   /* l'anello + la % sotto sono centrati insieme nella testata (stesso spazio sopra e sotto) */
 .ph-pct{position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);padding:1px 8px;border-radius:999px;background:#000;border:1px solid var(--lv);
   font:800 10.5px "DM Sans",sans-serif;color:#fff;white-space:nowrap}
 .ph-pct:empty{display:none}
@@ -1753,10 +1754,18 @@ body:not(.light) .cmc.mk{background:var(--aur)!important;background-attachment:f
 .pr-rv em{font-style:normal;font:700 11px "DM Sans",sans-serif;color:#b4b4b4}
 .pr-rv em i{font-style:normal}.pr-rv em i.w{color:#22c55e}.pr-rv em i.d{color:#f59e0b}.pr-rv em i.l{color:#ef4444}
 .pr-rv-ic{font-size:26px}
-.pr-chart{padding:10px 8px 8px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);margin-bottom:18px;overflow-x:auto}
-.pr-chart svg{width:100%;min-width:300px;height:auto;display:block}
+.pr-chart{padding:10px 8px 8px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);margin-bottom:18px;overflow:hidden}   /* sta tutto nello schermo, niente scorrimento */
+.pr-chart svg{width:100%;min-width:0;height:auto;display:block}
 .pr-chart .b-w{fill:#22c55e}.pr-chart .b-l{fill:#ef4444}.pr-chart .b-d{fill:#38bdf8}.pr-chart .b-o{fill:rgba(255,255,255,.22)}
 .pr-chart text{font-family:"DM Sans",sans-serif;text-anchor:middle}.pr-chart .t-v{font-size:12px;font-weight:800;fill:#fff}.pr-chart .t-d{font-size:9.5px;font-weight:700;fill:#8d8d8d}
+.ptr{position:relative;height:140px;margin-bottom:18px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);overflow:hidden}
+.ptr svg{position:absolute;inset:12px 8px 6px;width:calc(100% - 16px);height:calc(100% - 18px)}
+.ptr-pts{position:absolute;inset:12px 8px 6px}
+.ptr-pts span{position:absolute;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 2px #0b0b0d}
+.ptr-pts span.r-l{background:#ef4444}.ptr-pts span.r-d{background:#38bdf8}
+.ptr-pts span.best{box-shadow:0 0 0 2px #0b0b0d,0 0 0 4px #e8ff00,0 0 12px #e8ff00}
+.ptr-pts b{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);font:400 15px "Anton",sans-serif;color:#fff;white-space:nowrap}
+.ptr-pts span.best b{color:#e8ff00}
 .pr-leg{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:6px;font:700 10.5px "DM Sans",sans-serif;color:#b4b4b4}
 .pr-leg span{display:inline-flex;align-items:center;gap:5px}.pr-leg i{width:10px;height:10px;border-radius:3px;display:block}
 .pr-leg i.w{background:#22c55e}.pr-leg i.l{background:#ef4444}.pr-leg i.d{background:#38bdf8}.pr-leg i.o{background:rgba(255,255,255,.22)}
@@ -2911,6 +2920,19 @@ function badgesOf(p,st){
 function badgesHtml(ch){return ch.map(c=>`<span data-tip="${esc(c.t)}">${c.ic} ${c.w}</span>`).join('');}
 
 // ═══ PROFILO: anello % vittorie, badge, rivali, andamento dei game ═══
+// Profilo: linea dei game fatti nelle ultime 10 partite (pallino verde vinta, rosso persa, azzurro pareggio; il record in giallo)
+function trendHtml(p,mine){
+  const ms=mine.slice(0,10).reverse();if(ms.length<2)return'';
+  const v=ms.map(m=>{const g=_games(m);return _side(m,p.id)===1?g[0]:g[1];}),W=600,H=120,pad=16,mx=Math.max(...v,1),best=v.indexOf(mx);
+  const x=i=>pad+i*(W-2*pad)/(v.length-1),y=n=>H-pad-(n/mx)*(H-2*pad-14);
+  const pts=v.map((n,i)=>`${x(i).toFixed(1)},${y(n).toFixed(1)}`);
+  return`<div class="pr-sec">📉 ULTIME ${v.length} PARTITE</div><div class="ptr"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Game fatti nelle ultime partite">
+    <defs><linearGradient id="ptrG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e8ff00" stop-opacity=".32"/><stop offset="1" stop-color="#e8ff00" stop-opacity="0"/></linearGradient></defs>
+    ${[.33,.66].map(f=>`<line x1="${pad}" x2="${W-pad}" y1="${(pad+f*(H-2*pad)).toFixed(1)}" y2="${(pad+f*(H-2*pad)).toFixed(1)}" stroke="rgba(255,255,255,.07)" vector-effect="non-scaling-stroke"/>`).join('')}
+    <path d="M${pts.join(' L')} L${x(v.length-1).toFixed(1)},${H-pad} L${pad},${H-pad}Z" fill="url(#ptrG)"/>
+    <polyline points="${pts.join(' ')}" fill="none" stroke="#e8ff00" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>
+    <div class="ptr-pts">${v.map((n,i)=>`<span class="${i===best?'best':''} r-${_resFor(ms[i],p.id)}" style="left:${(x(i)/W*100).toFixed(2)}%;top:${(y(n)/H*100).toFixed(2)}%" title="${esc(dayShort(ms[i].data))}: ${n} game"><b>${n}</b></span>`).join('')}</div></div>`;
+}
 function profileExtra(p){
   const el=document.getElementById('profile-extra');if(!el)return;
   const mine=playedOf(p.id),opp=m=>{const s=_side(m,p.id);return s===1?m.p2Id:m.p1Id;};
@@ -2937,7 +2959,7 @@ function profileExtra(p){
   }
   const bd=badgesOf(p);
   el.innerHTML=(bd.length?`<div class="pr-badges hf-chips">${badgesHtml(bd)}</div>`:'')
-    +(mine.length?`<div class="pr-sec">⚔️ RIVALI</div><div class="pr-rivals">${rv('AVVERSARIO PIÙ AFFRONTATO',most,'🎾')}${rv('BESTIA NERA',bn,'😈')}</div>`:'')+chart;
+    +(mine.length?`<div class="pr-sec">⚔️ RIVALI</div><div class="pr-rivals">${rv('AVVERSARIO PIÙ AFFRONTATO',most,'🎾')}${rv('BESTIA NERA',bn,'😈')}</div>`:'')+chart+trendHtml(p,mine);
   // anello attorno all'avatar con la percentuale di vittorie
   const ring=document.querySelector('#profile-band .ph-ring');
   if(ring){const n=mine.length,w=mine.filter(m=>_resFor(m,p.id)==='w').length,pct=n?Math.round(w/n*100):0;
@@ -3973,7 +3995,7 @@ function buildPlayerCardHTML(p,opts){
     <div class="k4-av"${ringClick}>${photoHtml}</div>
     <div class="k4g-b">
       <div class="k4g-h"><div class="k4-sn">${esc(sn)}</div><div class="k4g-l5">${last5Html(p.id)}</div><div class="k4-rk">${ri>=0?'#'+(ri+1):'#–'}</div></div>
-      <div class="k4g-st">${stt(+p.pg||0,'Partite','Match','#e8ff00')}${stt(+p.gv||0,'Game','Game','#ff4fb8')}${stt((+p.mg||0).toFixed(2),'Media','Media','#22b8f0')}${stt(storicoHtml(p.storico),'','','#fff')}</div>
+      <div class="k4g-st">${stt(+p.pg||0,'Match','Match','#e8ff00')}${stt(+p.gv||0,'Game','Game','#ff4fb8')}${stt((+p.mg||0).toFixed(2),'Media','Media','#22b8f0')}${stt(storicoHtml(p.storico),'','','#fff')}</div>
     </div>
     ${_checkViewer()?'':`<div class="k4-adm"><span class="pk-lv">LV${p.livello}</span>${editBtn}</div>`}
   </div>`;
