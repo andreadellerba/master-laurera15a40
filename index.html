@@ -1903,6 +1903,8 @@ body:not(.light){--aur:linear-gradient(#0e1c33,#0e1c33);--bg:#24507f;--bg2:#0b18
 html:has(body:not(.light)),body:not(.light),body:not(.light) .page,body:not(.light) #page-players,body:not(.light) .wrap,
 body:not(.light) .header,body:not(.light) .profile-modal,body:not(.light) .profile-header{background:#24507f!important;background-image:none!important}
 html body:not(.light) .pcrd.k4c,html body:not(.light) .pcrd.pk{background:#0e1c33!important}
+/* titoli delle pagine (LISTA GIOCATORI, CALENDARIO…): la parte colorata diventa piena, blu notte come le card */
+html body:not(.light) :is(.hf-list-title,.pg-title.pg-big,.cal-big) span{color:#0e1c33!important;-webkit-text-stroke:0!important}
 /* riquadri "vetro" (impostazioni, albo, tornei…): sul blu sembravano slavati, diventano blu notte come le card */
 html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:#0e1c33!important}
 #boot{background:#24507f}
