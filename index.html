@@ -3024,7 +3024,7 @@ document.addEventListener('click',e=>{if(!navigator.vibrate||!matchMedia('(point
 // ═══ SCHERMATA DI CARICAMENTO: sparisce appena arrivano i giocatori (al massimo dopo 8 secondi) ═══
 function hideBoot(){const b=document.getElementById('boot');if(!b||b.classList.contains('out'))return;
   // resta visibile almeno 1,8 secondi dall'apertura, così il logo si vede anche quando i dati arrivano subito
-  const wait=1800-performance.now();if(wait>0){clearTimeout(hideBoot._t);hideBoot._t=setTimeout(hideBoot,wait);return;}b.classList.add('out');setTimeout(()=>b.remove(),600);}
+  const wait=3000-performance.now();if(wait>0){clearTimeout(hideBoot._t);hideBoot._t=setTimeout(hideBoot,wait);return;}b.classList.add('out');setTimeout(()=>b.remove(),600);}
 setTimeout(hideBoot,8000);
 // i badge restano su una riga: quelli che non ci stanno interi vengono nascosti
 // spiegazione dei badge al passaggio del mouse (fumetto sopra il badge)
