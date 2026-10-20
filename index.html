@@ -544,6 +544,12 @@ body:not(.viewer) .tabs-inner{justify-content:space-between;}
 /* ═══ REGISTRO ═══ */
 .log-entry{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border);}
 .log-entry:last-child{border-bottom:none;}
+.vis-sum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.vis-sum div{flex:1;min-width:80px;background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:8px 10px;text-align:center}
+.vis-sum b{display:block;font-family:"Bebas Neue",sans-serif;font-size:26px;line-height:1;color:var(--accent)}
+.vis-sum span{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text2)}
+.vis-row .log-text small{display:block;color:var(--text2);font-size:11px;margin-top:2px}
+.vis-ed{background:none;border:none;cursor:pointer;font-size:13px;opacity:.5;padding:0 2px}.vis-ed:hover{opacity:1}
 .log-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
 .log-text{flex:1;font-size:13px;color:var(--text);line-height:1.4;}
 .log-time{font-size:11px;color:var(--text2);flex-shrink:0;margin-top:2px;}
@@ -2090,6 +2096,15 @@ html{background:#000!important}
       <div class="btn-row"><button class="btn btn-d" onclick="resetData()">🗑️ Resetta Tutto</button></div>
     </div>
     <div class="card stg-block">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <h3 style="margin:0">👀 Chi apre l'app</h3>
+        <button class="btn btn-g" style="padding:4px 10px;font-size:12px" onclick="renderVisite()">↻ Aggiorna</button>
+      </div>
+      <p style="margin-bottom:10px">Ogni telefono che apre l'app viene contato in modo anonimo (le tue visite da admin no). Tocca ✏️ per dare un nome a un telefono se sai di chi è. Lo vedi solo tu.</p>
+      <div id="vis-sum" class="vis-sum"></div>
+      <div id="vis-list" style="max-height:320px;overflow-y:auto;background:var(--bg4);border-radius:8px;border:1px solid var(--border)"></div>
+    </div>
+    <div class="card stg-block">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <h3 style="margin:0">📋 Registro Modifiche</h3>
         <button class="btn btn-g" style="padding:4px 10px;font-size:12px" onclick="clearLog()">🗑 Pulisci</button>
@@ -2449,7 +2464,7 @@ function adminLogout(){_auth.signOut();document.body.classList.add('viewer');con
 function mobileProfileTap(){if(_checkViewer())openAdminModal();else switchTab('settings');}
 function openAdminModal(){const ei=document.getElementById('admin-email-input');const pi=document.getElementById('admin-pw-input');if(ei)ei.value='';if(pi)pi.value='';document.getElementById('admin-pw-err').style.display='none';document.getElementById('modal-admin-login').classList.add('open');setTimeout(()=>{if(ei)ei.focus();else if(pi)pi.focus();},100);}
 async function submitAdminLogin(){const email=document.getElementById('admin-email-input').value.trim();const pw=document.getElementById('admin-pw-input').value;if(!email||!pw)return;const btn=document.querySelector('#modal-admin-login .btn-p');if(btn)btn.disabled=true;try{await _auth.signInWithEmailAndPassword(email,pw);document.getElementById('modal-admin-login').classList.remove('open');toast('✅ Benvenuto Admin!');}catch(e){document.getElementById('admin-pw-err').style.display='block';}finally{if(btn)btn.disabled=false;}}
-function initAdmin(){_auth.onAuthStateChanged(user=>{if(user)enableAdmin();});}
+function initAdmin(){let first=true;_auth.onAuthStateChanged(user=>{if(user){enableAdmin();try{localStorage.setItem("laurera_noTrack","1");}catch(e){}}if(first){first=false;if(!user)trackVisit();}});}
 
 // ═══ FLAGS ═══
 const FC={'ITALIA':'it','RUSSIA':'ru','UZBEKISTAN':'uz','SPAGNA':'es','GERMANIA':'de','SERBIA':'rs','TURCHIA':'tr','CROAZIA':'hr','FRANCIA':'fr','USA':'us','BRASILE':'br','ARGENTINA':'ar','INGHILTERRA':'gb-eng','SVIZZERA':'ch','PORTOGALLO':'pt','OLANDA':'nl','BELGIO':'be','POLONIA':'pl','UCRAINA':'ua','AUSTRALIA':'au','CANADA':'ca','GIAPPONE':'jp','CINA':'cn','COREA':'kr','MESSICO':'mx','GRECIA':'gr','ROMANIA':'ro','AUSTRIA':'at','SVEZIA':'se','NORVEGIA':'no','DANIMARCA':'dk','SERBIA':'rs','ITA':'it','RUS':'ru','ESP':'es','GER':'de','FRA':'fr','POR':'pt'};
@@ -2557,7 +2572,7 @@ function toast(msg){const t=document.getElementById('toast-el');t.textContent=ms
 function applyTheme(){document.body.classList.remove('light');}
 function initTheme(){applyTheme();}
 // ═══ TAB ═══
-function switchTab(t){currentTab=t;document.body.dataset.tab=t;if(t==='players'){setTimeout(()=>countUp(document.getElementById('cards-grid')),30);setTimeout(fitK4,60);}document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('fab').style.display=['players','calendario'].includes(t)?'flex':'none';if(t==='classifiche')renderRank();if(t==='fanta'){loadFanta();renderFantaPronostici();}if(t==='calendario'){loadTornei();renderCalTorneoSelector();}if(t==='risultati')renderRisultati();if(t==='tornei'){loadTornei();renderTornei();}if(t==='albo'){renderAlbo();}if(t==='classifiche-torneo'){loadTornei();renderRanking();}if(t==='settings'){renderLog();}if(t==='players')renderTickerTape();const activeBn=document.querySelector('.bn-item.active');if(activeBn)activeBn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
+function switchTab(t){currentTab=t;document.body.dataset.tab=t;if(t==='players'){setTimeout(()=>countUp(document.getElementById('cards-grid')),30);setTimeout(fitK4,60);}document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('fab').style.display=['players','calendario'].includes(t)?'flex':'none';if(t==='classifiche')renderRank();if(t==='fanta'){loadFanta();renderFantaPronostici();}if(t==='calendario'){loadTornei();renderCalTorneoSelector();}if(t==='risultati')renderRisultati();if(t==='tornei'){loadTornei();renderTornei();}if(t==='albo'){renderAlbo();}if(t==='classifiche-torneo'){loadTornei();renderRanking();}if(t==='settings'){renderLog();renderVisite();}if(t==='players')renderTickerTape();const activeBn=document.querySelector('.bn-item.active');if(activeBn)activeBn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
 function fabClick(){if(_checkViewer())return;if(currentTab==='players')openNewPlayer();else if(currentTab==='calendario')openCalModal();}
 // ═══ FILTERS ═══
 // PC admin: sottomenu "Gestione"
@@ -4411,6 +4426,56 @@ function clearLog(){
   try{localStorage.removeItem('laurera_log');}catch(e){}
   _skipNextSnap.log=true;_doc('log').set({entries:[]}).catch(()=>{});
   renderLog();
+}
+
+// ═══════════════════════════════════════════════
+// CHI APRE L'APP: un codice anonimo per telefono, salvato solo sul telefono.
+// Chi legge non vede e non fa niente; le visite si leggono solo da admin.
+// ═══════════════════════════════════════════════
+const _visCol=()=>_db.collection('clubs').doc('laurera15a40').collection('visite');
+function trackVisit(){
+  try{
+    if(localStorage.getItem('laurera_noTrack'))return;   // telefono dell'admin: non conta
+    let id=localStorage.getItem('laurera_dev'),isNew=false;
+    if(!id){id=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');localStorage.setItem('laurera_dev',id);isNew=true;}
+    // una visita ogni 30 minuti al massimo (ricaricare la pagina non conta doppio)
+    const last=+localStorage.getItem('laurera_devLast')||0;if(!last)isNew=true;   // la prima scrittura non era andata: si riparte da capo
+    if(!isNew&&Date.now()-last<30*60*1000)return;
+    const ua=navigator.userAgent;
+    const dev=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)?'iPad':/Android/.test(ua)?'Android':/Macintosh/.test(ua)?'Mac':/Windows/.test(ua)?'PC Windows':'Altro';
+    const FV=firebase.firestore.FieldValue,d={last:FV.serverTimestamp(),n:FV.increment(1),dev};
+    if(isNew)d.first=FV.serverTimestamp();
+    _visCol().doc(id).set(d,{merge:true}).then(()=>{try{localStorage.setItem('laurera_devLast',Date.now());}catch(e){}}).catch(()=>{});
+  }catch(e){}
+}
+let _visite=[];
+async function renderVisite(){
+  const list=document.getElementById('vis-list'),sum=document.getElementById('vis-sum');if(!list||_checkViewer())return;
+  list.innerHTML='<div class="log-entry"><span class="log-text">Caricamento…</span></div>';
+  try{
+    const snap=await _visCol().get();
+    _visite=snap.docs.map(d=>{const x=d.data();return{id:d.id,n:x.n||0,dev:x.dev||'',nome:x.nome||'',first:x.first?x.first.toMillis():0,last:x.last?x.last.toMillis():0};});
+  }catch(e){list.innerHTML='<div class="log-entry"><span class="log-icon">⚠️</span><span class="log-text">Non riesco a leggere le visite. Controlla di aver aggiornato le regole su Firebase.</span></div>';sum.innerHTML='';return;}
+  // numero fisso per telefono, in ordine di primo accesso
+  [..._visite].sort((a,b)=>a.first-b.first).forEach((v,i)=>v.num=i+1);
+  const now=Date.now(),day=86400000,t0=new Date();t0.setHours(0,0,0,0);
+  const oggi=_visite.filter(v=>v.last>=t0.getTime()).length,sett=_visite.filter(v=>v.last>=now-7*day).length;
+  const tot=_visite.reduce((s,v)=>s+v.n,0);
+  sum.innerHTML=`<div><b>${_visite.length}</b><span>Telefoni</span></div><div><b>${oggi}</b><span>Oggi</span></div><div><b>${sett}</b><span>Ultimi 7 giorni</span></div><div><b>${tot}</b><span>Visite totali</span></div>`;
+  if(!_visite.length){list.innerHTML='<div class="log-entry"><span class="log-icon">ℹ️</span><span class="log-text">Ancora nessuna visita registrata.</span></div>';return;}
+  const fmt=ms=>{if(!ms)return'–';const d=new Date(ms),h=d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+    if(ms>=t0.getTime())return'oggi '+h;if(ms>=t0.getTime()-day)return'ieri '+h;return d.toLocaleDateString('it-IT',{day:'numeric',month:'short'})+' '+h;};
+  const ico={iPhone:'📱',iPad:'📱',Android:'📱',Mac:'💻','PC Windows':'💻'};
+  list.innerHTML=[..._visite].sort((a,b)=>b.last-a.last).map(v=>`<div class="log-entry vis-row"><span class="log-icon">${ico[v.dev]||'🌐'}</span>
+    <span class="log-text"><strong>${v.nome?esc(v.nome):'Telefono '+v.num}</strong> <button class="vis-ed" onclick="nameVisita('${v.id}')" title="Dai un nome">✏️</button>
+    <small>${esc(v.dev)}${v.nome?' · n. '+v.num:''} · ${v.n} ${v.n===1?'visita':'visite'} · primo accesso ${fmt(v.first)}</small></span>
+    <span class="log-time">${fmt(v.last)}</span></div>`).join('');
+}
+function nameVisita(id){
+  const v=_visite.find(x=>x.id===id);if(!v||_checkViewer())return;
+  const nome=prompt('Di chi è questo telefono? (lascia vuoto per togliere il nome)',v.nome||'');
+  if(nome===null)return;
+  _visCol().doc(id).update({nome:nome.trim().slice(0,40)}).then(renderVisite).catch(()=>toast('⚠️ Nome non salvato'));
 }
 
 // ═══════════════════════════════════════════════
