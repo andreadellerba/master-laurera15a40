@@ -1267,7 +1267,7 @@ body:not(.light) .cal-day.sel{background:var(--page)!important;border-color:tran
 body:not(.light) .cal-day.tod:not(.sel){border-color:var(--accent)!important}
 .cal-dots{gap:3px!important;margin-top:4px!important}.cdot{width:6px!important;height:6px!important}
 .cal-dh{display:flex;align-items:center;gap:10px;margin:16px 0 10px!important;font-family:"Bebas Neue",sans-serif!important;font-size:19px!important;font-weight:400!important;letter-spacing:1.5px;color:#d6d6d6!important;text-transform:uppercase!important}
-.cal-dh::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.12)}
+.cal-dh::after{display:none}   /* niente riga dopo la data fino a fine pagina */
 .cal-list{display:flex;flex-direction:column;gap:10px}
 @media(max-width:640px){.cal-strip{gap:4px!important}body:not(.light) .cal-day{border-radius:14px!important;padding:8px 1px!important}.cal-dd{font-size:19px!important}.cal-dn{font-size:9px!important;letter-spacing:.4px!important}}
 
@@ -1301,7 +1301,7 @@ body:not(.light) .cmc.mk{display:grid!important;grid-template-columns:auto minma
 
 /* ── RISULTATI ── */
 .rs-day{display:flex;align-items:center;gap:10px;margin:18px 0 10px;font-family:"Bebas Neue",sans-serif;font-size:19px;letter-spacing:1.5px;color:#d6d6d6;text-transform:uppercase}
-.rs-day::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.12)}
+.rs-day::after{display:none}   /* niente riga dopo la data fino a fine pagina */
 .rs-day:first-child{margin-top:0}
 .rs{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px;padding:12px 18px;margin-bottom:10px;border-radius:20px;overflow:hidden;
   background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 22px rgba(0,0,0,.3)}
