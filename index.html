@@ -1643,6 +1643,22 @@ body .cards-grid .pcrd.k4c,body:is(:not([data-tab]),[data-tab="players"]) .pcrd.
 .k4-rk{text-shadow:0 2px 10px rgba(0,0,0,.5)}
 .k4-st{background:rgba(0,0,0,.42);border-top:none;border-radius:14px;padding:8px 4px 7px;margin-top:12px;border:1px solid rgba(255,255,255,.06)}
 .k4-st .pk-t>span{color:#b4b4b4!important}
+/* ═══ Card giocatore compatta (G) ═══ */
+body .cards-grid .pcrd.k4c.k4g{display:flex!important;align-items:center;gap:14px;padding:12px 16px 12px 14px!important;margin-top:18px!important;container-type:inline-size}
+.k4g .k4-av{width:72px;height:72px;margin-top:-22px;align-self:flex-start}
+.k4g-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.k4g-h{display:flex;align-items:center;gap:10px;min-width:0}
+.k4g .k4-sn{font-size:24px;min-width:0}
+.k4g .k4-rk{position:static;font-size:26px;flex:none;margin-left:auto;transform:none!important}
+.k4g-l5:empty{display:none}.k4g-l5 .l5{margin:0!important}
+.k4g-st{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:6px 4px;border-radius:12px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.06)}
+.k4g-t{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;white-space:nowrap}
+.k4g-t b{font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:24px;line-height:1}
+.k4g-t b .sv,.k4g-t b span{font:inherit!important;letter-spacing:0!important}   /* storico grande come gli altri numeri */
+.k4g-t span{font:800 9.5px "DM Sans",sans-serif;letter-spacing:.9px;color:#b4b4b4;text-transform:uppercase}
+.k4g-t i{font-style:normal}.k4g-t .sh{display:none}
+.k4g .k4-adm{top:auto;bottom:-10px;right:14px}
+@container (max-width:300px){.k4g-t .lg{display:none}.k4g-t .sh{display:inline}}   /* poco spazio: PARTITE diventa MATCH */
 .hf-per{color:rgba(255,255,255,.55);margin-left:6px;letter-spacing:1px;white-space:nowrap;display:inline-block}
 /* record: etichette lunghe su telefono vanno su due righe invece di essere tagliate */
 @media(max-width:640px){.hl-tx small{white-space:normal;overflow:visible;line-height:1.15;letter-spacing:.3px;margin-bottom:2px}}
@@ -3113,7 +3129,7 @@ function renderHomePoster(){
 }
 // Card giocatori: nome (con sotto i pallini V/P/S) al centro fra il bordo alto della card e il riquadro dei numeri,
 // stesso spazio sopra e sotto; il # alla stessa altezza. Misurato sull'inchiostro delle lettere, non sul riquadro.
-function fitK4(){
+function fitK4(){return;   // card compatta (G): niente più calcolo, il layout è già allineato
   const cv=document.createElement('canvas').getContext('2d');
   document.querySelectorAll('.pcrd.k4c').forEach(c=>{
     const nm=c.querySelector('.k4-nm'),sn=c.querySelector('.k4-sn'),st=c.querySelector('.k4-st'),rk=c.querySelector('.k4-rk'),l5=c.querySelector('.k4-fn .l5,.k4-fn>*');
@@ -3948,16 +3964,15 @@ function buildPlayerCardHTML(p,opts){
   // Card "avatar che esce" (4): avatar grande che sporge sopra, nome piccolo sopra il cognome, # in alto a destra;
   // colore solo su bordo, anello e # (livello per l'admin, colore personale per gli altri).
   const fn='',sn=dispName(p.nome);   // N. COGNOME su una riga
-  return`<div class="pcrd k4c ${d.isFoil?'foil':''}" style="--lv:${lvColor};--gc:${gc}">
-    <div class="k4-rk">${ri>=0?'#'+(ri+1):'#–'}</div>
-    <div class="k4-top">
-      <div class="k4-av"${ringClick}>${photoHtml}</div>
-      <div class="k4-nm"><div class="k4-sn">${esc(sn)}</div><div class="k4-fn">${last5Html(p.id)}</div></div>
+  // Card compatta (proposta G): avatar a sinistra; accanto nome e #, sotto i numeri in riga con la descrizione in maiuscolo
+  const stt=(v,l,ls,c)=>`<div class="k4g-t"><b style="color:${c}">${v}</b><span><i class="lg">${l}</i><i class="sh">${ls}</i></span></div>`;
+  return`<div class="pcrd k4c k4g ${d.isFoil?'foil':''}" style="--lv:${lvColor};--gc:${gc}">
+    <div class="k4-av"${ringClick}>${photoHtml}</div>
+    <div class="k4g-b">
+      <div class="k4g-h"><div class="k4-sn">${esc(sn)}</div><div class="k4g-l5">${last5Html(p.id)}</div><div class="k4-rk">${ri>=0?'#'+(ri+1):'#–'}</div></div>
+      <div class="k4g-st">${stt(+p.pg||0,'Partite','Match','#e8ff00')}${stt(+p.gv||0,'Game','Game','#ff4fb8')}${stt((+p.mg||0).toFixed(2),'Media','Media','#22b8f0')}${stt(storicoHtml(p.storico),'V-P-S','V-P-S','#fff')}</div>
     </div>
     ${_checkViewer()?'':`<div class="k4-adm"><span class="pk-lv">LV${p.livello}</span>${editBtn}</div>`}
-    <div class="k4-st">
-      ${tile('Partite',+p.pg||0,'#e8ff00')}${tile('Storico',storicoHtml(p.storico),'#fff')}${tile('Game',+p.gv||0,'#ff4fb8')}${tile('Media',(+p.mg||0).toFixed(2),'#22b8f0')}
-    </div>
   </div>`;
 }
 function openPlayerCard(playerId){
