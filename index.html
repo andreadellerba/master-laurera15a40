@@ -1295,6 +1295,7 @@ body:not(.light) .cmc.mk{display:grid!important;grid-template-columns:auto minma
 .rs{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:14px;padding:12px 18px;margin-bottom:10px;border-radius:20px;overflow:hidden;
   background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 22px rgba(0,0,0,.3)}
 .rs::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#22c55e}.rs.draw::before{background:#22b8f0}
+.rs.wr::before{left:auto;right:0}   /* la barretta verde sta dalla parte del vincitore */
 .rs-side{display:flex;align-items:center;gap:10px;min-width:0}.rs-side.rt{justify-content:flex-end;text-align:right}
 .rs-nm{min-width:0}.rs-nm b{display:block;font-family:"Anton",sans-serif;font-weight:400;font-size:24px;line-height:1.05;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rs-nm .fn{display:block;font-size:11px;font-weight:700;letter-spacing:.5px;color:#9a9a9a;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2465,16 +2466,16 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const ini=n=>{const p=(n||"?").trim().split(/[\s.]+/).filter(Boolean);return p.length>1?(p[0][0]+p[1][0]).toUpperCase():(n||"?").slice(0,2).toUpperCase()};
 const isMobileView=()=>window.matchMedia('(max-width:640px)').matches;
 // Su mobile: "Nome Cognome" -> "N. COGNOME" (prima parola = iniziale, resto = cognome). Gestisce anche coppie "Nome1 Cognome1 / Nome2 Cognome2".
-const mobileShortName=nome=>{
+const mobileShortName=nome=>{   // "Mario Rossi" → "M. ROSSI" (sempre maiuscolo, una riga)
   if(!nome)return nome;
   return nome.split(' / ').map(n=>{
     const parts=n.trim().split(/\s+/);
-    if(parts.length<2)return n;
-    return parts[0].charAt(0)+'. '+parts.slice(1).join(' ');
+    if(parts.length<2)return n.toUpperCase();
+    return (parts[0].charAt(0)+'. '+parts.slice(1).join(' ')).toUpperCase();
   }).join(' / ');
 };
 // Telefono: nome puntato + cognome (Home esclusa). PC: nome completo. Esportazioni PDF: sempre puntato (pdfName).
-const dispName=nome=>isMobileView()?mobileShortName(nome):nome;
+const dispName=nome=>mobileShortName(nome);   // ovunque: N. COGNOME
 const pdfName=nome=>mobileShortName(nome);
 const avc=id=>`av-${id%8}`;
 const caC={1:'#86efac',2:'#16a34a',3:'#eab308',4:'#f97316',5:'#ef4444'};
@@ -2719,7 +2720,7 @@ function rankListAll(){const r=rankListGv(),ids=new Set(r.map(x=>x.id));return r
 const _avCache={};
 function fakeAv(p){
   if(!p)return'';
-  const key=p.id+'|'+p.sesso+'|'+players.length;if(_avCache[key])return _avCache[key];
+  const key=p.id+'|'+p.sesso+'|'+players.length+'|'+p.nome;if(_avCache[key])return _avCache[key];
   const F=String(p.sesso||'').toUpperCase()==='DONNA';
   // posizione del giocatore nel suo gruppo (uomini/donne): ogni combinazione esce una volta sola
   const grp=players.filter(x=>(String(x.sesso||'').toUpperCase()==='DONNA')===F).map(x=>+x.id).sort((a,b)=>a-b);
@@ -2729,8 +2730,10 @@ function fakeAv(p){
   const SH=['#22c55e','#38bdf8','#a78bfa','#ff4fb8','#f59e0b','#ef4444','#14b8a6','#f4f4f5','#e8ff00','#2563eb'];
   const AC=['#ffffff','#ff2d3d','#22c55e','#38bdf8','#e8ff00','#a78bfa','#111111'];
   const nS=F?5:6;
-  const st=i%nS,sk=SK[(i*3+1)%7],hc=HR[(i*5+2)%9],sh=SH[(i*7+3)%10],acc=(i*2+1)%3,ac=AC[(i*4+2)%7],bd=F?0:(i*5+1)%3;
-  const hair=(st===4&&!F)?HR[7]:hc;
+  let st=i%nS,sk=SK[(i*3+1)%7],hc=HR[(i*5+2)%9],sh=SH[(i*7+3)%10],acc=(i*2+1)%3,ac=AC[(i*4+2)%7],bd=F?0:(i*5+1)%3,eye='#1b1b1f';
+  let hair=(st===4&&!F)?HR[7]:hc;
+  // avatar su misura: Valentina Vacca, bionda con il caschetto, occhi azzurri, maglia fucsia
+  if(/valentina\s+vacca/i.test(p.nome||'')){st=3;hair='#ecc767';eye='#2f86e8';sh='#e5188f';acc=-1;}
   const dk=c=>{const n=parseInt(c.slice(1),16),r=Math.max(0,(n>>16)-28),g=Math.max(0,((n>>8)&255)-28),b=Math.max(0,(n&255)-28);return`rgb(${r},${g},${b})`;};
   let back='',top='';
   if(F){
@@ -2751,7 +2754,7 @@ function fakeAv(p){
   let acs='';
   if(acc===0)acs=`<rect x="32" y="33" width="36" height="6" rx="3" fill="${ac}"/>`;
   else if(acc===1)acs=`<path d="M32 38C32 26 40 20 50 20C60 20 68 26 68 38Z" fill="${ac}"/><path d="M50 37C60 36 72 37 76 40C70 42 58 41 50 40Z" fill="${dk(ac)}"/>`;
-  else acs=F||st===4?`<path d="M33 37C40 34 60 34 67 37L67 40C60 38 40 38 33 40Z" fill="${ac}"/><path d="M50 39C60 38 72 39 76 42C70 44 58 43 50 42Z" fill="${dk(ac)}"/>`:'';
+  else if(acc===2)acs=F||st===4?`<path d="M33 37C40 34 60 34 67 37L67 40C60 38 40 38 33 40Z" fill="${ac}"/><path d="M50 39C60 38 72 39 76 42C70 44 58 43 50 42Z" fill="${dk(ac)}"/>`:'';
   const beard=bd===1?`<path d="M35 52C36 66 43 70 50 70C57 70 64 66 65 52C61 60 56 62 50 62C44 62 39 60 35 52Z" fill="${hair}" opacity=".9"/>`
     :bd===2?`<path d="M35 52C36 66 43 70 50 70C57 70 64 66 65 52C61 60 56 62 50 62C44 62 39 60 35 52Z" fill="${hair}" opacity=".28"/>`:'';
   const cheeks=F?`<circle cx="40" cy="55" r="3" fill="#ff8a8a" opacity=".28"/><circle cx="60" cy="55" r="3" fill="#ff8a8a" opacity=".28"/>`:'';
@@ -2763,7 +2766,7 @@ function fakeAv(p){
     +`<circle cx="33" cy="49" r="4.2" fill="${sk}"/><circle cx="67" cy="49" r="4.2" fill="${sk}"/>`
     +`<ellipse cx="50" cy="47" rx="17" ry="20" fill="${sk}"/>${beard}${top}${acs}`
     +`<path d="M40.5 43.5Q43 42 45.5 43.5M54.5 43.5Q57 42 59.5 43.5" stroke="${dk(hair)}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`
-    +`<circle cx="43" cy="48" r="1.9" fill="#1b1b1f"/><circle cx="57" cy="48" r="1.9" fill="#1b1b1f"/>${cheeks}${ear}`
+    +`<circle cx="43" cy="48" r="${eye==='#1b1b1f'?1.9:2.3}" fill="${eye}"/><circle cx="57" cy="48" r="${eye==='#1b1b1f'?1.9:2.3}" fill="${eye}"/>${cheeks}${ear}`
     +`<path d="M44.5 57Q50 61.5 55.5 57" stroke="#7a3b2e" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>`;
   return _avCache[key]='data:image/svg+xml,'+encodeURIComponent(svg);
 }
@@ -2926,7 +2929,7 @@ function openMatchView(id){
   const day=m.data?new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):'';
   const prec=sched.filter(x=>x.id!==m.id&&x.risultato&&((x.p1Id===m.p1Id&&x.p2Id===m.p2Id)||(x.p1Id===m.p2Id&&x.p2Id===m.p1Id)));
   const pw1=prec.filter(x=>_resFor(x,m.p1Id)==='w').length,pw2=prec.filter(x=>_resFor(x,m.p2Id)==='w').length;
-  const side=(p,n,res,pid)=>{const w=String(n).split(' / ').length>1?['',n]:(()=>{const a=String(n).trim().split(/\s+/);return a.length>1?[a[0],a.slice(1).join(' ')]:['',a[0]];})();
+  const side=(p,n,res,pid)=>{const w=['',dispName(n)];   // N. COGNOME su una riga
     return`<div class="mv-pl ${res||''}"${p?` onclick="closeMatchView();openProfile(${pid})"`:''}><div class="mv-av">${p?avHtmlBig(p):''}</div><small>${esc(w[0])}</small><b>${esc(w[1])}</b>${p?last5Html(pid):''}</div>`;};
   const mid=played?`<div class="mv-score"><span class="${r1==='d'?'d':r1==='w'?'w':'l'}">${g1}</span><i>-</i><span class="${r1==='d'?'d':r1==='w'?'l':'w'}">${g2}</span></div>`
     :`<div class="mv-vs">VS${m.data===fmtD(new Date())&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:''}</div>`;
@@ -2968,9 +2971,9 @@ async function shareMatch(id){
     const p=players.find(z=>z.id===pid),img=await _loadImg(p?phUrl(p):null),R=150,cy=470;
     x.save();x.beginPath();x.arc(cx,cy,R+10,0,Math.PI*2);x.fillStyle=col(res);x.fill();x.beginPath();x.arc(cx,cy,R,0,Math.PI*2);x.fillStyle='#14151a';x.fill();x.clip();
     if(img)x.drawImage(img,cx-R,cy-R,R*2,R*2);x.restore();
-    const a=String(name).trim().split(/\s+/),fn=a.length>1&&!String(name).includes(' / ')?a[0]:'',sn=fn?a.slice(1).join(' '):String(name);
+    const fn='',sn=dispName(name);   // N. COGNOME su una riga
     x.fillStyle='rgba(255,255,255,.75)';x.font='700 28px "DM Sans"';if(fn)x.fillText(fn.toUpperCase(),cx,690);
-    x.fillStyle='#ffffff';let fs=64;x.font=fs+'px Anton';while(x.measureText(sn.toUpperCase()).width>420&&fs>30){fs-=2;x.font=fs+'px Anton';}x.fillText(sn.toUpperCase(),cx,760);
+    x.fillStyle='#ffffff';let fs=64;x.font=fs+'px Anton';while(x.measureText(sn.toUpperCase()).width>420&&fs>30){fs-=2;x.font=fs+'px Anton';}x.fillText(sn.toUpperCase(),cx,fn?760:725);
   };
   await drawSide(m.p1Id,teamLabel(m,1),280,r1);await drawSide(m.p2Id,teamLabel(m,2),800,r1==='w'?'l':r1==='l'?'w':'d');
   x.font='170px Anton';const s1=String(g1),s2=String(g2),dash=' - ',w1=x.measureText(s1).width,wd=x.measureText(dash).width,w2=x.measureText(s2).width,sx=S/2-(w1+wd+w2)/2;
@@ -3015,7 +3018,7 @@ function renderHomeFeat(){
     const p=ws.p,st=ws.st,rl2=rankListAll(),ri=rl2.findIndex(x=>x.id===p.id);
     const sub=`<span>MATCH ${+p.pg||0} · V-P-S ${esc(normStorico(p.storico))}</span><span>GAME ${+p.gv||0} · MEDIA ${(+p.mg||0).toFixed(2)}</span>`;
     feat=`<div class="hf-feat" onclick="openProfile(${p.id})"><div class="hf-ph">${avHtmlBig(p)}</div>
-      <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(p.nome)}${ri>=0?` <em class="hf-rk">#${ri+1}</em>`:''}</div><div class="hf-sub">${sub}</div>
+      <div class="hf-txt"><div class="hf-k">★ ${st?'GIOCATORE DELLA SETTIMANA':'IN TESTA ALLA CLASSIFICA'}</div><div class="hf-nm">${esc(dispName(p.nome))}${ri>=0?` <em class="hf-rk">#${ri+1}</em>`:''}</div><div class="hf-sub">${sub}</div>
       %%CHIPS%%</div></div>`;
   }
   // 6 record. Se più giocatori sono a pari merito, la scheda li fa scorrere uno ogni 3 secondi.
@@ -3069,7 +3072,7 @@ function renderHomePoster(){
   el.parentElement&&el.parentElement.classList.remove('one');
   // per ogni giocatore: nome (piccolo, solo PC) sopra il cognome grande, sotto Match · storico V-P-S · media
   const rl=rankListGv(),side=(id,n)=>{const p=players.find(q=>q.id===id);const dbl=String(n).includes(' / ');
-    const fn=!dbl?String(n).trim().split(/\s+/)[0]:'';const sn=String(n).split(' / ').map(surnameOf).join(' / ');
+    const fn='',sn=dispName(n);   // N. COGNOME su una riga
     const st=p&&!dbl?`MATCH ${+p.pg||0} · ${esc(normStorico(p.storico))} · MEDIA ${(+p.mg||0).toFixed(2)}`:'';
     return `<div class="hp-p"><div class="hp-av">${avHtmlBig(p||{nome:n})}</div>${fn&&fn!==sn?`<em class="hp-fn">${esc(fn)}</em>`:''}<b>${esc(sn)}</b><small>${st}</small></div>`;};
   const col=x.live||x.idx===0?'np-red':x.when==='oggi'?'np-cyan':'np-violet';
@@ -3230,10 +3233,10 @@ function renderNextMatch(){
   if(!el){renderHomePoster();return;}
   const x=nextMatchInfo();
   if(!x){el.innerHTML='';renderHomePoster();return;}
-  const short=n=>esc(String(n).split(' / ').map(s=>{const p=s.trim().split(/\s+/);return p.length>1?p.slice(1).join(" "):p[0];}).join(' / '));
+  const short=n=>esc(dispName(n));   // N. COGNOME
   el.innerHTML=`<button type="button" class="next-pill ${x.live||x.idx===0?'np-red':x.when==='oggi'?'np-cyan':'np-violet'}" onclick="openNextMatch()" title="${esc(x.a)} vs ${esc(x.b)} · ${esc(x.when)} ${esc(x.ora)}">
     ${x.live?'<span class="np-live" aria-hidden="true"></span>':''}<span class="np-tag">${x.live?'IN CORSO':esc(x.when.toUpperCase())}</span>
-    <b class="np-full">${esc(x.a)} vs ${esc(x.b)}</b><b class="np-short">${short(x.a)} – ${short(x.b)}</b>
+    <b class="np-full">${short(x.a)} vs ${short(x.b)}</b><b class="np-short">${short(x.a)} – ${short(x.b)}</b>
     <span class="np-when">${esc(x.ora)}</span>${x.total>1?`<span class="np-count">${x.idx+1}/${x.total}</span>`:""}</button>`;
   requestAnimationFrame(fitNextPill);renderHomePoster();
 }
@@ -3278,12 +3281,12 @@ function renderTickerTape(){renderNextMatch();
     const n1=_gtn(m,m.p1Id),n2=_gtn(m,m.p2Id);
     const g1=+m.gv1,g2=+m.gv2,hasG=Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2);
     const isDraw=m.winnerId==='draw'||!m.winnerId;
-    if(isDraw){items.push(`<i class="tk" data-mid="${m.id}"><b>${esc(n1.toUpperCase())}</b><u>VS</u><b>${esc(n2.toUpperCase())}</b><em class="draw">${hasG?`<i class="d">${g1}</i><i class="x">-</i><i class="d">${g2}</i>`:esc(m.risultato)}</em></i>`);return;}
+    if(isDraw){items.push(`<i class="tk" data-mid="${m.id}"><b>${esc(dispName(n1))}</b><u>VS</u><b>${esc(dispName(n2))}</b><em class="draw">${hasG?`<i class="d">${g1}</i><i class="x">-</i><i class="d">${g2}</i>`:esc(m.risultato)}</em></i>`);return;}
     // ordine come è stata creata la partita: il vincitore in bianco, lo sconfitto attenuato
     const winnerIsP1=+m.winnerId===m.p1Id;
     const t1=winnerIsP1?'b':'s',t2=winnerIsP1?'s':'b';
     const sc=hasG?`<i class="${winnerIsP1?"w":"l"}">${g1}</i><i class="x">-</i><i class="${winnerIsP1?"l":"w"}">${g2}</i>`:esc(m.risultato);
-    items.push(`<i class="tk" data-mid="${m.id}"><${t1}>${esc(n1.toUpperCase())}</${t1}><u>VS</u><${t2}>${esc(n2.toUpperCase())}</${t2}><em>${sc}</em></i>`);
+    items.push(`<i class="tk" data-mid="${m.id}"><${t1}>${esc(dispName(n1))}</${t1}><u>VS</u><${t2}>${esc(dispName(n2))}</${t2}><em>${sc}</em></i>`);
   });
   // le prossime partite non stanno più nel ticker: si vedono nella pillola del menu
   if(!items.length)items.push('<i class="tk"><b>LAURERA 15A40</b><u>la nuova era del tennis inizia qui</u></i>');
@@ -3303,7 +3306,7 @@ function renderTickerTape(){renderNextMatch();
 }
 // ═══ HIGHLIGHTS ═══
 function fillMSelects(){const opts='<option value="">— Seleziona —</option>'+players.filter(p=>!p.archiviato).sort((a,b)=>bySurname(a,b)).map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');document.getElementById('mm-p1').innerHTML=opts;document.getElementById('mm-p2').innerHTML=opts;}
-function renderMatches(){const grid=document.getElementById('match-grid');if(!matches.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><span class="empty-icon">🎬</span>Nessun highlight ancora</div>';return;}grid.innerHTML=matches.map(m=>{const p1=players.find(p=>p.id===m.p1Id),p2=players.find(p=>p.id===m.p2Id);const ds=m.data?new Date(m.data).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'}):'—';const hv=!!m.videoUrl;return`<div class="mcard"><div class="mthumb" onclick="${hv?`playVid(${m.id})`:''}"> ${hv?`<video src="${m.videoUrl}" preload="metadata"></video><div class="moverlay"><div class="mplay">▶</div></div>`:`<div class="mthumb-ph"><span>🎾</span><span>Nessun video</span></div>`}</div><div class="mbody"><div class="mtitle">${esc(m.titolo)||'Partita'}</div><div class="mmeta"><span>${p1?esc(p1.nome):'—'}</span><span style="color:var(--text2)">vs</span><span>${p2?esc(p2.nome):'—'}</span>${m.risultato?`<span style="color:var(--accent2);font-weight:700">${esc(m.risultato)}</span>`:''}</div><div class="mmeta" style="margin-top:4px"><span style="background:var(--bg4);padding:2px 7px;border-radius:5px;font-size:11px">📅 ${ds}</span></div><div class="mactions"><label class="mbtn mbtn-p" style="cursor:pointer">📹 ${hv?'Sostituisci':'Carica Video'}<input type="file" accept="video/*" style="display:none" onchange="uploadVid(this,${m.id})"></label><button class="mbtn mbtn-g" onclick="openMatchModal(${m.id})">✏️</button>${hv?`<button class="mbtn mbtn-d" onclick="removeVid(${m.id})">🗑</button>`:''}</div><div class="vprog" id="vp-${m.id}"><div class="vprog-fill" id="vpf-${m.id}" style="width:0%"></div></div></div></div>`;}).join('');}
+function renderMatches(){const grid=document.getElementById('match-grid');if(!matches.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><span class="empty-icon">🎬</span>Nessun highlight ancora</div>';return;}grid.innerHTML=matches.map(m=>{const p1=players.find(p=>p.id===m.p1Id),p2=players.find(p=>p.id===m.p2Id);const ds=m.data?new Date(m.data).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'}):'—';const hv=!!m.videoUrl;return`<div class="mcard"><div class="mthumb" onclick="${hv?`playVid(${m.id})`:''}"> ${hv?`<video src="${m.videoUrl}" preload="metadata"></video><div class="moverlay"><div class="mplay">▶</div></div>`:`<div class="mthumb-ph"><span>🎾</span><span>Nessun video</span></div>`}</div><div class="mbody"><div class="mtitle">${esc(m.titolo)||'Partita'}</div><div class="mmeta"><span>${p1?esc(dispName(p1.nome)):'—'}</span><span style="color:var(--text2)">vs</span><span>${p2?esc(dispName(p2.nome)):'—'}</span>${m.risultato?`<span style="color:var(--accent2);font-weight:700">${esc(m.risultato)}</span>`:''}</div><div class="mmeta" style="margin-top:4px"><span style="background:var(--bg4);padding:2px 7px;border-radius:5px;font-size:11px">📅 ${ds}</span></div><div class="mactions"><label class="mbtn mbtn-p" style="cursor:pointer">📹 ${hv?'Sostituisci':'Carica Video'}<input type="file" accept="video/*" style="display:none" onchange="uploadVid(this,${m.id})"></label><button class="mbtn mbtn-g" onclick="openMatchModal(${m.id})">✏️</button>${hv?`<button class="mbtn mbtn-d" onclick="removeVid(${m.id})">🗑</button>`:''}</div><div class="vprog" id="vp-${m.id}"><div class="vprog-fill" id="vpf-${m.id}" style="width:0%"></div></div></div></div>`;}).join('');}
 function openMatchModal(id){if(_checkViewer())return;editMatchId=id||null;fillMSelects();if(id){const m=matches.find(x=>x.id===id);document.getElementById('mm-title').textContent='Modifica';document.getElementById('mm-titolo').value=m.titolo||'';document.getElementById('mm-p1').value=m.p1Id||'';document.getElementById('mm-p2').value=m.p2Id||'';document.getElementById('mm-data').value=m.data||'';document.getElementById('mm-risultato').value=m.risultato||'';document.getElementById('mm-note').value=m.note||'';document.getElementById('mm-del-btn').style.display='';}else{document.getElementById('mm-title').textContent='Nuovo';['mm-titolo','mm-data','mm-risultato','mm-note'].forEach(x=>document.getElementById(x).value='');document.getElementById('mm-p1').value='';document.getElementById('mm-p2').value='';document.getElementById('mm-del-btn').style.display='none';}document.getElementById('modal-match').classList.add('open');}
 function saveMatch(){const data={titolo:document.getElementById('mm-titolo').value.trim(),p1Id:+document.getElementById('mm-p1').value||null,p2Id:+document.getElementById('mm-p2').value||null,data:document.getElementById('mm-data').value,risultato:document.getElementById('mm-risultato').value.trim(),note:document.getElementById('mm-note').value.trim()};if(editMatchId){const idx=matches.findIndex(m=>m.id===editMatchId);matches[idx]={...matches[idx],...data};toast('✅ Aggiornato!');}else{matches.push({id:matchNextId++,...data});toast('✅ Aggiunto!');}save();document.getElementById('modal-match').classList.remove('open');renderMatches();}
 function deleteMatch(){if(!editMatchId)return;delVid(editMatchId);matches=matches.filter(m=>m.id!==editMatchId);save();document.getElementById('modal-match').classList.remove('open');renderMatches();toast('🗑️ Eliminato');}
@@ -3387,7 +3390,7 @@ function cmcHtml(m){
   else{col='#8b5cf6';stat='DA GIOCARE';tag='';}
   if(!tag&&m.data)tag=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric'}).toUpperCase();
   const av=p=>p?`<div class="mk-av">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`:'';
-  const nm=(n,w,l)=>{const dbl=String(n).includes(' / ');const sn=String(n).split(' / ').map(surnameOf).join(' / ');const fn=dbl?'':String(n).trim().split(/\s+/)[0];
+  const nm=(n,w,l)=>{const dbl=String(n).includes(' / ');const sn=dispName(n),fn='';   /* N. COGNOME su una riga */
     return `<div class="mk-nm${w?' win':''}${l?' lose':''}">${fn&&fn!==sn?`<small>${esc(fn)}</small>`:''}<b>${esc(sn)}</b></div>`;};
   const admin=!m.risultato
     ?`<button class="add-res-btn" onclick="event.stopPropagation();openCalModalRes(${m.id})"><span class="add-res-full">+ Risultato</span><span class="add-res-short">+</span></button>`:'';
@@ -3624,7 +3627,7 @@ function renderRisultati(){
     if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){for(const e of [bm.p1,bm.p2]){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?p.nome:'?';}).join(' / ');}}}}
     const p=players.find(x=>x.id===pid);return p?p.nome:(pid===m.p1Id?m.teamName1:m.teamName2)||'?';};
   const av=pid=>{const p=players.find(x=>x.id===pid);return p?`<div class="mk-av">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`:'';};
-  const nm=(n,lbl)=>{const dbl=String(n).includes(' / ');const sn=String(n).split(' / ').map(surnameOf).join(' / ');const fn=dbl?'':String(n).trim().split(/\s+/)[0];
+  const nm=(n,lbl)=>{const dbl=String(n).includes(' / ');const sn=dispName(n),fn='';   /* N. COGNOME su una riga */
     return `<div class="rs-nm">${fn&&fn!==sn?`<small class="fn">${esc(fn)}</small>`:''}<b>${esc(sn)}</b></div>`;};
   const row=m=>{
     const draw=m.winnerId==='draw'||!m.winnerId;
@@ -3638,7 +3641,7 @@ function renderRisultati(){
     else if(parts){sL=parts[1];sR=parts[2];}
     else{sL=esc(m.risultato);sR='';}
     const cL=draw?'w':(wIsP1?'w':'l'),cR=draw?'l':(wIsP1?'l':'w');
-    return `<div class="rs${draw?' draw':''}${m.id===motw?' motw':''}" onclick="openMatchView(${m.id})">${m.id===motw?'<div class="rs-motw">⭐ PARTITA DELLA SETTIMANA</div>':''}
+    return `<div class="rs${draw?' draw':''}${!draw&&!wIsP1?' wr':''}${m.id===motw?' motw':''}" onclick="openMatchView(${m.id})">${m.id===motw?'<div class="rs-motw">⭐ PARTITA DELLA SETTIMANA</div>':''}
       <div class="rs-side ${cL}">${av(L)}${nm(teamOf(m,L),draw?'PAREGGIO':(wIsP1?'VINCE':'PERDE'))}</div>
       <div class="rs-score"><span class="${draw?'dr':(wIsP1?'win':'')}">${sL}</span>${sR!==''?`<span class="${draw?'dr':(wIsP1?'':'win')}">${sR}</span>`:''}</div>
       <div class="rs-side ${cR} rt">${nm(teamOf(m,R),draw?'PAREGGIO':(wIsP1?'PERDE':'VINCE'))}${av(R)}</div>
@@ -3892,7 +3895,7 @@ function buildPlayerCardHTML(p,opts){
   const gc=GUEST[Math.abs((+p.id||0)*7)%GUEST.length];
   // Card "avatar che esce" (4): avatar grande che sporge sopra, nome piccolo sopra il cognome, # in alto a destra;
   // colore solo su bordo, anello e # (livello per l'admin, colore personale per gli altri).
-  const _w=String(p.nome||'').trim().split(/\s+/),fn=_w.length>1?_w[0]:'',sn=_w.length>1?_w.slice(1).join(' '):_w[0]||'';
+  const fn='',sn=dispName(p.nome);   // N. COGNOME su una riga
   return`<div class="pcrd k4c ${d.isFoil?'foil':''}" style="--lv:${lvColor};--gc:${gc}">
     <div class="k4-rk">${ri>=0?'#'+(ri+1):'#–'}</div>
     <div class="k4-top">
@@ -3951,7 +3954,7 @@ function exportPlayerCardPNG(){
     ctx.fillStyle='#1e1e1e';ctx.beginPath();ctx.arc(cx,cy,rad-7,0,Math.PI*2);ctx.fill();
     const finishRest=()=>{
       ctx.fillStyle='#ffffff';ctx.font='700 40px "Bebas Neue"';ctx.textAlign='center';
-      ctx.fillText(p.nome.toUpperCase(),cx,cy+rad+66);
+      ctx.fillText(dispName(p.nome),cx,cy+rad+66);
       ctx.textAlign='center';
       const badgesY=cy+rad+114,bSize=56,bGap=14,totalBW=d.showBadges.length*bSize+(d.showBadges.length-1)*bGap;
       let bx=cx-totalBW/2;
@@ -4016,7 +4019,7 @@ function openProfile(playerId){
   av.className=`av ${avc(p.id)}`;
   av.innerHTML=phUrl(p)?`<img src="${phUrl(p)}" alt="">`:ini(p.nome);
   { const _w=String(p.nome||'').trim().split(/\s+/),_fn=_w.length>1?_w[0]:'',_sn=_w.length>1?_w.slice(1).join(' '):_w[0]||'';
-    document.getElementById('profile-name').innerHTML=(_fn?`<small>${esc(_fn)}</small>`:'')+esc(_sn); }
+    document.getElementById('profile-name').innerHTML=esc(dispName(p.nome)); }   // N. COGNOME su una riga
   // niente livello né bandiera nel profilo: il livello è solo per l'admin
   const _lvEl=document.getElementById('profile-lv');if(_lvEl)_lvEl.innerHTML='';
   // Stats
@@ -4502,7 +4505,7 @@ function fillMtPlayers(selected){
   el.innerHTML=players.filter(p=>!p.archiviato||selected.includes(p.id)).sort((a,b)=>bySurname(a,b)).map(p=>{
     const checked=selected.includes(p.id);
     const ini=p.nome.split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
-    return`<label class="mt-player-chip"><input type="checkbox" value="${p.id}" ${checked?'checked':''} onchange="updateMtCount()"><div class="mt-chip-av av-${p.id%8}">${ini}</div><span class="mt-chip-name">${esc(p.nome)}</span><div class="mt-chip-check">✓</div></label>`;
+    return`<label class="mt-player-chip"><input type="checkbox" value="${p.id}" ${checked?'checked':''} onchange="updateMtCount()"><div class="mt-chip-av av-${p.id%8}">${ini}</div><span class="mt-chip-name">${esc(dispName(p.nome))}</span><div class="mt-chip-check">✓</div></label>`;
   }).join('');
   updateMtCount();
 }
@@ -5416,7 +5419,7 @@ function renderAlbo(){
 +'<div style="flex:1;min-width:0">'
 +'<div style="font-family:\'Bebas Neue\',sans-serif;font-size:22px;letter-spacing:2px;line-height:1.1">'
 +'<span style="color:var(--text2)">Vincitore&nbsp;</span>'
-+'<span style="color:var(--accent)">'+esc(a.vincitore)+'</span>'
++'<span style="color:var(--accent)">'+esc(String(a.vincitore||'').split('/').map(function(s){return dispName(s.trim());}).join(' / '))+'</span>'
 +'</div>'
 +(a.torneo?'<div style="font-size:12px;color:var(--text2);margin-top:3px;letter-spacing:.5px">'+esc(a.torneo)+'</div>':'')
 +(a.note?(function(_n){
