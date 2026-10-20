@@ -433,6 +433,7 @@ body:not(.viewer) .tabs-inner{justify-content:space-between;}
   .fanta-add-btn{padding:5px 10px!important;justify-content:center!important;}
   .fanta-add-full{display:none!important;}
   .fanta-add-short{display:inline!important;}
+  .fanta-locked{text-align:center;padding:3px 6px!important;}
   .fanta-p2-name{display:block;}
 
   /* RANK TABLE — scroll orizzontale + nascondi colonne non essenziali */
@@ -550,6 +551,7 @@ body:not(.viewer) .tabs-inner{justify-content:space-between;}
 .vis-sum span{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text2)}
 .vis-row .log-text small{display:block;color:var(--text2);font-size:11px;margin-top:2px}
 .vis-ed{background:none;border:none;cursor:pointer;font-size:13px;opacity:.5;padding:0 2px}.vis-ed:hover{opacity:1}
+.fanta-locked{display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:700;color:var(--text2);background:var(--bg4);border:1px solid var(--border);border-radius:999px;padding:5px 12px;white-space:nowrap}
 .log-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
 .log-text{flex:1;font-size:13px;color:var(--text);line-height:1.4;}
 .log-time{font-size:11px;color:var(--text2);flex-shrink:0;margin-top:2px;}
@@ -5109,7 +5111,7 @@ function renderFantaPronostici(){
         </span>
         <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
           ${badge}
-          <button onclick="editFantaPrediction(${m.id},'${escapedUser}')" style="background:rgba(124,92,252,.12);border:1px solid rgba(124,92,252,.3);color:var(--accent2);border-radius:7px;padding:4px 8px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">✏️</button>
+          ${fantaLocked(m)?'':`<button onclick="editFantaPrediction(${m.id},'${escapedUser}')" style="background:rgba(124,92,252,.12);border:1px solid rgba(124,92,252,.3);color:var(--accent2);border-radius:7px;padding:4px 8px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">✏️</button>`}
           <button onclick="deleteFantaPrediction(${m.id},'${escapedUser}')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;border-radius:7px;padding:4px 8px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif">🗑</button>
         </div>
       </div>`;
@@ -5126,7 +5128,8 @@ function renderFantaPronostici(){
         </div>
         <div class="fanta-actions" style="display:flex;align-items:center;gap:6px;flex-shrink:0">
           <span class="fanta-pred-count" style="font-size:11px;color:var(--text2);background:var(--bg4);padding:2px 7px;border-radius:5px;white-space:nowrap">${preds.length} pronostici</span>
-          <button class="btn btn-p fanta-add-btn" style="padding:5px 12px;font-size:12px;white-space:nowrap" onclick="openFantaModal(${m.id})"><span class="fanta-add-full">+ Pronostico</span><span class="fanta-add-short" style="display:none">+</span></button>
+          ${fantaLocked(m)?`<span class="fanta-locked" title="Pronostici chiusi: la partita è già iniziata">🔒 <span class="fanta-add-full">Chiusi</span></span>`
+            :`<button class="btn btn-p fanta-add-btn" style="padding:5px 12px;font-size:12px;white-space:nowrap" onclick="openFantaModal(${m.id})"><span class="fanta-add-full">+ Pronostico</span><span class="fanta-add-short" style="display:none">+</span></button>`}
         </div>
         <button onclick="toggleFantaPanel('${panelId}')" style="background:var(--bg4);border:1px solid var(--border);color:var(--text2);border-radius:7px;padding:5px 10px;font-size:13px;cursor:pointer;flex-shrink:0" id="btn-${panelId}">▾</button>
       </div>
@@ -5240,9 +5243,16 @@ function editFantaPrediction(matchId,username){
     document.getElementById('mf-score').value=pr.score||'';
   },50);
 }
+// Pronostici chiusi quando la partita è iniziata (data + ora; senza ora dalla mezzanotte del giorno) o ha già il risultato
+function fantaLocked(m){
+  if(!m)return true;if(m.risultato)return true;if(!m.data)return false;
+  const start=new Date(m.data+'T'+(/^\d{1,2}:\d{2}$/.test(m.ora||'')?m.ora.padStart(5,'0'):'00:00')+':00');
+  return !isNaN(start)&&Date.now()>=start.getTime();
+}
 function openFantaModal(matchId){if(_checkViewer())return;
-  editFantaMatchId=matchId;
   const m=sched.find(x=>x.id===matchId);if(!m)return;
+  if(fantaLocked(m)){toast('🔒 Pronostici chiusi: la partita è già iniziata');renderFantaPronostici();return;}
+  editFantaMatchId=matchId;
   const p1=players.find(p=>p.id===m.p1Id),p2=players.find(p=>p.id===m.p2Id);
   const d=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
   document.getElementById('mf-match-info').textContent=`${p1?p1.nome:'?'} vs ${p2?p2.nome:'?'} — ${d}`;
@@ -5263,6 +5273,8 @@ function saveFantaPrediction(){
   const score=document.getElementById('mf-score').value.trim();
   if(!username){toast('❌ Inserisci il tuo nome');return;}
   if(!winner){toast('❌ Seleziona il vincitore');return;}
+  // la partita può essere iniziata mentre la finestra era aperta
+  if(fantaLocked(sched.find(x=>x.id===editFantaMatchId))){toast('🔒 Pronostici chiusi: la partita è già iniziata');document.getElementById('modal-fanta').classList.remove('open');renderFantaPronostici();return;}
   // Update existing or add new
   const existingIdx=fantaData.predictions.findIndex(p=>p.matchId===editFantaMatchId&&p.username===username);
   const pred={matchId:editFantaMatchId,username,winnerName:winner,score,updated:new Date().toISOString()};
