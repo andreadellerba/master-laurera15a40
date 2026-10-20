@@ -47,6 +47,9 @@ body.light .fg input,body.light .fg select,body.light .fg textarea{background:#f
 .header{background:var(--header-bg,rgba(0,0,0,.98));border-bottom:none;position:sticky;top:0;z-index:1000;backdrop-filter:blur(20px);padding-bottom:4px;}
 .hdr{position:relative;max-width:1400px;margin:0 auto;display:flex;align-items:center;padding:8px 20px;}
 .logo-img{height:89px;width:auto;max-width:240px;object-fit:contain;display:block;flex-shrink:0;}
+/* PC: logo quadrato (Laur/era 15 40) su sfondo trasparente, più stretto, così il ticker ha più spazio */
+.logo-stack{display:none;cursor:pointer}
+@media(min-width:641px){.hdr .logo-img{display:none!important}.hdr .logo-stack{display:block;height:58px;width:auto;flex-shrink:0;align-self:center}}
 .hdr-title{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;}.hdr-addr{font-family:"DM Sans",sans-serif;font-size:25px;font-weight:700;letter-spacing:-1px;color:var(--accent,#e8ff00);margin:0;text-transform:uppercase;line-height:1;}
 .hdr-title h1{font-family:"DM Sans",sans-serif;font-size:32px;font-weight:700;letter-spacing:1px;color:var(--text);line-height:1;margin:0;}
 .hdr-title p{font-size:12px;color:var(--text2);letter-spacing:1px;margin-top:2px}
@@ -1862,7 +1865,7 @@ html{background:#000!important}
 <header class="header">
   <div class="hdr">
     <div class="hdr-players-mobile" title="Giocatori registrati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0;color:var(--accent2)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span id="hdr-players2">—</span></div>
-    <img src="https://www.laurera15a40.com/uploads/1/5/0/6/150685976/editor/logo-tipo-long-def.png?1725893045" class="logo-img" alt="Laurera 15A40" onerror="this.style.display='none'" onclick="switchTab('players')" style="cursor:pointer">
+    <img src="https://www.laurera15a40.com/uploads/1/5/0/6/150685976/editor/logo-tipo-long-def.png?1725893045" class="logo-img" alt="Laurera 15A40" onerror="this.style.display='none'" onclick="switchTab('players')" style="cursor:pointer"><img src="logo-stack.png" class="logo-stack" alt="Laurera 15A40" onclick="switchTab('players')">
     <!-- Menu PC: dentro la barra unica di vetro (proposta 1). Su telefono è nascosto: c'è il menu in basso. -->
     <nav class="tabs"><div class="tabs-inner">
       <div class="tab active" data-tab="players" onclick="switchTab('players')" title="Home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/></svg><span>Home</span></div>
@@ -1873,7 +1876,7 @@ html{background:#000!important}
           <button type="button" class="tg-item" data-go="calendario" role="menuitem">Calendario</button>
           <button type="button" class="tg-item" data-go="risultati" role="menuitem">Risultati</button>
           <button type="button" class="tg-item" data-go="classifiche" role="menuitem">Classifiche</button>
-          <button type="button" class="tg-item" data-go="albo" role="menuitem">Albo d'Oro</button>
+          <button type="button" class="tg-item" data-go="albo" role="menuitem">Albo</button>
         </div>
       </div>
       <div class="tab" data-tab="tornei" onclick="switchTab('tornei')" title="Tornei"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.5 4"/><path d="M17 6h2.5a2.5 2.5 0 0 1-2.5 4"/><path d="M12 14v3"/><path d="M8.5 21h7"/><path d="M9.5 17h5v4h-5z"/></svg><span>Tornei</span></div>
@@ -1881,7 +1884,7 @@ html{background:#000!important}
       <div class="tab" data-tab="risultati" onclick="switchTab('risultati')" title="Risultati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M5.5 6.5c3 2 4 5.5 3 11"/><path d="M18.5 17.5c-3-2-4-5.5-3-11"/></svg><span>Risultati</span></div>
       <div class="tab" data-tab="classifiche-torneo" onclick="switchTab('classifiche-torneo')" title="Ranking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span>Ranking</span></div>
       <div class="tab" data-tab="classifiche" onclick="switchTab('classifiche')" title="Classifiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V12"/><path d="M12 21V5"/><path d="M19 21v-6"/></svg><span>Classifiche</span></div>
-      <div class="tab" data-tab="albo" onclick="switchTab('albo')" title="Albo d'Oro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5L3 7Z"/><path d="M5 21h14"/></svg><span>Albo d'Oro</span></div>
+      <div class="tab" data-tab="albo" onclick="switchTab('albo')" title="Albo d'Oro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5L3 7Z"/><path d="M5 21h14"/></svg><span>Albo</span></div>
       <div class="tab" data-tab="fanta" onclick="switchTab('fanta')" title="Fantatennis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span>Fantatennis</span></div>
       <div class="tab" data-tab="settings" onclick="switchTab('settings')" title="Impostazioni"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg><span>Impostazioni</span></div>
     </div></nav>
