@@ -3103,31 +3103,50 @@ function _loadImg(src){return new Promise(r=>{if(!src)return r(null);const i=new
 async function shareMatch(id){
   const m=sched.find(x=>x.id===id);if(!m||!m.risultato)return;
   try{await Promise.all(['72px Anton','40px "Bebas Neue"','700 30px "DM Sans"'].map(f=>document.fonts.load(f)));}catch(e){}
+  // Poster sportivo con i giocatori in righe "stile classifica ATP": posizione, avatar, nome, punteggio
   const S=1080,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');
-  x.fillStyle='#08090c';x.fillRect(0,0,S,S);
-  [[200,260,520,'rgba(139,92,246,.55)'],[880,240,480,'rgba(255,45,61,.45)'],[860,900,520,'rgba(34,184,240,.42)'],[260,940,420,'rgba(34,197,94,.25)']].forEach(([cx,cy,r,col])=>{
-    const g=x.createRadialGradient(cx,cy,0,cx,cy,r);g.addColorStop(0,col);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,S,S);});
-  x.textAlign='center';x.textBaseline='alphabetic';
+  const NV='#0e1c33',WIN='#22c55e',LIME='#e8ff00';
+  const bg=x.createLinearGradient(0,0,S*.6,S);bg.addColorStop(0,'#24507f');bg.addColorStop(1,'#173a5e');x.fillStyle=bg;x.fillRect(0,0,S,S);
+  // campo in prospettiva, leggero
+  x.save();x.translate(S/2,330);x.strokeStyle='rgba(255,255,255,.08)';x.lineWidth=5;x.beginPath();
+  [[-300,0,-470,760],[300,0,470,760],[-225,0,-352,760],[225,0,352,760],[-300,0,300,0],[-262,360,262,360],[0,360,0,760]].forEach(([a,b,cc,d])=>{x.moveTo(a,b);x.lineTo(cc,d);});
+  x.stroke();x.lineWidth=9;x.beginPath();x.moveTo(-250,205);x.lineTo(250,205);x.stroke();x.restore();
+  const rr=(X,Y,w,h,r)=>{x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath();};
+  // logo in alto a sinistra
   const logo=await _loadImg(document.querySelector('.logo-img')?.src);
-  let logoOk=false;if(logo){try{const h=90,w=logo.width*h/logo.height;x.drawImage(logo,S/2-w/2,70,w,h);x.getImageData(0,0,1,1);logoOk=true;}catch(e){logoOk=false;}}
-  if(!logoOk){x.fillStyle='#ffffff';x.font='64px Anton';x.fillText('LAURERA 15A40',S/2,150);}
-  const t=m.torneoId?tornei.find(z=>z.id===m.torneoId):null;
-  const day=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
-  x.fillStyle='rgba(255,255,255,.7)';x.font='700 30px "DM Sans"';x.fillText((t?t.nome.toUpperCase()+' · ':'')+day,S/2,220);
-  const[g1,g2]=_games(m),r1=_resFor(m,m.p1Id),col=r=>r==='w'?'#22c55e':r==='l'?'#ef4444':'#38bdf8';
-  const drawSide=async(pid,name,cx,res)=>{
-    const p=players.find(z=>z.id===pid),img=await _loadImg(p?phUrl(p):null),R=150,cy=470;
-    x.save();x.beginPath();x.arc(cx,cy,R+10,0,Math.PI*2);x.fillStyle=col(res);x.fill();x.beginPath();x.arc(cx,cy,R,0,Math.PI*2);x.fillStyle='#14151a';x.fill();x.clip();
-    if(img)x.drawImage(img,cx-R,cy-R,R*2,R*2);x.restore();
-    const fn='',sn=dispName(name);   // N. COGNOME su una riga
-    x.fillStyle='rgba(255,255,255,.75)';x.font='700 28px "DM Sans"';if(fn)x.fillText(fn.toUpperCase(),cx,690);
-    x.fillStyle='#ffffff';let fs=64;x.font=fs+'px Anton';while(x.measureText(sn.toUpperCase()).width>420&&fs>30){fs-=2;x.font=fs+'px Anton';}x.fillText(sn.toUpperCase(),cx,fn?760:725);
+  let logoOk=false;if(logo){try{const h=80,w=logo.width*h/logo.height;x.drawImage(logo,66,62,w,h);x.getImageData(0,0,1,1);logoOk=true;}catch(e){logoOk=false;}}
+  if(!logoOk){x.fillStyle='#ffffff';x.font='60px Anton';x.textAlign='left';x.textBaseline='alphabetic';x.fillText('LAURERA 15A40',70,128);}
+  // torneo e giorno/ora in alto a destra
+  const t=m.torneoId?tornei.find(z=>z.id===m.torneoId):null,d=new Date(m.data+'T12:00:00');
+  x.textAlign='right';x.textBaseline='alphabetic';x.fillStyle='rgba(255,255,255,.85)';x.font='800 28px "DM Sans"';
+  if(t)x.fillText(t.nome.toUpperCase(),1012,100);
+  x.fillStyle='rgba(255,255,255,.6)';x.fillText((d.toLocaleDateString('it-IT',{weekday:'long'})+(m.ora?' · '+m.ora:'')).toUpperCase(),1012,t?144:100);
+  // data enorme
+  x.textAlign='left';x.fillStyle=NV;x.font='330px "Bebas Neue"';x.fillText(String(d.getDate()),58,468);
+  x.font='80px Anton';x.fillText(d.toLocaleDateString('it-IT',{month:'long'}).toUpperCase(),66,556);
+  // righe dei giocatori
+  const[g1,g2]=_games(m),r1=_resFor(m,m.p1Id),r2=r1==='w'?'l':r1==='l'?'w':'d',rl=rankListAll();
+  const row=async(pid,name,g,res,Y)=>{
+    const p=players.find(z=>z.id===pid),win=res==='w',H=170,mid=Y+H/2;
+    x.save();rr(60,Y,960,H,28);x.fillStyle='rgba(14,28,51,.9)';x.fill();
+    if(win){const gr=x.createLinearGradient(60,0,700,0);gr.addColorStop(0,'rgba(34,197,94,.22)');gr.addColorStop(1,'rgba(34,197,94,0)');x.fillStyle=gr;x.fill();x.clip();x.fillStyle=WIN;x.fillRect(60,Y,12,H);}
+    x.restore();
+    // posizione in classifica (scritta dopo il nome)
+    const pos=p?rl.findIndex(z=>z.id===p.id)+1:0;
+    // avatar con anello
+    const img=await _loadImg(p?phUrl(p):null),R=62,cx=150;
+    x.save();x.beginPath();x.arc(cx,mid,R+6,0,Math.PI*2);x.fillStyle=win?WIN:res==='d'?'#38bdf8':'rgba(255,255,255,.4)';x.fill();
+    x.beginPath();x.arc(cx,mid,R,0,Math.PI*2);x.fillStyle='#16171c';x.fill();x.clip();if(img)x.drawImage(img,cx-R,mid-R,R*2,R*2);x.restore();
+    // nome (rimpicciolito se lungo) ed etichetta VINCE
+    const sn=dispName(name).toUpperCase();let fs=86;x.font=fs+'px Anton';while(x.measureText(sn).width>470&&fs>40){fs-=2;x.font=fs+'px Anton';}
+    x.textAlign='left';x.fillStyle=win||res==='d'?'#ffffff':'rgba(255,255,255,.72)';const ny=win?mid+14:mid+30;x.fillText(sn,240,ny);if(pos){const nw=x.measureText(sn).width;x.fillStyle='rgba(255,255,255,.55)';x.font='58px "Bebas Neue"';x.fillText('#'+pos,240+nw+18,ny);}
+    if(win){x.fillStyle=WIN;x.font='800 22px "DM Sans"';x.fillText('✓  VINCE',242,mid+56);}
+    // punteggio
+    rr(856,mid-66,146,132,24);x.fillStyle=win?LIME:'rgba(255,255,255,.1)';x.fill();
+    x.textAlign='center';x.fillStyle=win?NV:'rgba(255,255,255,.85)';x.font='140px "Bebas Neue"';x.fillText(String(g),929,mid+50);
   };
-  await drawSide(m.p1Id,teamLabel(m,1),280,r1);await drawSide(m.p2Id,teamLabel(m,2),800,r1==='w'?'l':r1==='l'?'w':'d');
-  x.font='170px Anton';const s1=String(g1),s2=String(g2),dash=' - ',w1=x.measureText(s1).width,wd=x.measureText(dash).width,w2=x.measureText(s2).width,sx=S/2-(w1+wd+w2)/2;
-  x.textAlign='left';x.fillStyle=col(r1);x.fillText(s1,sx,960);x.fillStyle='rgba(255,255,255,.5)';x.fillText(dash,sx+w1,960);x.fillStyle=col(r1==='w'?'l':r1==='l'?'w':'d');x.fillText(s2,sx+w1+wd,960);
-  x.textAlign='center';x.fillStyle='#a78bfa';x.font='44px Anton';x.fillText('VS',S/2,490);
-  x.fillStyle='rgba(255,255,255,.45)';x.font='700 24px "DM Sans"';x.fillText('LA NUOVA ERA DEL TENNIS INIZIA QUI',S/2,1035);
+  await row(m.p1Id,teamLabel(m,1),g1,r1,606);await row(m.p2Id,teamLabel(m,2),g2,r2,796);
+  x.textAlign='center';x.fillStyle='rgba(255,255,255,.45)';x.font='700 24px "DM Sans"';x.fillText('LA NUOVA ERA DEL TENNIS INIZIA QUI',S/2,1040);
   const blob=await new Promise(r=>c.toBlob(r,'image/png'));if(!blob){toast('❌ Immagine non creata');return;}
   const name=`risultato-${(teamLabel(m,1)+'-'+teamLabel(m,2)).toLowerCase().replace(/[^a-z0-9]+/g,'-')}.png`,file=new File([blob],name,{type:'image/png'});
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Risultato Laurera 15A40'});return;}catch(e){if(e&&e.name==='AbortError')return;}}
