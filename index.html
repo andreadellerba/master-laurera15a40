@@ -1352,6 +1352,21 @@ body:not(.light) .cmc.mk{display:grid!important;grid-template-columns:auto minma
 .tor-win{font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:.5px;color:#f0c040}
 .tor-pt{display:flex;justify-content:space-between;font-size:11.5px;font-weight:700;color:#bbb}
 .tor-prog{height:7px;border-radius:7px;background:rgba(255,255,255,.08);overflow:hidden}.tor-prog i{display:block;height:100%;border-radius:7px;background:var(--tc);box-shadow:0 0 10px var(--tc)}
+/* PC: torneo in corso come testata larga, con avanzamento, prossima partita e iscritti */
+.tor-hx{display:none}
+@media(min-width:900px){
+  .tor-hero{grid-column:1/-1}
+  .tor-hero .tor-hd{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,2fr);align-items:center;gap:24px;padding:18px 20px}
+  .tor-hero .tor-hd>small,.tor-hero .tor-hd>b{grid-column:1}
+  .tor-hero .tor-hd b{font-size:34px}
+  .tor-hero .tor-hx{display:grid;grid-column:2;grid-row:1/span 2;grid-template-columns:1fr 1.6fr .7fr;gap:22px;align-items:center}
+  .tor-hx small{display:block;font-size:10px;font-weight:800;letter-spacing:1.4px;opacity:.75}
+  .tor-hx b{display:block;font-family:"Anton",sans-serif;font-weight:400;font-size:26px;line-height:1.1;padding:0!important;margin:0!important}
+  .tor-hx .tor-nx{font-family:"Bebas Neue",sans-serif;font-size:22px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tor-hx span{font-size:11.5px;font-weight:700}
+  .tor-hx .tor-prog{background:rgba(0,0,0,.25);margin-top:5px}.tor-hx .tor-prog i{background:#111;box-shadow:none}
+  .tor-hero .tor-pt,.tor-hero .tor-bd>.tor-prog{display:none}
+}
 @media(max-width:640px){.tor-grid{grid-template-columns:1fr}.tor-hd b{font-size:22px}}
 /* etichetta RISULTATI piena: il testo che scorre le passa sotto e sfuma, invece di sovrapporsi */
 .tk-label{background:#16171a!important;box-shadow:14px 0 14px #16171a!important;z-index:3!important}
@@ -1753,6 +1768,7 @@ html{background:#000!important}
 #boot{position:fixed;inset:0;z-index:9999;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;transition:opacity .5s}
 #boot.out{opacity:0;pointer-events:none}
 #boot img{height:64px;width:auto;max-width:70vw;object-fit:contain}
+.boot-by{margin-top:-16px;font:600 12px "DM Sans",sans-serif;letter-spacing:1.5px;color:rgba(255,255,255,.55);text-align:center}
 .boot-court{position:relative;width:60px;height:80px}
 .boot-ball{position:absolute;left:50%;top:0;width:26px;height:26px;margin-left:-13px;border-radius:50%;
   background:radial-gradient(circle at 35% 30%,#f4ff7a,#d4e600 55%,#9fb000);box-shadow:inset -3px -4px 6px rgba(0,0,0,.25);animation:ballBounce .7s cubic-bezier(.5,0,.5,1) infinite alternate}
@@ -1840,7 +1856,7 @@ html{background:#000!important}
 </head>
 <body class="viewer">
 <!-- schermata di caricamento: logo e pallina che rimbalza, sparisce quando arrivano i giocatori -->
-<div id="boot" aria-hidden="true"><img src="https://www.laurera15a40.com/uploads/1/5/0/6/150685976/editor/logo-tipo-long-def.png?1725893045" alt=""><div class="boot-court"><div class="boot-ball"></div><div class="boot-shadow"></div></div></div>
+<div id="boot" aria-hidden="true"><img src="https://www.laurera15a40.com/uploads/1/5/0/6/150685976/editor/logo-tipo-long-def.png?1725893045" alt=""><div class="boot-by">by Andrea Dellerba</div><div class="boot-court"><div class="boot-ball"></div><div class="boot-shadow"></div></div></div>
 <!-- sfumatura dello sfondo che si muove piano -->
 <div id="bg-glow" aria-hidden="true"></div>
 <header class="header">
@@ -2481,6 +2497,11 @@ const mobileShortName=nome=>{   // "Mario Rossi" → "M. ROSSI" (sempre maiuscol
 // Telefono: nome puntato + cognome (Home esclusa). PC: nome completo. Esportazioni PDF: sempre puntato (pdfName).
 const dispName=nome=>mobileShortName(nome);   // ovunque: N. COGNOME
 const pdfName=nome=>mobileShortName(nome);
+// Date sempre scritte allo stesso modo: "LUN 12 OTT" e, per un periodo, "19 – 25 OTT" (o "28 SET – 4 OTT")
+const _MS=['GEN','FEB','MAR','APR','MAG','GIU','LUG','AGO','SET','OTT','NOV','DIC'],_GS=['DOM','LUN','MAR','MER','GIO','VEN','SAB'];
+const _toD=x=>x instanceof Date?x:new Date(String(x).slice(0,10)+'T12:00:00');
+function dayShort(x){if(!x)return'';const d=_toD(x);if(isNaN(d))return String(x);return _GS[d.getDay()]+' '+d.getDate()+' '+_MS[d.getMonth()];}
+function rangeShort(a,b){const x=_toD(a),y=_toD(b);return x.getMonth()===y.getMonth()?`${x.getDate()} – ${y.getDate()} ${_MS[y.getMonth()]}`:`${x.getDate()} ${_MS[x.getMonth()]} – ${y.getDate()} ${_MS[y.getMonth()]}`;}
 const avc=id=>`av-${id%8}`;
 const caC={1:'#86efac',2:'#16a34a',3:'#eab308',4:'#f97316',5:'#ef4444'};
 const NAZIONALITA=['ITALIA','FRANCIA','SPAGNA','GERMANIA','SVIZZERA','REGNO UNITO','PORTOGALLO','BELGIO','OLANDA','AUSTRIA','SERBIA','CROAZIA','ARGENTINA','BRASILE','STATI UNITI','RUSSIA','POLONIA','ROMANIA','GRECIA','ALBANIA','TUNISIA','MAROCCO','ALTRO'];
@@ -2834,11 +2855,12 @@ function rankDelta(){
     done.filter(m=>m.data<last).forEach(m=>{const ct=m.torneoId?tornei.find(t=>t.id===m.torneoId):null;if(ct&&ct.classifica==='no')return;
       const[g1,g2]=_games(m);[m.p1Id,m.p1Id2].forEach(id=>{if(id!=null)g[id]=(g[id]||0)+g1;});[m.p2Id,m.p2Id2].forEach(id=>{if(id!=null)g[id]=(g[id]||0)+g2;});});
     const prev=players.filter(p=>!p.archiviato&&(g[p.id]||0)>0).sort((a,b)=>(g[b.id]-g[a.id])||bySurname(a,b)).map(p=>p.id);
-    rankListGv().forEach((p,i)=>{const j=prev.indexOf(p.id);out[p.id]=j<0?'new':j-i;});
+    // NEW solo se prima c'era già una classifica e il giocatore non ne faceva parte (prima giornata: nessun segno)
+    if(prev.length)rankListGv().forEach((p,i)=>{const j=prev.indexOf(p.id);out[p.id]=j<0?'new':j-i;});
   }
   rankDelta._k=key;return rankDelta._v=out;
 }
-function deltaHtml(id){const d=rankDelta()[id];if(d==null||d===0)return'<span class="rkd eq">–</span>';if(d==='new')return'<span class="rkd new">NEW</span>';
+function deltaHtml(id){const d=rankDelta()[id];if(d==null||d===0)return'<span class="rkd eq"></span>';   /* posizione invariata: nessun segno */if(d==='new')return'<span class="rkd new">NEW</span>';
   return`<span class="rkd ${d>0?'up':'dn'}">${d>0?'▲':'▼'}${Math.abs(d)}</span>`;}
 function deltaText(id){const d=rankDelta()[id];return d==null||d===0?'=':d==='new'?'NEW':(d>0?'▲':'▼')+Math.abs(d);}
 
@@ -2930,7 +2952,7 @@ function openMatchView(id){
   const m=sched.find(x=>x.id===id);if(!m)return;
   const p1=players.find(x=>x.id===m.p1Id),p2=players.find(x=>x.id===m.p2Id),t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;
   const played=!!m.risultato,[g1,g2]=_games(m),r1=played?_resFor(m,m.p1Id):null;
-  const day=m.data?new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}):'';
+  const day=m.data?new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}).toUpperCase():'';
   const prec=sched.filter(x=>x.id!==m.id&&x.risultato&&((x.p1Id===m.p1Id&&x.p2Id===m.p2Id)||(x.p1Id===m.p2Id&&x.p2Id===m.p1Id)));
   const pw1=prec.filter(x=>_resFor(x,m.p1Id)==='w').length,pw2=prec.filter(x=>_resFor(x,m.p2Id)==='w').length;
   const side=(p,n,res,pid)=>{const w=['',dispName(n)];   // N. COGNOME su una riga
@@ -3249,7 +3271,7 @@ function nextMatchesAll(){
   return list.map(({m,start})=>{
     const live=now>=start&&now.getTime()<start.getTime()+100*60000;
     const tom=new Date(now);tom.setDate(now.getDate()+1);
-    const when=m.data===today?'oggi':m.data===fmtD(tom)?'domani':new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
+    const when=m.data===today?'oggi':m.data===fmtD(tom)?'domani':dayShort(m.data);
     return {m,live,when,ora:m.ora||'',a:side(m.p1Id,m.p1Id2,m.teamName1),b:side(m.p2Id,m.p2Id2,m.teamName2)};});
 }
 function nextMatchInfo(){const all=nextMatchesAll();if(!all.length)return null;const i=_npIdx%all.length;return Object.assign({idx:i,total:all.length},all[i]);}
@@ -3331,7 +3353,7 @@ function renderTickerTape(){renderNextMatch();
 }
 // ═══ HIGHLIGHTS ═══
 function fillMSelects(){const opts='<option value="">— Seleziona —</option>'+players.filter(p=>!p.archiviato).sort((a,b)=>bySurname(a,b)).map(p=>`<option value="${p.id}">${esc(p.nome)}</option>`).join('');document.getElementById('mm-p1').innerHTML=opts;document.getElementById('mm-p2').innerHTML=opts;}
-function renderMatches(){const grid=document.getElementById('match-grid');if(!matches.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><span class="empty-icon">🎬</span>Nessun highlight ancora</div>';return;}grid.innerHTML=matches.map(m=>{const p1=players.find(p=>p.id===m.p1Id),p2=players.find(p=>p.id===m.p2Id);const ds=m.data?new Date(m.data).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'}):'—';const hv=!!m.videoUrl;return`<div class="mcard"><div class="mthumb" onclick="${hv?`playVid(${m.id})`:''}"> ${hv?`<video src="${m.videoUrl}" preload="metadata"></video><div class="moverlay"><div class="mplay">▶</div></div>`:`<div class="mthumb-ph"><span>🎾</span><span>Nessun video</span></div>`}</div><div class="mbody"><div class="mtitle">${esc(m.titolo)||'Partita'}</div><div class="mmeta"><span>${p1?esc(dispName(p1.nome)):'—'}</span><span style="color:var(--text2)">vs</span><span>${p2?esc(dispName(p2.nome)):'—'}</span>${m.risultato?`<span style="color:var(--accent2);font-weight:700">${esc(m.risultato)}</span>`:''}</div><div class="mmeta" style="margin-top:4px"><span style="background:var(--bg4);padding:2px 7px;border-radius:5px;font-size:11px">📅 ${ds}</span></div><div class="mactions"><label class="mbtn mbtn-p" style="cursor:pointer">📹 ${hv?'Sostituisci':'Carica Video'}<input type="file" accept="video/*" style="display:none" onchange="uploadVid(this,${m.id})"></label><button class="mbtn mbtn-g" onclick="openMatchModal(${m.id})">✏️</button>${hv?`<button class="mbtn mbtn-d" onclick="removeVid(${m.id})">🗑</button>`:''}</div><div class="vprog" id="vp-${m.id}"><div class="vprog-fill" id="vpf-${m.id}" style="width:0%"></div></div></div></div>`;}).join('');}
+function renderMatches(){const grid=document.getElementById('match-grid');if(!matches.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><span class="empty-icon">🎬</span>Nessun highlight ancora</div>';return;}grid.innerHTML=matches.map(m=>{const p1=players.find(p=>p.id===m.p1Id),p2=players.find(p=>p.id===m.p2Id);const ds=m.data?dayShort(m.data):'—';const hv=!!m.videoUrl;return`<div class="mcard"><div class="mthumb" onclick="${hv?`playVid(${m.id})`:''}"> ${hv?`<video src="${m.videoUrl}" preload="metadata"></video><div class="moverlay"><div class="mplay">▶</div></div>`:`<div class="mthumb-ph"><span>🎾</span><span>Nessun video</span></div>`}</div><div class="mbody"><div class="mtitle">${esc(m.titolo)||'Partita'}</div><div class="mmeta"><span>${p1?esc(dispName(p1.nome)):'—'}</span><span style="color:var(--text2)">vs</span><span>${p2?esc(dispName(p2.nome)):'—'}</span>${m.risultato?`<span style="color:var(--accent2);font-weight:700">${esc(m.risultato)}</span>`:''}</div><div class="mmeta" style="margin-top:4px"><span style="background:var(--bg4);padding:2px 7px;border-radius:5px;font-size:11px">📅 ${ds}</span></div><div class="mactions"><label class="mbtn mbtn-p" style="cursor:pointer">📹 ${hv?'Sostituisci':'Carica Video'}<input type="file" accept="video/*" style="display:none" onchange="uploadVid(this,${m.id})"></label><button class="mbtn mbtn-g" onclick="openMatchModal(${m.id})">✏️</button>${hv?`<button class="mbtn mbtn-d" onclick="removeVid(${m.id})">🗑</button>`:''}</div><div class="vprog" id="vp-${m.id}"><div class="vprog-fill" id="vpf-${m.id}" style="width:0%"></div></div></div></div>`;}).join('');}
 function openMatchModal(id){if(_checkViewer())return;editMatchId=id||null;fillMSelects();if(id){const m=matches.find(x=>x.id===id);document.getElementById('mm-title').textContent='Modifica';document.getElementById('mm-titolo').value=m.titolo||'';document.getElementById('mm-p1').value=m.p1Id||'';document.getElementById('mm-p2').value=m.p2Id||'';document.getElementById('mm-data').value=m.data||'';document.getElementById('mm-risultato').value=m.risultato||'';document.getElementById('mm-note').value=m.note||'';document.getElementById('mm-del-btn').style.display='';}else{document.getElementById('mm-title').textContent='Nuovo';['mm-titolo','mm-data','mm-risultato','mm-note'].forEach(x=>document.getElementById(x).value='');document.getElementById('mm-p1').value='';document.getElementById('mm-p2').value='';document.getElementById('mm-del-btn').style.display='none';}document.getElementById('modal-match').classList.add('open');}
 function saveMatch(){const data={titolo:document.getElementById('mm-titolo').value.trim(),p1Id:+document.getElementById('mm-p1').value||null,p2Id:+document.getElementById('mm-p2').value||null,data:document.getElementById('mm-data').value,risultato:document.getElementById('mm-risultato').value.trim(),note:document.getElementById('mm-note').value.trim()};if(editMatchId){const idx=matches.findIndex(m=>m.id===editMatchId);matches[idx]={...matches[idx],...data};toast('✅ Aggiornato!');}else{matches.push({id:matchNextId++,...data});toast('✅ Aggiunto!');}save();document.getElementById('modal-match').classList.remove('open');renderMatches();}
 function deleteMatch(){if(!editMatchId)return;delVid(editMatchId);matches=matches.filter(m=>m.id!==editMatchId);save();document.getElementById('modal-match').classList.remove('open');renderMatches();toast('🗑️ Eliminato');}
@@ -3376,7 +3398,7 @@ function calGroupHtml(dayM){
   return [...by.entries()].map(([k,ms])=>{const t=tornei.find(x=>x.id===k);
     return `<div class="cal-tor">${esc((t?t.nome:'Altre partite').toUpperCase())}</div>${ms.map(m=>cmcHtml(m)).join('')}`;}).join('');
 }
-function calRender(){const dates=getWeekDates();const d0=dates[0],d6=dates[6];const fmt=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'});document.getElementById('cal-wlbl').textContent=`${fmt(d0)} – ${fmt(d6)}`;calBig(d0,d6);const today=fmtD(new Date());document.getElementById('cal-strip').innerHTML=dates.map((d,i)=>{const ds=fmtD(d);const _schedStrip=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dm=_schedStrip.filter(m=>m.data===ds);const dots=dm.map(m=>`<div class="cdot ${m.risultato?'cdot-d':isLiveMatch(m)?'cdot-l':'cdot-s'}"></div>`).join('');return`<div class="cal-day${ds===calSelDate?' sel':''}${ds===today?' tod':''}" onclick="calSelDay('${ds}')"><div class="cal-dn">${DAY[i]}</div><div class="cal-dd">${d.getDate()}</div><div class="cal-dots">${dots}</div></div>`;}).join('');document.getElementById('cal-dh').textContent=fmtDIt(calSelDate);const _sched=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dayM=_sched.filter(m=>m.data===calSelDate).sort((a,b)=>(a.ora||'').localeCompare(b.ora||''));const list=document.getElementById('cal-list');list.innerHTML=dayM.length?calGroupHtml(dayM):'<div class="cal-empty">Nessun incontro in questo giorno.</div>';
+function calRender(){const dates=getWeekDates();const d0=dates[0],d6=dates[6];const fmt=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'});document.getElementById('cal-wlbl').textContent=rangeShort(d0,d6);calBig(d0,d6);const today=fmtD(new Date());document.getElementById('cal-strip').innerHTML=dates.map((d,i)=>{const ds=fmtD(d);const _schedStrip=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dm=_schedStrip.filter(m=>m.data===ds);const dots=dm.map(m=>`<div class="cdot ${m.risultato?'cdot-d':isLiveMatch(m)?'cdot-l':'cdot-s'}"></div>`).join('');return`<div class="cal-day${ds===calSelDate?' sel':''}${ds===today?' tod':''}" onclick="calSelDay('${ds}')"><div class="cal-dn">${DAY[i]}</div><div class="cal-dd">${d.getDate()}</div><div class="cal-dots">${dots}</div></div>`;}).join('');document.getElementById('cal-dh').textContent=fmtDIt(calSelDate);const _sched=calActiveTorneoId?sched.filter(m=>m.torneoId===calActiveTorneoId):sched;const dayM=_sched.filter(m=>m.data===calSelDate).sort((a,b)=>(a.ora||'').localeCompare(b.ora||''));const list=document.getElementById('cal-list');list.innerHTML=dayM.length?calGroupHtml(dayM):'<div class="cal-empty">Nessun incontro in questo giorno.</div>';
 }
 function calSelDay(ds){calSelDate=ds;calRender();}
 function calShiftDay(delta){
@@ -3675,7 +3697,7 @@ function renderRisultati(){
   };
   const days={};done.forEach(m=>{(days[m.data]=days[m.data]||[]).push(m);});
   cont.innerHTML=Object.keys(days).sort((a,b)=>b.localeCompare(a)).map(d=>{
-    const lbl=new Date(d+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
+    const lbl=new Date(d+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
     return `<div class="rs-day">${esc(lbl)}</div>${days[d].map(row).join('')}`;
   }).join('');
 }
@@ -4150,7 +4172,7 @@ function renderH2H(){
         ${matches.map(m=>{
           const isDraw=m.winnerId==='draw'||!m.winnerId;
           const winner=isDraw?null:players.find(p=>p.id===m.winnerId);
-          const d=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'});
+          const d=dayShort(m.data)+' '+m.data.slice(0,4);
           const col=isDraw?'var(--gold)':m.winnerId===p1.id?'var(--green)':'var(--red)';
           const lbl=isDraw?'🤝 Pareggio':`🏆 ${winner?esc(dispName(winner.nome)):'?'}`;
           return`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg4);border-radius:8px">
@@ -4465,18 +4487,23 @@ function renderTornei(){
     return;
   }
   const CAT={master:['#e8ff00','⭐ MASTER'],grandslam:['#f0c040','🏆 GRAND SLAM'],libero:['#22c55e','🆓 LIBERO'],challenger:['#22b8f0','🎾 CHALLENGER']};
-  el.innerHTML='<div class="tor-grid">'+tornei.map(t=>{
+  // PC: il torneo in corso (o il prossimo in programma) diventa una testata larga; gli altri restano card
+  const _hero=tornei.find(t=>!getTorneoEsito(t).finished&&sched.some(m=>m.torneoId===t.id))||tornei.find(t=>!getTorneoEsito(t).finished);
+  el.innerHTML='<div class="tor-grid">'+tornei.slice().sort((a,b)=>(b===_hero)-(a===_hero)).map(t=>{
     const tipo=t.tipo==='girone'?'🔄 Campionato':t.tipo==='misto'?'🔀 Girone + elim.':'⚡ Eliminazione';
     const esito=getTorneoEsito(t);
     const c=CAT[t.categoria]||CAT.challenger;
     const ms=sched.filter(m=>m.torneoId===t.id),gioc=ms.filter(m=>m.risultato).length;
     const pct=esito.finished?100:(ms.length?Math.round(gioc/ms.length*100):0);
     const stato=esito.finished?'CONCLUSO':ms.length?'IN CORSO':'IN PROGRAMMA';
-    return`<div class="tor" style="--tc:${c[0]}" onclick="openTorneoDetail(${t.id})">
+    const nx=ms.filter(m=>!m.risultato&&m.data).sort((a,b)=>(a.data+(a.ora||'')).localeCompare(b.data+(b.ora||'')))[0];
+    const nxp=id=>{const p=players.find(x=>x.id===id);return p?dispName(p.nome):'?';};
+    const heroX=t===_hero?`<div class="tor-hx"><div><small>AVANZAMENTO</small><b>${gioc} / ${ms.length}</b><div class="tor-prog"><i style="width:${pct}%"></i></div></div><div><small>PROSSIMA PARTITA</small>${nx?`<b class="tor-nx">${esc(nxp(nx.p1Id))} vs ${esc(nxp(nx.p2Id))}</b><span>${dayShort(nx.data)}${nx.ora?' · '+esc(nx.ora):''}</span>`:'<b class="tor-nx">DA PROGRAMMARE</b>'}</div><div><small>ISCRITTI</small><b>${t.players.length}</b></div></div>`:'';
+    return`<div class="tor${t===_hero?' tor-hero':''}" style="--tc:${c[0]}" onclick="openTorneoDetail(${t.id})">
       <div class="tor-hd"><small>${c[1]}</small><b>${esc(t.nome)}</b><span class="tor-st">${stato}</span>
-        <button class="tor-edit" onclick="event.stopPropagation();openEditTorneo(${t.id})" title="Modifica">✏️</button></div>
+        <button class="tor-edit" onclick="event.stopPropagation();openEditTorneo(${t.id})" title="Modifica">✏️</button>${heroX}</div>
       <div class="tor-bd">
-        <div class="tor-meta"><span>${tipo}</span><span>${t.format==='doppio'?'👥 Doppio':'🎾 Singolo'}</span><span>👥 ${t.players.length} iscritti</span>${t.dataStart?`<span>📅 ${esc(t.dataStart)}${t.dataEnd?' → '+esc(t.dataEnd):''}</span>`:''}</div>
+        <div class="tor-meta"><span>${tipo}</span><span>${t.format==='doppio'?'👥 Doppio':'🎾 Singolo'}</span><span>👥 ${t.players.length} iscritti</span>${t.dataStart?`<span>📅 ${t.dataEnd?rangeShort(t.dataStart,t.dataEnd):dayShort(t.dataStart)}</span>`:''}</div>
         ${esito.winnerName?`<div class="tor-win">🏆 ${esc(esito.winnerName)}</div>`:''}
         <div class="tor-pt"><span>Avanzamento · ${gioc}/${ms.length} partite</span><span>${pct}%</span></div>
         <div class="tor-prog"><i style="width:${pct}%"></i></div>
@@ -4945,7 +4972,7 @@ function renderFantaPronostici(){
 
   const fmtMatch=(m)=>{
     const p1=players.find(p=>p.id===m.p1Id),p2=players.find(p=>p.id===m.p2Id);
-    const d=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
+    const d=dayShort(m.data);
     const preds=fantaData.predictions.filter(p=>p.matchId===m.id);
     const panelId='fpan-'+m.id; // prefisso diverso da quello del modulo giocatore (fp-nome…)
 
@@ -5107,7 +5134,7 @@ function openFantaModal(matchId){if(_checkViewer())return;
   editFantaMatchId=matchId;
   const m=sched.find(x=>x.id===matchId);if(!m)return;
   const p1=players.find(p=>p.id===m.p1Id),p2=players.find(p=>p.id===m.p2Id);
-  const d=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
+  const d=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
   document.getElementById('mf-match-info').textContent=`${p1?p1.nome:'?'} vs ${p2?p2.nome:'?'} — ${d}`;
   document.getElementById('mf-username').value='';
   document.getElementById('mf-score').value='';
