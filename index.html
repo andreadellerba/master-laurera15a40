@@ -3095,10 +3095,11 @@ function fitK4(){
     const cs=getComputedStyle(sn);cv.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
     const m=cv.measureText(sn.textContent||'H'),fh=m.fontBoundingBoxAscent+m.fontBoundingBoxDescent,lh=parseFloat(cs.lineHeight)||fh;
     const R=sn.getBoundingClientRect(),base=R.top+(lh-fh)/2+m.fontBoundingBoxAscent,top=base-cv.measureText('H').actualBoundingBoxAscent;
-    const bot=l5&&l5.offsetParent?l5.getBoundingClientRect().bottom:base;
+    const bot=base;   // comandano nome e #: i pallini stanno sotto e non spostano niente
     const cr=c.getBoundingClientRect(),mid=(cr.top+st.getBoundingClientRect().top)/2;
     nm.style.transform=`translateY(${(mid-(top+bot)/2).toFixed(1)}px)`;
-    if(rk){const r=rk.getBoundingClientRect();rk.style.transform=`translateY(${(mid-(r.top+r.bottom)/2).toFixed(1)}px)`;}
+    if(rk){const rs=getComputedStyle(rk);cv.font=`${rs.fontWeight} ${rs.fontSize} ${rs.fontFamily}`;const q=cv.measureText(rk.textContent),qh=q.fontBoundingBoxAscent+q.fontBoundingBoxDescent,ql=parseFloat(rs.lineHeight)||qh,r=rk.getBoundingClientRect(),rb=r.top+(ql-qh)/2+q.fontBoundingBoxAscent,rt=rb-q.actualBoundingBoxAscent;
+      rk.style.transform=`translateY(${(mid-(rt+rb)/2).toFixed(1)}px)`;}   // # centrato sull'inchiostro, alla stessa altezza del nome
   });
 }
 window.addEventListener('resize',()=>{clearTimeout(window._fk4);window._fk4=setTimeout(fitK4,120);});
