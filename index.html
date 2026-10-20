@@ -3139,8 +3139,8 @@ async function shareMatch(id){
     x.save();x.beginPath();x.arc(cx,mid,R+6,0,Math.PI*2);x.fillStyle=win?WIN:res==='d'?'#38bdf8':'rgba(255,255,255,.4)';x.fill();
     x.beginPath();x.arc(cx,mid,R,0,Math.PI*2);x.fillStyle='#16171c';x.fill();x.clip();if(img)x.drawImage(img,cx-R,mid-R,R*2,R*2);x.restore();
     // nome (rimpicciolito se lungo) e posizione in classifica
-    const sn=dispName(name).toUpperCase();let fs=86;x.font=fs+'px Anton';while(x.measureText(sn).width>470&&fs>40){fs-=2;x.font=fs+'px Anton';}
-    x.textAlign='left';x.fillStyle=win||res==='d'?'#ffffff':'rgba(255,255,255,.72)';const ny=mid+30;x.fillText(sn,240,ny);if(pos){const nw=x.measureText(sn).width;x.fillStyle='rgba(255,255,255,.55)';x.font='58px "Bebas Neue"';x.fillText('#'+pos,240+nw+18,ny);}
+    const sn=dispName(name).toUpperCase();let fs=86;x.font=fs+'px Anton';const full=sn+(pos?'  #'+pos:'');while(x.measureText(full).width>590&&fs>40){fs-=2;x.font=fs+'px Anton';}
+    x.textAlign='left';x.fillStyle=win||res==='d'?'#ffffff':'rgba(255,255,255,.72)';const ny=mid+30;x.fillText(sn,240,ny);if(pos){const nw=x.measureText(sn+'  ').width;x.fillStyle='rgba(255,255,255,.42)';x.fillText('#'+pos,240+nw,ny);}
 
     // punteggio
     rr(856,mid-66,146,132,24);x.fillStyle=win?LIME:'rgba(255,255,255,.1)';x.fill();
