@@ -1397,6 +1397,9 @@ html{min-height:100%;background:#141518 radial-gradient(70% 220px at 50% 0%,rgba
 body[data-tab="players"],body:not([data-tab]){--page:#ff2d3d}
 @media(min-width:641px){.hdr .tab[data-tab="players"] svg{color:#ff2d3d}}
 .tabs-mobile2 .tbtn[data-tab="players"]{--tc:#ff2d3d!important}
+/* Menu telefono: Tornei non serve (si gestisce da PC); al suo posto Fanta in fondo, come su PC. Per gli ospiti Fanta resta nascosto. */
+.tabs-mobile2 .tbar .tbtn[data-tab="tornei"]{display:none!important}
+.tabs-mobile2 .tbtn[data-tab="fanta"]{--tc:#f472b6}
 /* sottomenu centrati nello spazio libero (Classifiche) */
 #page-classifiche .wrap>div:first-child{display:grid!important;grid-template-columns:auto 1fr auto;align-items:center;gap:12px}
 #page-classifiche .wrap>div:first-child>div:last-child{display:contents!important}
@@ -1954,6 +1957,7 @@ html{background:#000!important}
     <button type="button" class="tab tbtn" data-tab="classifiche-torneo" onclick="switchTab('classifiche-torneo')" title="Ranking"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span class="tl">Ranking</span></button>
     <button type="button" class="tab tbtn" data-tab="classifiche" onclick="switchTab('classifiche')" title="Classifiche"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V12"/><path d="M12 21V5"/><path d="M19 21v-6"/></svg><span class="tl">Classifiche</span></button>
     <button type="button" class="tab tbtn" data-tab="albo" onclick="switchTab('albo')" title="Albo d'Oro"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 11H5L3 7Z"/><path d="M5 21h14"/></svg><span class="tl">Albo</span></button>
+    <button type="button" class="tab tbtn" data-tab="fanta" onclick="switchTab('fanta')" title="Fantatennis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg><span class="tl">Fanta</span></button>
   </div>
 </div>
 
