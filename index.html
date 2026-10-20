@@ -1598,6 +1598,10 @@ body .cards-grid .pcrd.k4c{display:block!important;max-width:none;margin:0!impor
 .k4-av span{font-family:"Bebas Neue",sans-serif;font-size:32px;color:#fff}
 .pcrd.k4c.foil .k4-av{border-color:#f0c040;box-shadow:0 0 16px rgba(240,192,64,.55),0 8px 20px rgba(0,0,0,.6)}
 .k4-nm{flex:1;min-width:0;padding:0 46px 4px 0}
+/* nome al centro fra il bordo alto della card e i numeri; il # alla stessa altezza */
+
+.k4-nm{padding-right:54px!important}
+.k4-fn:empty{display:none}
 .k4-fn{font:700 11px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.55);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:13px}
 .k4-sn{font-family:"Anton",sans-serif;font-size:25px;line-height:1.05;color:#fff;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .k4-adm{position:absolute;top:44px;right:14px;display:flex;align-items:center;gap:6px}
@@ -2499,7 +2503,7 @@ function toast(msg){const t=document.getElementById('toast-el');t.textContent=ms
 function applyTheme(){document.body.classList.remove('light');}
 function initTheme(){applyTheme();}
 // ═══ TAB ═══
-function switchTab(t){currentTab=t;document.body.dataset.tab=t;if(t==='players')setTimeout(()=>countUp(document.getElementById('cards-grid')),30);document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('fab').style.display=['players','calendario'].includes(t)?'flex':'none';if(t==='classifiche')renderRank();if(t==='fanta'){loadFanta();renderFantaPronostici();}if(t==='calendario'){loadTornei();renderCalTorneoSelector();}if(t==='risultati')renderRisultati();if(t==='tornei'){loadTornei();renderTornei();}if(t==='albo'){renderAlbo();}if(t==='classifiche-torneo'){loadTornei();renderRanking();}if(t==='settings'){renderLog();}if(t==='players')renderTickerTape();const activeBn=document.querySelector('.bn-item.active');if(activeBn)activeBn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
+function switchTab(t){currentTab=t;document.body.dataset.tab=t;if(t==='players'){setTimeout(()=>countUp(document.getElementById('cards-grid')),30);setTimeout(fitK4,60);}document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('fab').style.display=['players','calendario'].includes(t)?'flex':'none';if(t==='classifiche')renderRank();if(t==='fanta'){loadFanta();renderFantaPronostici();}if(t==='calendario'){loadTornei();renderCalTorneoSelector();}if(t==='risultati')renderRisultati();if(t==='tornei'){loadTornei();renderTornei();}if(t==='albo'){renderAlbo();}if(t==='classifiche-torneo'){loadTornei();renderRanking();}if(t==='settings'){renderLog();}if(t==='players')renderTickerTape();const activeBn=document.querySelector('.bn-item.active');if(activeBn)activeBn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
 function fabClick(){if(_checkViewer())return;if(currentTab==='players')openNewPlayer();else if(currentTab==='calendario')openCalModal();}
 // ═══ FILTERS ═══
 // PC admin: sottomenu "Gestione"
@@ -3080,6 +3084,25 @@ function renderHomePoster(){
     ${side(x.m.p1Id,x.a)}<div class="hp-vs">VS</div>${side(x.m.p2Id,x.b)}
     ${x.total>1?`<div class="hp-dots">${Array.from({length:Math.min(x.total,8)},(_,i)=>`<i class="${i===x.idx?'on':''}"></i>`).join('')}</div>`:''}</div>`;
 }
+// Card giocatori: nome (con sotto i pallini V/P/S) al centro fra il bordo alto della card e il riquadro dei numeri,
+// stesso spazio sopra e sotto; il # alla stessa altezza. Misurato sull'inchiostro delle lettere, non sul riquadro.
+function fitK4(){
+  const cv=document.createElement('canvas').getContext('2d');
+  document.querySelectorAll('.pcrd.k4c').forEach(c=>{
+    const nm=c.querySelector('.k4-nm'),sn=c.querySelector('.k4-sn'),st=c.querySelector('.k4-st'),rk=c.querySelector('.k4-rk'),l5=c.querySelector('.k4-fn .l5,.k4-fn>*');
+    if(!nm||!sn||!st||!c.offsetParent)return;
+    nm.style.transform='';if(rk)rk.style.transform='';
+    const cs=getComputedStyle(sn);cv.font=`${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+    const m=cv.measureText(sn.textContent||'H'),fh=m.fontBoundingBoxAscent+m.fontBoundingBoxDescent,lh=parseFloat(cs.lineHeight)||fh;
+    const R=sn.getBoundingClientRect(),base=R.top+(lh-fh)/2+m.fontBoundingBoxAscent,top=base-cv.measureText('H').actualBoundingBoxAscent;
+    const bot=l5&&l5.offsetParent?l5.getBoundingClientRect().bottom:base;
+    const cr=c.getBoundingClientRect(),mid=(cr.top+st.getBoundingClientRect().top)/2;
+    nm.style.transform=`translateY(${(mid-(top+bot)/2).toFixed(1)}px)`;
+    if(rk){const r=rk.getBoundingClientRect();rk.style.transform=`translateY(${(mid-(r.top+r.bottom)/2).toFixed(1)}px)`;}
+  });
+}
+window.addEventListener('resize',()=>{clearTimeout(window._fk4);window._fk4=setTimeout(fitK4,120);});
+if(document.fonts)document.fonts.ready.then(()=>fitK4());
 function renderCards(){renderHomeFeat();
   const grid=document.getElementById('cards-grid');
   const list=getFiltered();
@@ -3089,6 +3112,7 @@ function renderCards(){renderHomeFeat();
     `<div style="animation:cardIn .6s cubic-bezier(.2,.9,.3,1.15) both;animation-delay:${Math.min(_cardIdx,24)*0.05}s">${buildPlayerCardHTML(p,{interactive:true,rankPtsMap:_rPts,rankList:_rList})}</div>`
   ).join('');
   if(!window._cardsCounted&&list.length){window._cardsCounted=true;countUp(grid);}
+  requestAnimationFrame(fitK4);setTimeout(fitK4,400);
 }
 // ═══ PLAYER MODAL ═══
 function calcMgAuto(){const gv=+document.getElementById('fp-gv').value||0,pg=+document.getElementById('fp-pg').value||0;document.getElementById('fp-mg').value=pg?calcMg(gv,pg).toFixed(2):'—';}
@@ -3900,7 +3924,7 @@ function buildPlayerCardHTML(p,opts){
     <div class="k4-rk">${ri>=0?'#'+(ri+1):'#–'}</div>
     <div class="k4-top">
       <div class="k4-av"${ringClick}>${photoHtml}</div>
-      <div class="k4-nm"><div class="k4-fn">${esc(fn)}${last5Html(p.id)}</div><div class="k4-sn">${esc(sn)}</div></div>
+      <div class="k4-nm"><div class="k4-sn">${esc(sn)}</div><div class="k4-fn">${last5Html(p.id)}</div></div>
     </div>
     ${_checkViewer()?'':`<div class="k4-adm"><span class="pk-lv">LV${p.livello}</span>${editBtn}</div>`}
     <div class="k4-st">
