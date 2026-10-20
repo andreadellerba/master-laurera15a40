@@ -2824,54 +2824,82 @@ function rankListAll(){const r=rankListGv(),ids=new Set(r.map(x=>x.id));return r
 // ═══ AVATAR DISEGNATI: un tennista diverso per ogni giocatore senza foto (uomo/donna dal campo "sesso") ═══
 // Non vengono salvati: appena si carica una foto vera, si vede la foto.
 const _avCache={};
+// Uomo o donna dal nome di battesimo (se c'è per intero); con la sola iniziale si usa il campo "sesso"
+const _NOMI_M_A=['andrea','luca','mattia','nicola','elia','tobia','enea','gianluca','mustafa','battista','zaccaria','geremia','isaia'];
+const _NOMI_F_ALTRI=['beatrice','alice','irene','ester','rachele','agnese','adele','matilde','carmen','noemi','nicole','miriam','ines','iris','chloe','desire','desirè','ruth','margherita'];
+function isDonna(p){
+  const first=String(p&&p.nome||'').trim().split(/\s+/)[0].toLowerCase();
+  if(first.length>2&&!first.endsWith('.')){
+    if(_NOMI_M_A.includes(first))return false;
+    if(_NOMI_F_ALTRI.includes(first))return true;
+    return /a$/.test(first);
+  }
+  return String(p&&p.sesso||'').toUpperCase()==='DONNA';
+}
 function fakeAv(p){
   if(!p)return'';
   const key=p.id+'|'+p.sesso+'|'+players.length+'|'+p.nome;if(_avCache[key])return _avCache[key];
-  const F=String(p.sesso||'').toUpperCase()==='DONNA';
-  // posizione del giocatore nel suo gruppo (uomini/donne): ogni combinazione esce una volta sola
-  const grp=players.filter(x=>(String(x.sesso||'').toUpperCase()==='DONNA')===F).map(x=>+x.id).sort((a,b)=>a-b);
+  const F=isDonna(p);
+  // posizione del giocatore nel suo gruppo (uomini/donne): combinazioni diverse per ognuno
+  const grp=players.filter(x=>isDonna(x)===F).map(x=>+x.id).sort((a,b)=>a-b);
   const i=Math.max(0,grp.indexOf(+p.id));
-  const SK=['#fbe0cc','#f6d2b8','#f3c9ab','#efc2a2','#f8d8c0','#f1cdb2','#eab996'];
-  const HR=['#1f1a17','#3a2a20','#5a3a24','#7f5232','#a8743f','#d2ab68','#e6d3a3','#8f8f8f','#7a2e1f'];
-  const SH=['#22c55e','#38bdf8','#a78bfa','#ff4fb8','#f59e0b','#ef4444','#14b8a6','#f4f4f5','#e8ff00','#2563eb'];
-  const AC=['#ffffff','#ff2d3d','#22c55e','#38bdf8','#e8ff00','#a78bfa','#111111'];
-  const nS=F?5:6;
-  let st=i%nS,sk=SK[(i*3+1)%7],hc=HR[(i*5+2)%9],sh=SH[(i*7+3)%10],acc=(i*2+1)%3,ac=AC[(i*4+2)%7],bd=F?0:(i*5+1)%3,eye='#1b1b1f';
-  let hair=(st===4&&!F)?HR[7]:hc;
+  const SK=['#fbe0cc','#f6d2b8','#f3c9ab','#efc2a2','#f8d8c0','#f1cdb2','#ecbe9c'];
+  const HR=['#1f1a17','#3a2a20','#5a3a24','#7f5232','#a8743f','#d2ab68','#e6d3a3','#8a3a22'];
+  const SH=['#22c55e','#38bdf8','#a78bfa','#ff4fb8','#f59e0b','#ef4444','#14b8a6','#f4f4f5','#e8ff00','#2563eb','#0f172a','#fb7185'];
+  const AC=['#ffffff','#ff2d3d','#22c55e','#38bdf8','#e8ff00','#a78bfa','#f59e0b'];
+  // capigliature: tutte piene (niente calvi né capelli radi)
+  const MST=['ricci','frangia','corti','ciuffo','riga','laterale','mossi','spazzola','caschetto','cresta'];
+  const FST=['coda','caschetto','chignon','lunghi','codaAlta','treccia','ricciLunghi'];
+  const sts=F?FST:MST;
+  let st=sts[i%sts.length],sk=SK[(i*3+1)%SK.length],hair=HR[(i*5+2)%HR.length],sh=SH[(i*7+3)%SH.length],ac=AC[(i*4+2)%AC.length],eye='#1b1b1f';
+  // accessori: uomini fascia o cappellino ogni tanto, donne fascia o visiera ogni tanto
+  let acc=F?['','fascia','','visiera',''][(i*3+1)%5]:['','fascia','','cappello','',''][(i*5+1)%6];
+  if(acc==='visiera'&&['codaAlta','chignon','codino','cresta'].includes(st))acc='';
+  if(acc==='cappello'&&['codino','cresta','spazzola'].includes(st))acc='fascia';
+  const bd=F?0:[0,2,0,1,0,2][(i*5+1)%6];
   // avatar su misura: Valentina Vacca, bionda con il caschetto, occhi azzurri, maglia fucsia
-  if(/valentina\s+vacca/i.test(p.nome||'')){st=3;hair='#ecc767';eye='#2f86e8';sh='#e5188f';acc=-1;}
-  const dk=c=>{const n=parseInt(c.slice(1),16),r=Math.max(0,(n>>16)-28),g=Math.max(0,((n>>8)&255)-28),b=Math.max(0,(n&255)-28);return`rgb(${r},${g},${b})`;};
-  let back='',top='';
-  if(F){
-    if(st===0){back=`<path d="M30 44C28 64 30 78 36 84L64 84C70 78 72 64 70 44Z" fill="${hair}"/>`;top=`<path d="M32 44C31 28 40 22 50 22C60 22 69 28 68 44C64 34 57 30 50 30C43 30 36 34 32 44Z" fill="${hair}"/><path d="M50 23L49 33" stroke="${dk(hair)}" stroke-width="1.4"/>`;}
-    else if(st===1){back=`<path d="M64 36C78 38 80 56 72 70C76 56 72 46 64 44Z" fill="${hair}"/>`;top=`<path d="M32 44C31 27 41 22 51 22C61 22 69 28 68 42C63 33 56 30 49 30C42 30 36 35 32 44Z" fill="${hair}"/>`;}
-    else if(st===2){top=`<circle cx="50" cy="19" r="8" fill="${hair}"/><path d="M32 44C31 27 41 23 50 23C59 23 69 27 68 44C64 34 57 30 50 30C43 30 36 34 32 44Z" fill="${hair}"/>`;}
-    else if(st===3){back=`<path d="M30 42C28 56 30 62 34 64L66 64C70 62 72 56 70 42Z" fill="${hair}"/>`;top=`<path d="M31 46C30 27 40 22 50 22C60 22 70 27 69 46C66 36 60 31 50 31C40 31 34 36 31 46Z" fill="${hair}"/>`;}
-    else{back=`<path d="M29 44C25 60 27 76 33 86C38 80 37 70 35 62L65 62C63 70 62 80 67 86C73 76 75 60 71 44Z" fill="${hair}"/>`;top=`<path d="M32 46C30 28 40 22 50 22C61 22 70 28 68 46C66 34 59 29 52 30C46 31 40 35 32 46Z" fill="${hair}"/>`;}
-  }else{
-    if(st===0)top=`<path d="M33 42C33 27 42 22 50 22C59 22 67 27 67 42C63 34 57 31 50 31C43 31 37 34 33 42Z" fill="${hair}"/>`;
-    else if(st===1)top=`<path d="M33.5 40C34 28 42 24 50 24C58 24 66 28 66.5 40C62 34 57 32 50 32C43 32 38 34 33.5 40Z" fill="${hair}" opacity=".75"/>`;
-    else if(st===2)top=[[38,30],[44,25],[51,23],[58,25],[63,30],[35,37],[66,37],[47,28],[55,28]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="5.2" fill="${hair}"/>`).join('');
-    else if(st===3)top=`<path d="M33 42C32 28 40 20 52 19C60 19 68 24 67 40C62 31 55 29 47 30C41 31 36 35 33 42Z" fill="${hair}"/><path d="M46 20C52 15 60 17 63 22C57 20 51 21 46 24Z" fill="${hair}"/>`;
-    else if(st===4)top=`<path d="M33 46C32 40 34 36 36 35L36 47Z" fill="${hair}"/><path d="M67 46C68 40 66 36 64 35L64 47Z" fill="${hair}"/>`;
-    else{back=`<path d="M31 42C29 52 31 58 33 60L67 60C69 58 71 52 69 42Z" fill="${hair}"/>`;top=`<path d="M31 46C30 28 40 21 50 21C61 21 70 28 69 46C66 35 59 30 50 30C41 30 34 35 31 46Z" fill="${hair}"/>`;}
-  }
-  // accessori: fascia, cappellino, visiera
+  if(/valentina\s+vacca/i.test(p.nome||'')){st='caschetto';hair='#ecc767';eye='#2f86e8';sh='#e5188f';acc='';}
+  const dk=(c,a=28)=>{const n=parseInt(c.slice(1),16),r=Math.min(255,Math.max(0,(n>>16)-a)),g=Math.min(255,Math.max(0,((n>>8)&255)-a)),b=Math.min(255,Math.max(0,(n&255)-a));return`rgb(${r},${g},${b})`;};
+  const H=hair,C=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${H}"/>`;
+  const HS={
+    ricci:()=>({top:[[35,40],[36,33],[40,27.5],[46,24],[53,23.5],[59,26],[64,30.5],[66,37],[66.5,43],[33.5,46],[43,29],[50,28],[57,30],[38,36],[62,35]].map(([x,y])=>C(x,y,5.6)).join('')}),
+    frangia:()=>({top:`<path d="M33 44C32 28 41 21.5 50 21.5C60 21.5 68 28 67 44C66 38 64.5 34.5 62.5 33.5L60.5 36.5L57.5 32.5L54.5 36.5L51.5 32.5L48.5 36.5L45.5 32.5L42.5 36.5L39.5 33.5C36.5 35.5 34.5 39 33 44Z" fill="${H}"/>`}),
+    corti:()=>({top:`<path d="M33.5 41C33.5 27.5 42 22.5 50 22.5C58 22.5 66.5 27.5 66.5 41C62.5 34 57 31.5 50 31.5C43 31.5 37.5 34 33.5 41Z" fill="${H}"/>`}),
+    ciuffo:()=>({top:`<path d="M34 42C33 30 39 25 45 24C46 18 55 15.5 61.5 20C67 24.5 67 33 66 42C63 34 57 31 50 31C43 31 37 34 34 42Z" fill="${H}"/>`}),
+    riga:()=>({top:`<path d="M33 42C33 27 42 22 50 22C59 22 67 27 67 42C64.5 35 60.5 31 55 30C53 32 51 33.5 48 34C47 32 46.5 31 46 30C40 31.5 35.5 35.5 33 42Z" fill="${H}"/>`}),
+    laterale:()=>({top:`<path d="M32 46C30 29 40 21 51 21C62 21 70 28 68 44C63 36 56 32 47 33C41 34 36 39 32 46Z" fill="${H}"/><path d="M59 26C67.5 30 70 38 68.5 46L66 46C66 38 63 32 57.5 29Z" fill="${H}"/>`}),
+    mossi:()=>({back:`<path d="M31 42C29 50 31 55 33 57L35 50Z" fill="${H}"/><path d="M69 42C71 50 69 55 67 57L65 50Z" fill="${H}"/>`,top:`<path d="M32 44C30 29 40 21 50 21C60 21 70 28 68 44C66 36 61 31 55 31C57 34 56 37 53 38C52 34 48 31 43 32C38 33 34 38 32 44Z" fill="${H}"/>`}),
+    spazzola:()=>({top:`<path d="M33.5 42C33 31 37 26 40 25L41 20L44 24L46 18.5L49 23.5L51.5 18L54 23.5L57 19L58.5 24.5L61.5 21L62 26C65 28 67 33 66.5 42C62.5 35 57 32.5 50 32.5C43 32.5 37.5 35 33.5 42Z" fill="${H}"/>`}),
+    caschetto:()=>({top:`<path d="M31.5 46C30 27 40 20.5 50 20.5C60 20.5 70 27 68.5 46C67 41 66 38 64 37C58 38.5 42 38.5 36 37C34 38 33 41 31.5 46Z" fill="${H}"/>`,back:F?`<path d="M30 42C28 56 30 62 34 64L66 64C70 62 72 56 70 42Z" fill="${H}"/>`:''}),
+    lunghi:()=>({back:F?`<path d="M29 44C25 60 27 76 33 86C38 80 37 70 35 62L65 62C63 70 62 80 67 86C73 76 75 60 71 44Z" fill="${H}"/>`:`<path d="M30 40C26 56 28 70 34 76C38 70 37 62 36 58L64 58C63 62 62 70 66 76C72 70 74 56 70 40Z" fill="${H}"/>`,top:`<path d="M31 46C30 28 40 21 50 21C61 21 70 28 69 46C67 36 60 31 50 31C40 31 33 36 31 46Z" fill="${H}"/>`}),
+    codino:()=>({top:`${C(50,18.5,6)}<path d="M33.5 41C33.5 27 42 22.5 50 22.5C58 22.5 66.5 27 66.5 41C62.5 33.5 57 31 50 31C43 31 37.5 33.5 33.5 41Z" fill="${H}"/>`}),
+    cresta:()=>({top:`<path d="M33.5 41C33.5 28 42 23.5 50 23.5C58 23.5 66.5 28 66.5 41C62.5 34.5 57 32 50 32C43 32 37.5 34.5 33.5 41Z" fill="${H}" opacity=".45"/><path d="M41 36C40 25 45 19 50 19C55 19 60 25 59 36C56 33 53 32 50 32C47 32 44 33 41 36Z" fill="${H}"/>`}),
+    coda:()=>({back:`<path d="M63 33C80 33 83 54 75 73C76.5 57 72 46 63.5 44Z" fill="${H}"/>`,top:`<path d="M32 44C31 27 41 22 51 22C61 22 69 28 68 42C63 33 56 30 49 30C42 30 36 35 32 44Z" fill="${H}"/>`}),
+    chignon:()=>({top:`${C(50,18.5,7.5)}<path d="M32 44C31 27 41 23 50 23C59 23 69 27 68 44C64 34 57 30 50 30C43 30 36 34 32 44Z" fill="${H}"/>`}),
+    codaAlta:()=>({back:`<path d="M52 18C66 12 78 24 74 46C72 36 66 28 56 26Z" fill="${H}"/>`,top:`<path d="M32 44C31 27 41 21.5 51 21.5C61 21.5 69 28 68 43C64 34 57 30 49 30C42 30 36 35 32 44Z" fill="${H}"/>`}),
+    treccia:()=>({back:[[31,54],[30,61.5],[31,69],[33,76]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="4.6" ry="4.4" fill="${H}" stroke="${dk(H)}" stroke-width=".8"/>`).join(''),top:`<path d="M31.5 46C30 27 40 21 50 21C60 21 70 27 68.5 44C66 35 59 30 50 30C42 30 35 36 33 48Z" fill="${H}"/>`}),
+    ricciLunghi:()=>({back:[[30,48],[29,57],[31,66],[70,48],[71,57],[69,66],[33,74],[67,74]].map(([x,y])=>C(x,y,6.5)).join(''),top:[[34,40],[35,32],[40,26.5],[47,23],[54,23],[60,26],[65,32],[66,40],[43,28],[50,27],[57,29]].map(([x,y])=>C(x,y,6)).join('')}),
+  };
+  const hs=HS[st]();
   let acs='';
-  if(acc===0)acs=`<rect x="32" y="33" width="36" height="6" rx="3" fill="${ac}"/>`;
-  else if(acc===1)acs=`<path d="M32 38C32 26 40 20 50 20C60 20 68 26 68 38Z" fill="${ac}"/><path d="M50 37C60 36 72 37 76 40C70 42 58 41 50 40Z" fill="${dk(ac)}"/>`;
-  else if(acc===2)acs=F||st===4?`<path d="M33 37C40 34 60 34 67 37L67 40C60 38 40 38 33 40Z" fill="${ac}"/><path d="M50 39C60 38 72 39 76 42C70 44 58 43 50 42Z" fill="${dk(ac)}"/>`:'';
-  const beard=bd===1?`<path d="M35 52C36 66 43 70 50 70C57 70 64 66 65 52C61 60 56 62 50 62C44 62 39 60 35 52Z" fill="${hair}" opacity=".9"/>`
-    :bd===2?`<path d="M35 52C36 66 43 70 50 70C57 70 64 66 65 52C61 60 56 62 50 62C44 62 39 60 35 52Z" fill="${hair}" opacity=".28"/>`:'';
+  if(acc==='fascia')acs=`<rect x="32" y="32.5" width="36" height="6" rx="3" fill="${ac}"/>`;
+  else if(acc==='cappello')acs=`<path d="M32 38C32 26 40 20 50 20C60 20 68 26 68 38Z" fill="${ac}"/><path d="M50 37C60 36 72 37 76 40C70 42 58 41 50 40Z" fill="${dk(ac)}"/>`;
+  else if(acc==='visiera')acs=`<path d="M33 37C40 34 60 34 67 37L67 40C60 38 40 38 33 40Z" fill="${ac}"/><path d="M50 39C60 38 72 39 76 42C70 44 58 43 50 42Z" fill="${dk(ac)}"/>`;
+  const beard=bd===1?`<path d="M35 52C36 66 43 70 50 70C57 70 64 66 65 52C61 60 56 62 50 62C44 62 39 60 35 52Z" fill="${H}" opacity=".9"/>`
+    :bd===2?`<path d="M35 52C36 66 43 70 50 70C57 70 64 66 65 52C61 60 56 62 50 62C44 62 39 60 35 52Z" fill="${H}" opacity=".28"/>`:'';
   const cheeks=F?`<circle cx="40" cy="55" r="3" fill="#ff8a8a" opacity=".28"/><circle cx="60" cy="55" r="3" fill="#ff8a8a" opacity=".28"/>`:'';
   const ear=F?`<circle cx="33" cy="53" r="1.4" fill="${ac==='#111111'?'#e8ff00':ac}"/><circle cx="67" cy="53" r="1.4" fill="${ac==='#111111'?'#e8ff00':ac}"/>`:'';
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="9 7 82 82"><defs><radialGradient id="g" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="${sh}" stop-opacity=".35"/><stop offset="1" stop-color="#14151a"/></radialGradient></defs>`
-    +`<rect width="100" height="100" fill="url(#g)"/>${back}`
-    +`<path d="M12 104C14 82 30 74 50 74C70 74 86 82 88 104Z" fill="${sh}"/><path d="M41 74L50 84L59 74" fill="none" stroke="${sh==='#f4f4f5'?'#c9c9cf':'#ffffff'}" stroke-width="2.6" stroke-linejoin="round" opacity=".85"/>`
-    +`<rect x="44" y="60" width="12" height="16" rx="5" fill="${dk(sk)}"/>`
+  // maglietta: uomini polo con colletto e bottoni, donne girocollo; cuciture delle maniche (niente più scollo a V bianco)
+  const sd=dk(sh,sh==='#0f172a'?-40:34);
+  const shirt=`<path d="M12 104C14 82 30 74 50 74C70 74 86 82 88 104Z" fill="${sh}"/><path d="M25 87Q28 95 27 104M75 87Q72 95 73 104" stroke="${sd}" stroke-width="1.3" fill="none" opacity=".7"/>`
+    +(F?`<path d="M41.5 74.6Q50 81.5 58.5 74.6" fill="none" stroke="${sd}" stroke-width="2.4" stroke-linecap="round"/>`
+       :`<path d="M50 79.5V95" stroke="${sd}" stroke-width="1.4"/><circle cx="50" cy="85.5" r="1" fill="${sd}"/><circle cx="50" cy="90.5" r="1" fill="${sd}"/><path d="M41 73.6L50 79.8L45.6 84.6L38.6 76.2Z" fill="${sd}"/><path d="M59 73.6L50 79.8L54.4 84.6L61.4 76.2Z" fill="${sd}"/>`);
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="9 7 82 82"><defs><radialGradient id="g" cx="50%" cy="35%" r="75%"><stop offset="0" stop-color="${sh==='#0f172a'?'#38bdf8':sh}" stop-opacity=".35"/><stop offset="1" stop-color="#14151a"/></radialGradient></defs>`
+    +`<rect width="100" height="100" fill="url(#g)"/>${hs.back||''}`
+    +`<rect x="44" y="60" width="12" height="16" rx="5" fill="${dk(sk)}"/>${shirt}`
     +`<circle cx="33" cy="49" r="4.2" fill="${sk}"/><circle cx="67" cy="49" r="4.2" fill="${sk}"/>`
-    +`<ellipse cx="50" cy="47" rx="17" ry="20" fill="${sk}"/>${beard}${top}${acs}`
-    +`<path d="M40.5 43.5Q43 42 45.5 43.5M54.5 43.5Q57 42 59.5 43.5" stroke="${dk(hair)}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`
+    +`<ellipse cx="50" cy="47" rx="17" ry="20" fill="${sk}"/>${beard}${hs.top}${acs}`
+    +`<path d="M40.5 43.5Q43 42 45.5 43.5M54.5 43.5Q57 42 59.5 43.5" stroke="${dk(H)}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`
     +`<circle cx="43" cy="48" r="${eye==='#1b1b1f'?1.9:2.3}" fill="${eye}"/><circle cx="57" cy="48" r="${eye==='#1b1b1f'?1.9:2.3}" fill="${eye}"/>${cheeks}${ear}`
     +`<path d="M44.5 57Q50 61.5 55.5 57" stroke="#7a3b2e" stroke-width="1.7" fill="none" stroke-linecap="round"/></svg>`;
   return _avCache[key]='data:image/svg+xml,'+encodeURIComponent(svg);
