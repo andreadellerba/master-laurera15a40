@@ -2922,11 +2922,11 @@ function badgesHtml(ch){return ch.map(c=>`<span data-tip="${esc(c.t)}">${c.ic} $
 // ═══ PROFILO: anello % vittorie, badge, rivali, andamento dei game ═══
 // Profilo: linea dei game fatti nelle ultime 10 partite (pallino verde vinta, rosso persa, azzurro pareggio; il record in giallo)
 function trendHtml(p,mine){
-  const ms=mine.slice(0,10).reverse();if(ms.length<2)return'';
+  const ms=mine.slice(0,10).reverse();if(!ms.length)return'';
   const v=ms.map(m=>{const g=_games(m);return _side(m,p.id)===1?g[0]:g[1];}),W=600,H=120,pad=16,mx=Math.max(...v,1),best=v.indexOf(mx);
-  const x=i=>pad+i*(W-2*pad)/(v.length-1),y=n=>H-pad-(n/mx)*(H-2*pad-14);
+  const x=i=>v.length<2?W/2:pad+i*(W-2*pad)/(v.length-1),y=n=>H-pad-(n/mx)*(H-2*pad-14);
   const pts=v.map((n,i)=>`${x(i).toFixed(1)},${y(n).toFixed(1)}`);
-  return`<div class="pr-sec">📉 ULTIME ${v.length} PARTITE</div><div class="ptr"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Game fatti nelle ultime partite">
+  return`<div class="pr-sec">📉 ${v.length===1?'ULTIMA PARTITA':'ULTIME '+v.length+' PARTITE'}</div><div class="ptr"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Game fatti nelle ultime partite">
     <defs><linearGradient id="ptrG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e8ff00" stop-opacity=".32"/><stop offset="1" stop-color="#e8ff00" stop-opacity="0"/></linearGradient></defs>
     ${[.33,.66].map(f=>`<line x1="${pad}" x2="${W-pad}" y1="${(pad+f*(H-2*pad)).toFixed(1)}" y2="${(pad+f*(H-2*pad)).toFixed(1)}" stroke="rgba(255,255,255,.07)" vector-effect="non-scaling-stroke"/>`).join('')}
     <path d="M${pts.join(' L')} L${x(v.length-1).toFixed(1)},${H-pad} L${pad},${H-pad}Z" fill="url(#ptrG)"/>
@@ -2947,7 +2947,7 @@ function profileExtra(p){
   // andamento: game fatti (barra colorata per esito) e subiti (barra grigia), partita per partita
   let chart='';
   const seq=mine.slice(0,12).reverse();
-  if(seq.length>=2){
+  if(seq.length>=1){   // anche con una sola partita
     const mx=Math.max(1,...seq.map(m=>Math.max(..._games(m)))),W=Math.max(320,seq.length*54),H=150,bw=16,pad=26;
     const bars=seq.map((m,i)=>{const g=_games(m),me=_side(m,p.id)===1?g[0]:g[1],ot=_side(m,p.id)===1?g[1]:g[0],r=_resFor(m,p.id);
       const x=pad+i*((W-pad*2)/seq.length)+((W-pad*2)/seq.length)/2-bw,h1=(me/mx)*(H-44),h2=(ot/mx)*(H-44);
