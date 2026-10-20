@@ -1896,6 +1896,16 @@ html{background:#000!important}
 .cmc.mk.live .mk-c,.cmc.mk.live .mk-time{border-color:#ff2d3d!important;animation:liveBox 1s ease-in-out infinite}
 @keyframes liveBlink{0%,100%{opacity:1;text-shadow:0 0 12px rgba(255,45,61,.8)}50%{opacity:.35;text-shadow:none}}
 @keyframes liveBox{0%,100%{box-shadow:0 0 0 0 rgba(255,45,61,0)}50%{box-shadow:0 0 16px 2px rgba(255,45,61,.45)}}
+/* ═══ TEMA BLU CEMENTO (proposta 81): pagina nel blu del circolo, card e barre blu notte ═══
+   Solo tema scuro: il tema chiaro resta com'è. L'aurora diventa un blu notte pieno, così header, menu,
+   barra risultati, righe classifica e card prendono tutti lo stesso colore. */
+body:not(.light){--aur:linear-gradient(#0e1c33,#0e1c33);--bg:#24507f;--bg2:#0b1830;--bg3:#0e1c33;--bg4:#172a4b;--border:#24385c;--border2:#2f4670;--text2:#9fb0c8;--header-bg:#24507f}
+html:has(body:not(.light)),body:not(.light),body:not(.light) .page,body:not(.light) #page-players,body:not(.light) .wrap,
+body:not(.light) .header,body:not(.light) .profile-modal,body:not(.light) .profile-header{background:#24507f!important;background-image:none!important}
+html body:not(.light) .pcrd.k4c,html body:not(.light) .pcrd.pk{background:#0e1c33!important}
+/* riquadri "vetro" (impostazioni, albo, tornei…): sul blu sembravano slavati, diventano blu notte come le card */
+html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:#0e1c33!important}
+#boot{background:#24507f}
 /* Telefono: la sfumatura di header e menu segue la barra invece di restare fissata allo schermo.
    Con "fixed" il browser del telefono ridisegnava a pezzi le zone animate (bottoni, voce attiva)
    e comparivano rettangoli di un altro colore. Aspetto quasi identico: header = fetta alta, menu = fetta bassa. */
