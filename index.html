@@ -1811,6 +1811,23 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
 .vd-time{width:46px;flex:none;font:400 20px/1 "Bebas Neue",sans-serif;color:#e8ff00}
 .ios-tx b.blue{color:#4da3ff;font-weight:500}
 #vis-det .ios-grp+.ios-f,#vis-det .ios-f{margin-top:10px}
+/* ═══ finestra "Installa l'app" ═══ */
+#inst-bg{position:fixed!important;inset:0;z-index:7000!important;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom));animation:instFade .25s ease}
+@keyframes instFade{from{opacity:0}to{opacity:1}}
+.inst-box{width:100%;max-width:420px;background:#0e1c33;border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:22px 18px 14px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);animation:sheetUp .3s ease-out}
+.inst-logo{width:68px;height:68px;border-radius:16px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
+.inst-box h3{font:800 21px "DM Sans",sans-serif;color:#fff;margin:12px 0 6px}
+.inst-box p{font-size:14px;line-height:1.45;color:#a9bbd3;margin:0 6px 14px}
+.inst-go{width:100%;padding:15px;border:0;border-radius:14px;background:#e8ff00;color:#111;font:800 17px "DM Sans",sans-serif;cursor:pointer}
+.inst-go[hidden],#inst-how[hidden]{display:none!important}
+.inst-sub{font:700 12px "DM Sans",sans-serif;letter-spacing:.6px;text-transform:uppercase;color:#9fb0c8;margin-bottom:8px;text-align:left;padding-left:4px}
+.inst-steps{list-style:none;margin:0;padding:0;background:#172a4b;border-radius:16px;text-align:left}
+.inst-steps li{display:flex;align-items:center;gap:12px;padding:12px 14px;color:#fff;font-size:14.5px;line-height:1.35}
+.inst-steps li+li{box-shadow:inset 0 .5px 0 rgba(255,255,255,.1)}
+.inst-n{width:26px;height:26px;border-radius:50%;background:#e8ff00;color:#111;font:800 14px "DM Sans",sans-serif;display:grid;place-items:center;flex:none}
+.inst-t{flex:1}.inst-t b{color:#e8ff00}
+.inst-i{width:32px;height:32px;border-radius:9px;background:rgba(255,255,255,.1);display:grid;place-items:center;flex:none;color:#4da3ff}.inst-i svg{width:20px;height:20px}
+.inst-no{width:100%;margin-top:8px;padding:13px;border:0;background:transparent;color:#9fb0c8;font:600 16px "DM Sans",sans-serif;cursor:pointer}
 /* Telefono: la sfumatura di header e menu segue la barra invece di restare fissata allo schermo.
    Con "fixed" il browser del telefono ridisegnava a pezzi le zone animate (bottoni, voce attiva)
    e comparivano rettangoli di un altro colore. Aspetto quasi identico: header = fetta alta, menu = fetta bassa. */
@@ -6886,49 +6903,52 @@ document.addEventListener('click',function(e){
 })();
 
 
-// ═══ PWA: banner "Installa l'app" (Android/Chrome — beforeinstallprompt non esiste su iOS Safari) ═══
+// ═══ PWA: finestra "Installa l'app" sui telefoni che non l'hanno ancora sulla schermata Home ═══
+// Android/Chrome: tasto Installa (prompt del sistema); iPhone e browser senza prompt: istruzioni passo passo.
+// "Annulla" la richiude e la ripropone dopo 3 giorni.
 (function(){
-  var deferredPrompt=null;
-  window.addEventListener('beforeinstallprompt',function(e){
-    e.preventDefault();
-    deferredPrompt=e;
-    try{if(localStorage.getItem('laurera_install_dismissed'))return;}catch(err){}
-    showInstallBanner();
-  });
-  // Service worker minimo (nessuna cache): rende l'app installabile su PC e Android.
-  if('serviceWorker' in navigator&&location.protocol==='https:'){
-    navigator.serviceWorker.register('sw.js').catch(function(){});
-  }
-  // iPhone/iPad (Safari): niente prompt automatico, si spiega come fare.
-  var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  var deferredPrompt=null,KEY='laurera_install_later',WAIT=3*86400000;
+  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferredPrompt=e;var b=document.getElementById('inst-go'),h=document.getElementById('inst-how');if(b){b.hidden=false;if(h)h.hidden=true;}});
+  window.addEventListener('appinstalled',function(){closeIt();try{localStorage.setItem(KEY,String(Date.now()+3650*86400000));}catch(e){}});
+  var ua=navigator.userAgent;
+  var isIOS=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),isAndroid=/android/i.test(ua);
   var standalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
-  if(isIOS&&!standalone){
-    var dismissed=false;try{dismissed=!!localStorage.getItem('laurera_install_dismissed');}catch(e){}
-    if(!dismissed)setTimeout(function(){showInstallBanner(true);},2500);
+  if(standalone||!(isIOS||isAndroid)||location.protocol==='file:'||navigator.webdriver||/HeadlessChrome/.test(ua))return;
+  try{if(Date.now()<(+localStorage.getItem(KEY)||0))return;}catch(e){}
+  var inApp=/FBAN|FBAV|Instagram|WhatsApp|Line\/|; wv\)/i.test(ua),iosSafari=isIOS&&/Safari/.test(ua)&&!/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  var ic={share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>',
+    add:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M12 8v8M8 12h8"/></svg>',
+    dots:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
+    more:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>',
+    ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>'};
+  var st=function(n,t,i){return'<li><span class="inst-n">'+n+'</span><span class="inst-t">'+t+'</span>'+(i?'<span class="inst-i">'+ic[i]+'</span>':'')+'</li>';};
+  function steps(){
+    if(isIOS&&!iosSafari)return st(1,'Tocca <b>⋯</b> o il menu',inApp?'more':'share')+st(2,inApp?'Scegli <b>Apri in Safari</b>':'Tocca <b>Condividi</b>','share')+st(3,'Poi <b>Aggiungi alla schermata Home</b>','add');
+    if(isIOS)return st(1,'Tocca <b>Condividi</b> nella barra di Safari','share')+st(2,'Scorri e tocca <b>Aggiungi alla schermata Home</b>','add')+st(3,'Tocca <b>Aggiungi</b> in alto a destra','ok');
+    if(inApp)return st(1,'Tocca i <b>tre puntini</b> in alto a destra','dots')+st(2,'Scegli <b>Apri in Chrome</b> (o nel browser)','share')+st(3,'Nel menu di Chrome tocca <b>Installa app</b>','add');
+    return st(1,'Tocca i <b>tre puntini</b> in alto a destra','dots')+st(2,'Tocca <b>Installa app</b> o <b>Aggiungi a schermata Home</b>','add')+st(3,'Conferma con <b>Installa</b>','ok');
   }
-  function showInstallBanner(ios){
-    if(document.getElementById('install-banner'))return;
-    var banner=document.createElement('div');
-    banner.id='install-banner';
-    banner.innerHTML=ios
-      ?'<img src="icon-180.png" alt="" style="width:34px;height:34px;border-radius:8px;flex-shrink:0">'
-        +'<span class="ib-text">Installa l\'app: tocca <b>Condividi</b> <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg> e poi <b>Aggiungi alla schermata Home</b></span>'
-        +'<button type="button" class="ib-close" title="Chiudi">✕</button>'
-      :'<img src="icon-180.png" alt="" style="width:34px;height:34px;border-radius:8px;flex-shrink:0">'
-        +'<span class="ib-text">Installa Laurera 15A40 come app</span>'
-        +'<button type="button" class="ib-install">Installa</button>'
-        +'<button type="button" class="ib-close" title="Chiudi">✕</button>';
-    document.body.appendChild(banner);
-    var inst=banner.querySelector('.ib-install');
-    if(inst)inst.onclick=async function(){
-      banner.remove();
-      if(deferredPrompt){deferredPrompt.prompt();try{await deferredPrompt.userChoice;}catch(e){}deferredPrompt=null;}
-    };
-    banner.querySelector('.ib-close').onclick=function(){
-      banner.remove();
-      try{localStorage.setItem('laurera_install_dismissed','1');}catch(e){}
-    };
+  function closeIt(){var b=document.getElementById('inst-bg');if(b)b.remove();}
+  function show(){
+    if(document.getElementById('inst-bg'))return;
+    var bg=document.createElement('div');bg.id='inst-bg';
+    bg.innerHTML='<div class="inst-box" role="dialog" aria-labelledby="inst-tt"><img src="icon-180.png" alt="" class="inst-logo"><h3 id="inst-tt">Installa l\'app Laurera</h3>'
+      +'<p>Così la apri con un tocco dalla schermata Home, come le altre app, e vedi subito risultati e classifiche.</p>'
+      +'<button type="button" id="inst-go" class="inst-go"'+(deferredPrompt?'':' hidden')+'>Installa</button>'
+      +'<div id="inst-how"'+(deferredPrompt?' hidden':'')+'><div class="inst-sub">Come fare</div><ol class="inst-steps">'+steps()+'</ol></div>'
+      +'<button type="button" id="inst-no" class="inst-no">Annulla</button></div>';
+    document.body.appendChild(bg);
+    var go=document.getElementById('inst-go');
+    go.onclick=async function(){if(!deferredPrompt){go.hidden=true;document.getElementById('inst-how').hidden=false;return;}
+      deferredPrompt.prompt();var r=null;try{r=await deferredPrompt.userChoice;}catch(e){}deferredPrompt=null;
+      if(r&&r.outcome==='accepted'){closeIt();try{localStorage.setItem(KEY,String(Date.now()+3650*86400000));}catch(e){}}
+      else{go.hidden=true;document.getElementById('inst-how').hidden=false;}};
+    document.getElementById('inst-no').onclick=function(){closeIt();try{localStorage.setItem(KEY,String(Date.now()+WAIT));}catch(e){}};
   }
+  window.__showInstall=show;   // per le prove
+  // aspetto che l'app sia caricata (e su Android che arrivi il prompt del sistema)
+  setTimeout(show,isAndroid?5000:3000);
 })();
 </script>
 </body>
