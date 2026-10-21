@@ -1915,6 +1915,41 @@ html body:not(.light) :is(.hf-list-title,.pg-title.pg-big,.cal-big),html body:no
 /* riquadri "vetro" (impostazioni, albo, tornei…): sul blu sembravano slavati, diventano blu notte come le card */
 html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:#0e1c33!important}
 #boot{background:#24507f}
+/* ═══ AVATAR PERSONALIZZATI (admin): menu al tocco dell'avatar ed editor ═══ */
+.avs-bg{position:fixed!important;inset:0;z-index:6000!important;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.avs-bg.open{display:flex}
+@media(min-width:641px){.avs-bg{align-items:center}}
+.avs-box{width:100%;max-width:380px;background:#0e1c33;border:1px solid rgba(255,255,255,.14);border-radius:22px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.avs-hd{display:flex;align-items:center;gap:12px;padding:4px 4px 8px}
+.avs-av{width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid #e8ff00;flex:none}.avs-av img{width:100%;height:100%;display:block}
+.avs-hd b{font:400 22px "Anton",sans-serif;text-transform:uppercase;color:#fff}
+.avs-box>button{width:100%;padding:13px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:#172a4b;color:#fff;font:700 15px "DM Sans",sans-serif;text-align:left;cursor:pointer}
+.avs-box>button.avs-x{background:transparent;text-align:center;color:#9fb0c8}
+.ave-bg{position:fixed!important;inset:0;z-index:6000!important;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:12px;padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+.ave-bg.open{display:flex}
+.ave-box{width:100%;max-width:560px;max-height:100%;background:#0e1c33;border:1px solid rgba(255,255,255,.14);border-radius:24px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.ave-top{display:flex;align-items:center;gap:14px;padding:14px 50px 10px 14px;position:relative}
+.ave-prev{width:120px;height:120px;border-radius:50%;overflow:hidden;border:3px solid #e8ff00;flex:none;box-shadow:0 10px 24px rgba(0,0,0,.5)}
+.ave-prev img{width:100%;height:100%;display:block}
+.ave-ttl{display:flex;flex-direction:column;gap:3px;min-width:0}
+.ave-ttl b{font:400 24px/1.05 "Anton",sans-serif;text-transform:uppercase;color:#fff}
+.ave-ttl span{font-size:12px;color:#9fb0c8}
+.ave-act{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.ave-act button{border:1px solid rgba(255,255,255,.16);background:#172a4b;color:#fff;border-radius:999px;padding:7px 12px;font:700 12px "DM Sans",sans-serif;cursor:pointer}
+.ave-x{position:absolute!important;top:12px;right:12px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:transparent;color:#fff;cursor:pointer;font-size:14px}
+.ave-tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 14px 10px;scrollbar-width:none;border-bottom:1px solid rgba(255,255,255,.08);flex:none}
+.ave-tabs::-webkit-scrollbar{display:none}
+.ave-tabs button{flex:none;border:1px solid rgba(255,255,255,.14);background:transparent;color:#cfd8e6;border-radius:999px;padding:7px 13px;font:700 12.5px "DM Sans",sans-serif;cursor:pointer}
+.ave-tabs button.on{background:#e8ff00;color:#111;border-color:#e8ff00}
+.ave-body{overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:16px;flex:1;min-height:0}
+.ave-lb{font:800 11px "DM Sans",sans-serif;letter-spacing:1px;text-transform:uppercase;color:#9fb0c8;margin-bottom:8px}
+.ave-ch{display:flex;flex-wrap:wrap;gap:6px}
+.ave-ch button{border:1px solid rgba(255,255,255,.14);background:#172a4b;color:#fff;border-radius:12px;padding:8px 11px;font:600 13px "DM Sans",sans-serif;cursor:pointer}
+.ave-ch button.on{background:#e8ff00;color:#111;border-color:#e8ff00}
+.ave-sw{display:flex;flex-wrap:wrap;gap:9px}
+.ave-c{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;color:#fff;font:800 14px "DM Sans",sans-serif;background:#172a4b;padding:0}
+.ave-c.on{outline:3px solid #e8ff00;outline-offset:2px}
+.ave-ft{display:flex;gap:8px;justify-content:flex-end;padding:10px 14px 12px;border-top:1px solid rgba(255,255,255,.08);flex:none}
 /* Telefono: la sfumatura di header e menu segue la barra invece di restare fissata allo schermo.
    Con "fixed" il browser del telefono ridisegnava a pezzi le zone animate (bottoni, voce attiva)
    e comparivano rettangoli di un altro colore. Aspetto quasi identico: header = fetta alta, menu = fetta bassa. */
@@ -2905,6 +2940,255 @@ function fakeAv(p){
   return _avCache[key]='data:image/svg+xml,'+encodeURIComponent(svg);
 }
 function phUrl(p){return p?(p.photoUrl||fakeAv(p)):'';}
+// ═══════════════════════════════════════════════
+// AVATAR PERSONALIZZATI (solo admin): toccando l'avatar si sceglie se creare/modificare l'avatar,
+// caricare una foto o aprire il profilo. L'avatar creato si salva come "foto" (documento foto di Firestore),
+// così compare ovunque; dentro l'immagine restano le scelte fatte, per poterlo riaprire e modificare.
+// ═══════════════════════════════════════════════
+const LAV={
+  pelle:['#fde7d6','#fbdcc6','#f6d0b6','#f2c6a8','#ecbd9c','#e5b18c','#dca47c','#cf9469','#c08560','#a8714f'],
+  colCap:['#0f0d0c','#2a1d16','#3d2b20','#5a3a24','#7a5232','#9a6a3f','#b98a55','#d8b06c','#ecd29a','#f3e6c4','#8a3a22','#b4532a','#d0703a','#6b6b6b','#9a9a9a','#cfcfcf','#f2f2f2'],
+  colOcchi:['#3b2618','#1b1b1f','#6b4a2a','#5a7a3a','#3c7fbf','#6f8fa8','#8aa0b0'],
+  colori:['#ef4444','#f97316','#f59e0b','#e8ff00','#22c55e','#15803d','#14b8a6','#38bdf8','#2563eb','#1e3a8a','#a78bfa','#7c3aed','#ff4fb8','#be123c','#f4f4f5','#9ca3af','#374151','#111827'],
+  sfondi:['auto','#14151a','#0e1c33','#24507f','#1f2937','#3b0764','#064e3b','#7f1d1d','#78350f','#e8ff00','#f4f4f5'],
+  // [chiave, etichetta]
+  viso:[['ovale','Ovale'],['tondo','Tondo'],['squadrato','Squadrato'],['allungato','Allungato'],['cuore','A cuore']],
+  capelli:[['corti','Corti'],['rasato','Rasati'],['spazzola','A spazzola'],['ciuffo','Ciuffo'],['riga','Riga di lato'],['indietro','Tirati indietro'],['frangia','Frangia'],['mossi','Mossi'],['ricci','Ricci'],['ricciCorti','Ricci corti'],['cresta','Cresta'],['codino','Codino'],['stempiato','Stempiato'],['chierica','Calvo ai lati'],['pelato','Pelato'],['pixie','Corti da donna'],['caschetto','Caschetto'],['lunghi','Lunghi lisci'],['lunghiMossi','Lunghi mossi'],['coda','Coda'],['codaAlta','Coda alta'],['chignon','Chignon'],['treccia','Treccia']],
+  sfum:[['no','Nessuna'],['fade','Sfumati ai lati'],['tempie','Tempie grigie'],['brizzolato','Brizzolati'],['meches','Colpi di sole'],['ombre','Punte chiare']],
+  barba:[['no','Nessuna'],['accenno','Accenno'],['corta','Corta'],['piena','Piena'],['lunga','Lunga'],['pizzetto','Pizzetto'],['baffi','Baffi'],['baffiPizzetto','Baffi e pizzetto'],['basette','Basette']],
+  sopr:[['normali','Normali'],['arcuate','Arcuate'],['dritte','Dritte'],['folte','Folte'],['sottili','Sottili'],['angolate','Angolate']],
+  occhi:[['mandorla','A mandorla'],['tondi','Tondi'],['piccoli','Piccoli'],['sottili','Socchiusi']],
+  naso:[['piccolo','Piccolo'],['medio','Medio'],['grande','Grande'],['aquilino','Aquilino'],['largo','Largo']],
+  bocca:[['sorriso','Sorriso'],['aperto','Sorriso aperto'],['mezzo','Mezzo sorriso'],['serio','Serio'],['sottile','Labbra sottili']],
+  occhiali:[['no','Nessuno'],['tondi','Da vista tondi'],['rett','Da vista squadrati'],['sole','Da sole'],['sport','Sportivi']],
+  testa:[['no','Nessuno'],['fascia','Fascia'],['fasciaLarga','Fascia larga'],['cappello','Cappellino'],['rovescio','Cappellino al contrario'],['visiera','Visiera'],['bandana','Bandana'],['berretto','Berretto di lana']],
+  maglia:[['polo','Polo'],['girocollo','Girocollo'],['scolloV','Scollo a V'],['sport','Sportiva'],['canotta','Canotta'],['felpa','Felpa']],
+};
+const _lc=(c,a)=>{if(!/^#[0-9a-f]{6}$/i.test(c))return c;const n=parseInt(c.slice(1),16),f=v=>Math.max(0,Math.min(255,v-a));return`rgb(${f(n>>16)},${f((n>>8)&255)},${f(n&255)})`;};   // a>0 scurisce, a<0 schiarisce
+function lavDefault(p){
+  const F=isDonna(p);
+  return{viso:'ovale',pelle:LAV.pelle[2],capelli:F?'coda':'corti',colCap:LAV.colCap[3],sfum:'no',barba:'no',colBarba:'',sopr:'normali',occhi:'mandorla',colOcchi:LAV.colOcchi[0],
+    naso:'medio',bocca:'sorriso',occhiali:'no',testa:'no',colTesta:'#ffffff',maglia:F?'girocollo':'polo',colMaglia:'#2563eb',colDett:'#f4f4f5',sfondo:'auto',
+    orecchini:F,lentiggini:false,guance:F,rughe:false,neo:false};
+}
+function lavRandom(p){
+  const r=a=>a[Math.floor(Math.random()*a.length)],k=a=>r(a)[0],F=isDonna(p);
+  const cap=F?r(['pixie','caschetto','lunghi','lunghiMossi','coda','codaAlta','chignon','treccia','ricci']):r(['corti','rasato','spazzola','ciuffo','riga','indietro','frangia','mossi','ricci','ricciCorti','cresta','stempiato']);
+  return{...lavDefault(p),viso:k(LAV.viso),pelle:r(LAV.pelle.slice(0,7)),capelli:cap,colCap:r(LAV.colCap.slice(0,13)),barba:F?'no':r(['no','no','accenno','corta','piena','pizzetto','baffi']),
+    sopr:k(LAV.sopr),occhi:k(LAV.occhi),colOcchi:r(LAV.colOcchi),naso:k(LAV.naso),bocca:k(LAV.bocca),occhiali:r(['no','no','no','tondi','rett','sole']),
+    testa:r(['no','no','fascia','cappello','visiera']),colTesta:r(LAV.colori),maglia:k(LAV.maglia),colMaglia:r(LAV.colori),colDett:r(LAV.colori),lentiggini:Math.random()<.15};
+}
+// disegno dell'avatar (SVG 200×200, inquadratura come gli avatar automatici)
+function lavSvg(c){
+  const FS={ovale:{w:36,jw:22,cy:142},tondo:{w:39,jw:30,cy:138},squadrato:{w:37,jw:32,cy:138,sq:1},allungato:{w:33,jw:20,cy:148},cuore:{w:38,jw:15,cy:142}};
+  const f=FS[c.viso]||FS.ovale,L=100-f.w,R=100+f.w,k=f.w/36,sk=c.pelle,hc=c.colCap,bc=c.colBarba||hc,E=94,ex=f.w*.42,cy=f.cy;
+  const sx=s=>`<g transform="translate(100 0) scale(${k} 1) translate(-100 0)">${s}</g>`;
+  let defs=`<radialGradient id="bg" cx="50%" cy="38%" r="72%"><stop offset="0" stop-color="${c.sfondo==='auto'?c.colMaglia:_lc(c.sfondo,-30)}" stop-opacity="${c.sfondo==='auto'?.4:1}"/><stop offset="1" stop-color="${c.sfondo==='auto'?'#14151a':c.sfondo}"/></radialGradient>`
+    +`<radialGradient id="sk" cx="46%" cy="40%" r="70%"><stop offset="0" stop-color="${_lc(sk,-10)}"/><stop offset=".65" stop-color="${sk}"/><stop offset="1" stop-color="${_lc(sk,24)}"/></radialGradient>`
+    +`<linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${_lc(hc,-28)}"/><stop offset=".45" stop-color="${hc}"/><stop offset="1" stop-color="${c.sfum==='ombre'?_lc(hc,-70):_lc(hc,18)}"/></linearGradient>`
+    +`<linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${_lc(c.colMaglia,-14)}"/><stop offset="1" stop-color="${_lc(c.colMaglia,26)}"/></linearGradient>`
+    +`<pattern id="bz" width="13" height="11" patternUnits="userSpaceOnUse"><path d="M1 2l3 1.2M7 5l2.6-.8M3 8.5l2.4 1.4M10 9.5l2.2.6" stroke="#ececec" stroke-width="1.2" stroke-opacity=".6" stroke-linecap="round"/></pattern>`
+    +`<pattern id="rz" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".7" fill="${_lc(hc,-20)}" opacity=".7"/></pattern>`
+    +`<linearGradient id="fd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sk}" stop-opacity="0"/><stop offset="1" stop-color="${sk}" stop-opacity=".95"/></linearGradient>`;
+  const H='url(#hg)';
+  // ── capelli: parte dietro (passa dietro collo e spalle) e parte davanti ──
+  const C=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="FILL"/>`;
+  const capBase=`<path d="M62 96C56 52 80 34 100 34C120 34 144 52 138 96C136 80 132 72 126 68C116 64 84 64 74 68C68 72 64 80 62 96Z" fill="FILL"/>`;
+  const hairs={
+    corti:{f:capBase},
+    rasato:{f:`<path d="M63 92C59 54 80 38 100 38C120 38 141 54 137 92C135 80 131 73 125 70C116 67 84 67 75 70C69 73 65 80 63 92Z" fill="FILL" opacity=".55"/><path d="M63 92C59 54 80 38 100 38C120 38 141 54 137 92C135 80 131 73 125 70C116 67 84 67 75 70C69 73 65 80 63 92Z" fill="url(#rz)"/>`},
+    spazzola:{f:`<path d="M62 94C58 64 66 50 72 46L72 36L80 42L84 30L91 40L97 27L103 39L110 28L115 40L122 32L126 44L130 40C138 52 142 70 138 94C136 80 132 72 126 68C116 64 84 64 74 68C68 72 64 80 62 94Z" fill="FILL"/>`},
+    ciuffo:{f:capBase+`<path d="M72 70C66 50 80 32 100 30C118 22 138 32 136 48C134 58 122 62 110 66C98 70 84 72 72 70Z" fill="FILL"/>`},
+    riga:{f:`<path d="M62 96C56 52 80 34 100 34C120 34 144 52 138 96C136 80 130 70 120 66C110 63 98 66 86 72C80 66 72 70 66 80C64 84 63 90 62 96Z" fill="FILL"/>`,x:`<path d="M86 38Q83 56 86 72" stroke="${_lc(hc,30)}" stroke-width="1.6" fill="none"/>`},
+    indietro:{f:`<path d="M63 92C58 50 80 32 100 32C120 32 142 50 137 92C135 72 128 62 116 58C108 56 92 56 84 58C72 62 65 72 63 92Z" fill="FILL"/>`,x:`<path d="M78 58Q96 40 124 50M74 66Q96 46 130 58M84 56Q100 36 116 42" stroke="${_lc(hc,-30)}" stroke-width="1.3" fill="none" opacity=".6"/>`},
+    frangia:{f:`<path d="M62 98C56 52 80 34 100 34C120 34 144 52 138 98C136 86 134 80 130 78L126 82L120 76L114 82L108 76L102 82L96 76L90 82L84 76L78 82L72 77C68 80 64 86 62 98Z" fill="FILL"/>`},
+    mossi:{b:`<path d="M58 88C52 104 54 118 62 124L68 100Z" fill="FILL"/><path d="M142 88C148 104 146 118 138 124L132 100Z" fill="FILL"/>`,f:`<path d="M60 104C52 52 80 32 100 32C122 32 148 52 140 104C138 92 136 84 130 80C128 74 120 70 112 72C114 78 110 82 104 82C104 74 96 70 86 72C76 72 66 80 60 104Z" fill="FILL"/>`},
+    ricci:{f:[[70,82],[70,68],[78,56],[90,48],[104,46],[117,50],[127,59],[132,72],[134,86],[66,94],[86,58],[100,56],[114,60],[76,72],[124,72],[96,64],[110,66]].map(([x,y])=>C(x,y,11.5)).join('')},
+    ricciCorti:{f:capBase+[[72,70],[80,58],[92,51],[106,50],[118,56],[128,66],[86,64],[100,60],[114,63]].map(([x,y])=>C(x,y,7.5)).join('')},
+    cresta:{f:`<g opacity=".4">${capBase}</g><path d="M84 72C80 46 90 24 100 22C110 24 120 46 116 72C110 66 90 66 84 72Z" fill="FILL"/>`},
+    codino:{f:C(100,30,12)+`<path d="M63 92C58 50 80 34 100 34C120 34 142 50 137 92C135 72 128 62 116 58C108 56 92 56 84 58C72 62 65 72 63 92Z" fill="FILL"/>`},
+    stempiato:{f:`<path d="M62 96C56 52 80 34 100 34C120 34 144 52 138 96C136 82 134 70 128 58C122 64 120 70 114 68C108 62 92 62 86 68C80 70 78 64 72 58C66 70 64 82 62 96Z" fill="FILL"/>`},
+    chierica:{f:`<path d="M62 98C58 82 60 70 66 62L71 66C67 74 66 86 67 99Z" fill="FILL"/><path d="M138 98C142 82 140 70 134 62L129 66C133 74 134 86 133 99Z" fill="FILL"/>`,shine:1},
+    pelato:{f:'',shine:1},
+    pixie:{f:`<path d="M62 98C56 50 82 32 102 34C126 34 144 52 138 94C134 78 126 70 116 70C104 72 90 78 74 86C68 88 64 92 62 98Z" fill="FILL"/>`},
+    caschetto:{b:`<path d="M58 92C56 118 60 130 68 132L132 132C140 130 144 118 142 92Z" fill="FILL"/>`,f:`<path d="M60 106C58 52 80 34 100 34C120 34 142 52 140 106C138 92 136 82 130 78C116 80 84 80 70 78C64 82 62 92 60 106Z" fill="FILL"/>`},
+    lunghi:{b:`<path d="M58 88C50 120 54 150 66 168C76 158 74 142 72 126L128 126C126 142 124 158 134 168C146 150 150 120 142 88Z" fill="FILL"/>`,f:`<path d="M62 102C58 54 80 34 100 34C122 34 142 54 138 102C134 80 118 64 101 62C84 64 66 80 62 102Z" fill="FILL"/>`,x:`<path d="M101 36V62" stroke="${_lc(hc,30)}" stroke-width="1.4"/>`},
+    lunghiMossi:{b:[[60,96],[56,112],[58,128],[62,144],[68,160],[140,96],[144,112],[142,128],[138,144],[132,160]].map(([x,y])=>C(x,y,12)).join('')+`<path d="M64 100L136 100L134 160L66 160Z" fill="FILL"/>`,f:`<path d="M60 104C54 54 80 34 100 34C122 34 146 54 140 104C136 82 122 66 106 64C112 72 106 78 98 78C96 70 90 66 82 70C72 76 64 88 60 104Z" fill="FILL"/>`},
+    coda:{b:`<path d="M128 70C162 70 168 114 152 150C154 118 146 98 128 94Z" fill="FILL"/>`,f:`<path d="M62 96C58 52 80 34 100 34C122 34 142 52 138 92C132 74 118 66 100 66C84 66 68 76 62 96Z" fill="FILL"/>`},
+    codaAlta:{b:`<path d="M104 38C134 20 162 48 152 98C148 74 134 58 114 54Z" fill="FILL"/>`,f:`<path d="M62 96C58 52 80 34 100 34C122 34 142 52 138 92C132 74 118 66 100 66C84 66 68 76 62 96Z" fill="FILL"/><circle cx="110" cy="38" r="4" fill="${c.colTesta}"/>`},
+    chignon:{f:C(100,30,15)+`<path d="M62 96C58 52 80 36 100 36C122 36 142 52 138 92C132 74 118 66 100 66C84 66 68 76 62 96Z" fill="FILL"/>`},
+    treccia:{b:[[64,112],[62,126],[63,140],[66,154],[70,166]].map(([x,y])=>`<ellipse cx="${x}" cy="${y}" rx="9" ry="8" fill="FILL" stroke="${_lc(hc,30)}" stroke-width="1.2"/>`).join(''),f:`<path d="M62 102C58 52 80 34 100 34C122 34 142 52 138 92C132 74 118 66 100 66C84 66 70 78 66 104Z" fill="FILL"/>`},
+  };
+  const hs=hairs[c.capelli]||hairs.corti;
+  const hairBack=(hs.b||'').split('FILL').join(H),hairFront=(hs.f||'').split('FILL').join(H);
+  let hairOver='';
+  if(hs.f&&c.sfum==='brizzolato')hairOver+=(hs.f||'').split('FILL').join('url(#bz)');
+  if(hs.f&&c.sfum==='meches')hairOver+=`<path d="M78 50Q86 44 92 58M98 42Q104 40 106 56M114 46Q122 46 124 60M70 64Q74 56 80 60" stroke="${_lc(hc,-80)}" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".55"/>`;
+  if(hs.f&&!['rasato','pelato','chierica','cresta'].includes(c.capelli)&&c.sfum!=='brizzolato')hairOver+=`<path d="M84 44Q96 38 112 42M80 52Q88 47 96 48" stroke="#fff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".16"/>`;
+  if(hs.f&&['fade','tempie'].includes(c.sfum)){const col=c.sfum==='fade'?'url(#fd)':'#c9c9c9',op=c.sfum==='fade'?1:.8;hairOver+=`<path d="M62 98C60 88 61 80 65 74C69 76 71 80 71 86C71 92 69 96 66 100Z" fill="${col}" opacity="${op}"/><path d="M138 98C140 88 139 80 135 74C131 76 129 80 129 86C129 92 131 96 134 100Z" fill="${col}" opacity="${op}"/>`;}
+  if(hs.x)hairOver+=hs.x;
+  // ── maglia ──
+  const md=c.colDett,mt=c.maglia;
+  let shirt='',under='';
+  const body=`<path d="M20 214C24 178 56 162 100 162C144 162 176 178 180 214Z" fill="url(#mg)"/><path d="M50 182Q56 196 54 214M150 182Q144 196 146 214" stroke="${_lc(c.colMaglia,40)}" stroke-width="1.6" fill="none" opacity=".6"/>`;
+  if(mt==='canotta'){under=`<path d="M20 214C24 180 50 166 82 163L118 163C150 166 176 180 180 214Z" fill="${_lc(sk,14)}"/>`;shirt=`<path d="M58 214C60 188 70 172 78 165L86 165Q100 182 114 165L122 165C130 172 140 188 142 214Z" fill="url(#mg)"/><path d="M86 165Q100 182 114 165" stroke="${md}" stroke-width="3" fill="none"/>`;}
+  else if(mt==='felpa'){under=`<path d="M64 170C66 148 134 148 136 170Z" fill="${_lc(c.colMaglia,30)}"/>`;shirt=body+`<path d="M84 163Q100 176 116 163" stroke="${_lc(c.colMaglia,40)}" stroke-width="4" fill="none"/><path d="M100 172V214" stroke="${md}" stroke-width="2.4"/><path d="M92 170V190M108 170V190" stroke="${md}" stroke-width="1.8" stroke-linecap="round"/>`;}
+  else{shirt=body;
+    if(mt==='girocollo')shirt+=`<path d="M80 163Q100 180 120 163" stroke="${md}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`;
+    if(mt==='sport')shirt+=`<path d="M80 163Q100 180 120 163" stroke="${md}" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M40 176L70 166L66 214L40 214ZM160 176L130 166L134 214L160 214Z" fill="${md}" opacity=".85"/>`;
+    if(mt==='scolloV')shirt+=`<path d="M82 162L100 188L118 162Z" fill="${_lc(sk,14)}"/><path d="M82 162L100 188L118 162" stroke="${md}" stroke-width="3.5" fill="none" stroke-linejoin="round"/>`;
+    if(mt==='polo')shirt+=`<path d="M100 172V196" stroke="${_lc(c.colMaglia,40)}" stroke-width="2"/><circle cx="100" cy="181" r="1.8" fill="${md}"/><circle cx="100" cy="190" r="1.8" fill="${md}"/><path d="M82 160L100 172L92 182L77 166Z" fill="${md}"/><path d="M118 160L100 172L108 182L123 166Z" fill="${md}"/>`;
+  }
+  // ── viso ──
+  const face=`M${L} 92C${L} 58 ${100-f.w*.62} 46 100 46C${100+f.w*.62} 46 ${R} 58 ${R} 92C${R} ${f.sq?126:116} ${100+f.jw} ${cy-6} 100 ${cy}C${100-f.jw} ${cy-6} ${L} ${f.sq?126:116} ${L} 92Z`;
+  const ears=`<ellipse cx="${L+1}" cy="98" rx="7" ry="11" fill="${sk}"/><ellipse cx="${R-1}" cy="98" rx="7" ry="11" fill="${sk}"/><path d="M${L-1} 92Q${L-4} 98 ${L} 104M${R+1} 92Q${R+4} 98 ${R} 104" stroke="${_lc(sk,30)}" stroke-width="1.6" fill="none"/>`
+    +(c.orecchini?`<circle cx="${L}" cy="110" r="2.6" fill="#f0c040"/><circle cx="${R}" cy="110" r="2.6" fill="#f0c040"/>`:'');
+  const neck=`<path d="M86 ${cy-24}L86 163Q100 171 114 163L114 ${cy-24}Z" fill="${_lc(sk,16)}"/><ellipse cx="100" cy="${cy+3}" rx="18" ry="6" fill="${_lc(sk,42)}" opacity=".35"/>`;
+  // occhi
+  const eye=(x)=>{const ir=c.occhi==='tondi'?3.8:c.occhi==='piccoli'?2.9:3.4;let w='',lid='';
+    if(c.occhi==='tondi'){w=`<ellipse cx="${x}" cy="${E}" rx="6.6" ry="5.6" fill="#fff"/>`;lid=`<path d="M${x-6.6} ${E}Q${x} ${E-7.5} ${x+6.6} ${E}" stroke="#2b1d16" stroke-width="1.6" fill="none"/>`;}
+    else if(c.occhi==='piccoli'){w=`<ellipse cx="${x}" cy="${E}" rx="5" ry="3.8" fill="#fff"/>`;lid=`<path d="M${x-5} ${E}Q${x} ${E-5} ${x+5} ${E}" stroke="#2b1d16" stroke-width="1.5" fill="none"/>`;}
+    else if(c.occhi==='sottili'){w=`<path d="M${x-7} ${E+.5}Q${x} ${E-3.5} ${x+7} ${E+.5}Q${x} ${E+4} ${x-7} ${E+.5}Z" fill="#fff"/>`;lid=`<path d="M${x-7.5} ${E+.5}Q${x} ${E-4} ${x+7.5} ${E+.5}" stroke="#2b1d16" stroke-width="1.9" fill="none"/>`;}
+    else{w=`<path d="M${x-7} ${E}Q${x} ${E-6} ${x+7} ${E}Q${x} ${E+5} ${x-7} ${E}Z" fill="#fff"/>`;lid=`<path d="M${x-7.4} ${E+.3}Q${x} ${E-6.6} ${x+7.4} ${E+.3}" stroke="#2b1d16" stroke-width="1.7" fill="none"/>`;}
+    const id='e'+Math.round(x);
+    return`<clipPath id="${id}">${w.replace('fill="#fff"','')}</clipPath>${w}<g clip-path="url(#${id})"><circle cx="${x}" cy="${E}" r="${ir}" fill="${c.colOcchi}"/><circle cx="${x}" cy="${E}" r="${ir*.48}" fill="#0b0b0d"/><circle cx="${x+1.1}" cy="${E-1.3}" r="${ir*.3}" fill="#fff"/></g>${lid}`;};
+  const eyes=eye(100-ex)+eye(100+ex);
+  // sopracciglia
+  const bw={sottili:1.5,normali:2.6,folte:4,arcuate:2.4,dritte:3,angolate:2.8}[c.sopr]||2.6,B=E-11;
+  const brow=(x,s)=>{const o=x+s*8.5,i=x-s*8.5;   // s=1 occhio destro: esterno a destra
+    if(c.sopr==='arcuate')return`M${i} ${B+1}Q${x} ${B-6} ${o} ${B+1.5}`;
+    if(c.sopr==='dritte'||c.sopr==='folte')return`M${i} ${B}Q${x} ${B-2} ${o} ${B+.5}`;
+    if(c.sopr==='angolate')return`M${i} ${B+1.5}L${x+s*2} ${B-3}L${o} ${B+1}`;
+    return`M${i} ${B+.5}Q${x} ${B-3.5} ${o} ${B+1}`;};
+  const brows=`<path d="${brow(100-ex,-1)} ${brow(100+ex,1)}" stroke="${_lc(c.colBarba||hc,10)}" stroke-width="${bw}" fill="none" stroke-linecap="round"/>`;
+  // naso
+  const ns=_lc(sk,45);
+  const nose={piccolo:`<path d="M97 111Q100 114 103 111" stroke="${ns}" stroke-width="1.7" fill="none" stroke-linecap="round"/>`,
+    medio:`<path d="M98.5 99Q95 110 96 112.5Q100 116 104 112.5" stroke="${ns}" stroke-width="1.7" fill="none" stroke-linecap="round"/>`,
+    grande:`<path d="M98 97Q92 112 93.5 115.5Q100 120 106.5 115.5Q108 112 104 110" stroke="${ns}" stroke-width="1.9" fill="none" stroke-linecap="round"/>`,
+    aquilino:`<path d="M99 97Q102 103 100 108Q95 113 97 115.5Q100 117.5 104 115.5" stroke="${ns}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`,
+    largo:`<path d="M99 100Q97 109 95 111Q92 115 96 116Q100 118 104 116Q108 115 105 111" stroke="${ns}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`}[c.naso]||'';
+  const noseSh=`<ellipse cx="101" cy="112" rx="6" ry="3" fill="${_lc(sk,22)}" opacity=".35"/>`;
+  // bocca
+  const lip='#b0544a',M=Math.min(126,cy-14);
+  const mouth={sorriso:`<path d="M88 ${M-2}Q100 ${M+7} 112 ${M-2}" stroke="${lip}" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M94 ${M+4}Q100 ${M+6.5} 106 ${M+4}" stroke="${_lc(sk,30)}" stroke-width="1.4" fill="none" opacity=".6"/>`,
+    aperto:`<path d="M87 ${M-3}Q100 ${M+12} 113 ${M-3}Z" fill="#6b2a24"/><path d="M89 ${M-2.2}Q100 ${M+2} 111 ${M-2.2}L111 ${M-.6}Q100 ${M+4.5} 89 ${M-.6}Z" fill="#fff"/>`,
+    mezzo:`<path d="M90 ${M}Q101 ${M+3} 111 ${M-4}" stroke="${lip}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
+    serio:`<path d="M91 ${M}Q100 ${M+1.5} 109 ${M}" stroke="${lip}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
+    sottile:`<path d="M90 ${M}Q100 ${M+2.5} 110 ${M}" stroke="${lip}" stroke-width="1.7" fill="none" stroke-linecap="round"/>`}[c.bocca]||'';
+  // barba
+  const bArea=(ext=0)=>`M${L+3} 100C${L+3} ${f.sq?132:126} ${100-f.jw-4} ${cy+4+ext} 100 ${cy+5+ext}C${100+f.jw+4} ${cy+4+ext} ${R-3} ${f.sq?132:126} ${R-3} 100C${R-6} 114 112 118 100 118C88 118 ${L+6} 114 ${L+3} 100Z`;
+  const must=`<path d="M86 ${M-4}Q93 ${M-12} 100 ${M-7}Q107 ${M-12} 114 ${M-4}Q107 ${M-6} 100 ${M-4}Q93 ${M-6} 86 ${M-4}Z" fill="${bc}"/>`;
+  const goat=`<path d="M91 ${M+6}Q100 ${M+3} 109 ${M+6}Q110 ${cy+3} 100 ${cy+6}Q90 ${cy+3} 91 ${M+6}Z" fill="${bc}"/>`;
+  const beard={no:'',accenno:`<path d="${bArea()}" fill="${bc}" opacity=".22"/>`,corta:`<path d="${bArea()}" fill="${bc}" opacity=".7"/>`+must.replace('fill=','opacity=".8" fill='),
+    piena:`<path d="${bArea(4)}" fill="${bc}"/>`+must,lunga:`<path d="${bArea(22)}" fill="${bc}"/>`+must,pizzetto:goat,baffi:must,baffiPizzetto:must+goat,
+    basette:`<path d="M${L+1} 84L${L+8} 84L${L+7} 110L${L+2} 106Z M${R-1} 84L${R-8} 84L${R-7} 110L${R-2} 106Z" fill="${bc}"/>`}[c.barba]||'';
+  // occhiali
+  const gx1=100-ex,gx2=100+ex;
+  const glasses={no:'',
+    tondi:`<g fill="none" stroke="#1f2937" stroke-width="2.2"><circle cx="${gx1}" cy="${E}" r="10"/><circle cx="${gx2}" cy="${E}" r="10"/><path d="M${gx1+10} ${E-1}Q100 ${E-5} ${gx2-10} ${E-1}M${gx1-10} ${E-2}L${L} ${E-4}M${gx2+10} ${E-2}L${R} ${E-4}"/></g>`,
+    rett:`<g fill="none" stroke="#111827" stroke-width="2.6"><rect x="${gx1-11}" y="${E-8}" width="22" height="15" rx="4"/><rect x="${gx2-11}" y="${E-8}" width="22" height="15" rx="4"/><path d="M${gx1+11} ${E-2}Q100 ${E-6} ${gx2-11} ${E-2}M${gx1-11} ${E-3}L${L} ${E-5}M${gx2+11} ${E-3}L${R} ${E-5}"/></g>`,
+    sole:`<g><rect x="${gx1-12}" y="${E-8}" width="23" height="15" rx="6" fill="#111"/><rect x="${gx2-11}" y="${E-8}" width="23" height="15" rx="6" fill="#111"/><path d="M${gx1+11} ${E-3}Q100 ${E-6} ${gx2-11} ${E-3}M${gx1-12} ${E-3}L${L} ${E-5}M${gx2+12} ${E-3}L${R} ${E-5}" stroke="#111" stroke-width="2.4" fill="none"/><path d="M${gx1-8} ${E-5}l6 0M${gx2-7} ${E-5}l6 0" stroke="#fff" stroke-width="1.6" opacity=".4"/></g>`,
+    sport:`<path d="M${L} ${E-4}C${gx1-6} ${E-11} ${gx2+6} ${E-11} ${R} ${E-4}L${R-2} ${E+4}C${gx2} ${E+8} ${gx1} ${E+8} ${L+2} ${E+4}Z" fill="#1e3a8a"/><path d="M${L+6} ${E-3}C${gx1} ${E-8} ${gx2} ${E-8} ${R-6} ${E-3}" stroke="#f97316" stroke-width="3" fill="none" opacity=".75"/>`}[c.occhiali]||'';
+  // copricapo
+  const tc=c.colTesta,td=_lc(tc,40);
+  const head={no:'',
+    fascia:`<path d="M60 72C80 62 120 62 140 72L140 81C120 71 80 71 60 81Z" fill="${tc}"/><path d="M62 77C82 68 118 68 138 77" stroke="${td}" stroke-width="1.4" fill="none" opacity=".6"/>`,
+    fasciaLarga:`<path d="M60 66C80 54 120 54 140 66L140 82C120 70 80 70 60 82Z" fill="${tc}"/><path d="M92 60h16v10h-16z" fill="${td}" opacity=".5"/>`,
+    cappello:`<path d="M60 82C56 42 80 26 100 26C120 26 144 42 140 82C120 74 80 74 60 82Z" fill="${tc}"/><path d="M100 28V76M80 34Q86 54 82 78M120 34Q114 54 118 78" stroke="${td}" stroke-width="1.4" fill="none" opacity=".5"/><circle cx="100" cy="28" r="3" fill="${td}"/><path d="M100 77C126 73 154 75 164 84C154 91 126 89 100 86Z" fill="${td}"/>`,
+    rovescio:`<path d="M100 74C74 70 46 72 36 80C46 86 74 84 100 82Z" fill="${td}"/><path d="M60 82C56 42 80 26 100 26C120 26 144 42 140 82C120 74 80 74 60 82Z" fill="${tc}"/><path d="M88 74Q100 64 112 74" stroke="${td}" stroke-width="3" fill="none"/><circle cx="100" cy="28" r="3" fill="${td}"/>`,
+    visiera:`<path d="M60 74C80 66 120 66 140 74L140 82C120 75 80 75 60 82Z" fill="${tc}"/><path d="M100 78C126 74 154 76 164 85C154 92 126 90 100 87Z" fill="${td}"/>`,
+    bandana:`<path d="M60 76C76 50 124 50 140 76L140 82C120 70 80 70 60 82Z" fill="${tc}"/><path d="M60 76L46 70L50 84L60 80Z" fill="${td}"/><circle cx="80" cy="66" r="1.8" fill="#fff" opacity=".7"/><circle cx="104" cy="62" r="1.8" fill="#fff" opacity=".7"/><circle cx="124" cy="68" r="1.8" fill="#fff" opacity=".7"/>`,
+    berretto:`<path d="M60 84C56 40 80 22 100 22C120 22 144 40 140 84Z" fill="${tc}"/><path d="M58 70C80 62 120 62 142 70L142 86C120 78 80 78 58 86Z" fill="${td}"/><path d="M76 30V64M88 25V62M100 23V62M112 25V62M124 30V64" stroke="${td}" stroke-width="1.4" opacity=".5"/><circle cx="100" cy="20" r="8" fill="${tc}"/>`}[c.testa]||'';
+  // dettagli del viso
+  const extra=(c.guance?`<ellipse cx="${100-ex-2}" cy="110" rx="7" ry="4.5" fill="#ff7b7b" opacity=".25"/><ellipse cx="${100+ex+2}" cy="110" rx="7" ry="4.5" fill="#ff7b7b" opacity=".25"/>`:'')
+    +(c.lentiggini?[[-22,106],[-17,109],[-24,111],[-14,104],[22,106],[17,109],[24,111],[14,104],[-3,104],[4,105]].map(([dx,y])=>`<circle cx="${100+dx}" cy="${y}" r="1.1" fill="#a0603a" opacity=".55"/>`).join(''):'')
+    +(c.rughe?`<path d="M84 66Q100 62 116 66M86 71Q100 67 114 71" stroke="${_lc(sk,30)}" stroke-width="1.1" fill="none" opacity=".55"/><path d="M90 116Q86 124 89 130M110 116Q114 124 111 130" stroke="${_lc(sk,32)}" stroke-width="1.3" fill="none" opacity=".55"/><path d="M${100-ex-10} ${E+1}l-4 -2M${100-ex-10} ${E+3}l-4 1M${100+ex+10} ${E+1}l4 -2M${100+ex+10} ${E+3}l4 1" stroke="${_lc(sk,32)}" stroke-width="1" opacity=".6"/>`:'')
+    +(c.neo?`<circle cx="${100+ex+6}" cy="116" r="1.6" fill="#5a3a24"/>`:'');
+  const shine=hs.shine?`<ellipse cx="88" cy="58" rx="12" ry="6" fill="#fff" opacity=".18" transform="rotate(-20 88 58)"/>`:'';
+  const cfg=`<desc>LAV:${encodeURIComponent(JSON.stringify(c))}</desc>`;
+  return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="18 16 164 164">${cfg}<defs>${defs}</defs><rect x="0" y="0" width="200" height="200" fill="url(#bg)"/>`
+    +sx(hairBack)+neck+`<g transform="translate(0 -7)">${under}${shirt}</g>`+ears+`<path d="${face}" fill="url(#sk)"/>`+shine+extra+noseSh+beard+nose+mouth+eyes+brows+sx(hairFront+hairOver)+glasses+sx(head)+`</svg>`;
+}
+const lavUri=c=>'data:image/svg+xml,'+encodeURIComponent(lavSvg(c));
+function lavRead(uri){try{if(!uri||!uri.startsWith('data:image/svg+xml'))return null;const s=decodeURIComponent(uri.slice(uri.indexOf(',')+1)),m=s.match(/<desc>LAV:([^<]*)<\/desc>/);return m?JSON.parse(decodeURIComponent(m[1])):null;}catch(e){return null;}}
+
+// ── menu al tocco dell'avatar (admin) ──
+function avatarTap(id){if(_checkViewer()){openProfile(id);return;}openAvMenu(id);}
+function _avSheet(){let el=document.getElementById('av-sheet');if(el)return el;el=document.createElement('div');el.id='av-sheet';el.className='avs-bg';el.onclick=e=>{if(e.target===el)el.classList.remove('open');};document.body.appendChild(el);return el;}
+function openAvMenu(id){
+  const p=players.find(x=>x.id===id);if(!p)return;const el=_avSheet();
+  el.innerHTML=`<div class="avs-box"><div class="avs-hd"><div class="avs-av"><img src="${phUrl(p)}" alt=""></div><b>${esc(dispName(p.nome))}</b></div>
+    <button type="button" onclick="document.getElementById('av-sheet').classList.remove('open');openAvEditor(${id})">🎨 ${lavRead(fotoData[id])?'Modifica avatar':'Crea avatar'}</button>
+    <button type="button" onclick="avPickPhoto(${id})">📷 Carica foto</button>
+    ${fotoData[id]?`<button type="button" onclick="avResetAuto(${id})">↺ Torna all'avatar automatico</button>`:''}
+    <button type="button" onclick="document.getElementById('av-sheet').classList.remove('open');openProfile(${id})">👤 Apri profilo</button>
+    <button type="button" class="avs-x" onclick="document.getElementById('av-sheet').classList.remove('open')">Chiudi</button></div>`;
+  el.classList.add('open');
+}
+function _avRefresh(id){_attachPhotos();renderCards();if(currentTab==='classifiche')renderRank();const pa=document.getElementById('profile-av');if(pa&&profilePlayerId===id){const p=players.find(x=>x.id===id);pa.innerHTML=`<img src="${phUrl(p)}" alt="">`;}}
+function avPickPhoto(id){
+  const inp=document.createElement('input');inp.type='file';inp.accept='image/*';
+  inp.onchange=()=>{const f=inp.files&&inp.files[0];if(!f)return;if(f.size>8*1024*1024){toast('⚠️ Foto troppo grande');return;}
+    const r=new FileReader();r.onload=e=>{shrinkPhoto(e.target.result).then(s=>{try{localStorage.setItem('laurera_ph_'+id,s);}catch(er){}fotoData[id]=s;
+      _doc('foto').set({ph:{[id]:s}},{merge:true}).then(()=>toast('✅ Foto salvata')).catch(er=>toast('⚠️ Foto non salvata online: '+(er&&er.message||'errore')));
+      const p=players.find(x=>x.id===id);addLog('📷',`Foto di ${p?p.nome:id}`);_avRefresh(id);});};r.readAsDataURL(f);
+    document.getElementById('av-sheet')?.classList.remove('open');};
+  inp.click();
+}
+function avResetAuto(id){
+  if(!confirm('Togliere foto/avatar e tornare all\'avatar automatico?'))return;
+  delPh(id);const p=players.find(x=>x.id===id);if(p)delete p.photoUrl;
+  document.getElementById('av-sheet')?.classList.remove('open');_avRefresh(id);toast('↺ Avatar automatico');
+}
+// ── editor ──
+let _ave=null;
+const _AVE_TABS=[
+  ['Viso',[['viso','Forma del viso'],['pelle','Carnagione','pelle'],['extra','Dettagli']]],
+  ['Capelli',[['capelli','Taglio'],['colCap','Colore','colCap'],['sfum','Sfumatura']]],
+  ['Barba',[['barba','Barba e baffi'],['colBarba','Colore (vuoto = come i capelli)','colCap']]],
+  ['Occhi',[['occhi','Forma'],['colOcchi','Colore','colOcchi'],['sopr','Sopracciglia'],['occhiali','Occhiali']]],
+  ['Naso e bocca',[['naso','Naso'],['bocca','Bocca']]],
+  ['Testa',[['testa','Fascia o cappello'],['colTesta','Colore','colori']]],
+  ['Maglia',[['maglia','Tipo'],['colMaglia','Colore','colori'],['colDett','Colletto e dettagli','colori'],['sfondo','Sfondo','sfondi']]],
+];
+function openAvEditor(id){
+  const p=players.find(x=>x.id===id);if(!p||_checkViewer())return;
+  _ave={id,c:lavRead(fotoData[id])||lavDefault(p),tab:0};
+  let el=document.getElementById('av-editor');
+  if(!el){el=document.createElement('div');el.id='av-editor';el.className='ave-bg';document.body.appendChild(el);}
+  el.classList.add('open');_aveRender();
+}
+function _aveRender(){
+  const el=document.getElementById('av-editor'),p=players.find(x=>x.id===_ave.id),c=_ave.c;
+  const sw=(key,list)=>`<div class="ave-sw">${key==='colBarba'?`<button type="button" class="ave-c${!c.colBarba?' on':''}" data-k="colBarba" data-v="" title="Come i capelli">=</button>`:''}${LAV[list].map(v=>`<button type="button" class="ave-c${c[key]===v?' on':''}" data-k="${key}" data-v="${v}" style="background:${v==='auto'?'conic-gradient(#ef4444,#f59e0b,#22c55e,#38bdf8,#a78bfa,#ef4444)':v}" title="${v==='auto'?'Automatico':v}"></button>`).join('')}</div>`;
+  const ch=key=>`<div class="ave-ch">${LAV[key].map(([v,l])=>`<button type="button" class="${c[key]===v?'on':''}" data-k="${key}" data-v="${v}">${l}</button>`).join('')}</div>`;
+  const tg=(key,l)=>`<button type="button" class="${c[key]?'on':''}" data-t="${key}">${l}</button>`;
+  const sec=_AVE_TABS[_ave.tab][1].map(([key,label,pal])=>`<div class="ave-sec"><div class="ave-lb">${label}</div>${key==='extra'?`<div class="ave-ch">${tg('lentiggini','Lentiggini')}${tg('guance','Guance rosse')}${tg('rughe','Rughe')}${tg('neo','Neo')}${tg('orecchini','Orecchini')}</div>`:pal?sw(key,pal):ch(key)}</div>`).join('');
+  el.innerHTML=`<div class="ave-box">
+    <div class="ave-top"><div class="ave-prev"><img src="${lavUri(c)}" alt="Anteprima avatar"></div>
+      <div class="ave-ttl"><b>${esc(dispName(p.nome))}</b><span>Avatar personalizzato</span><div class="ave-act"><button type="button" data-a="rnd">🎲 Casuale</button><button type="button" data-a="photo">📷 Foto</button></div></div>
+      <button type="button" class="ave-x" data-a="close" aria-label="Chiudi">✕</button></div>
+    <div class="ave-tabs">${_AVE_TABS.map(([t],i)=>`<button type="button" class="${i===_ave.tab?'on':''}" data-tab="${i}">${t}</button>`).join('')}</div>
+    <div class="ave-body">${sec}</div>
+    <div class="ave-ft"><button type="button" class="btn btn-g" data-a="close">Annulla</button><button type="button" class="btn btn-p" data-a="save">💾 Salva avatar</button></div></div>`;
+  el.onclick=e=>{
+    if(e.target===el){el.classList.remove('open');return;}
+    const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.tab!=null){_ave.tab=+b.dataset.tab;_aveRender();return;}
+    if(b.dataset.k){_ave.c[b.dataset.k]=b.dataset.v;_aveRender();return;}
+    if(b.dataset.t){_ave.c[b.dataset.t]=!_ave.c[b.dataset.t];_aveRender();return;}
+    const a=b.dataset.a;
+    if(a==='close'){el.classList.remove('open');return;}
+    if(a==='rnd'){_ave.c=lavRandom(p);_aveRender();return;}
+    if(a==='photo'){el.classList.remove('open');avPickPhoto(_ave.id);return;}
+    if(a==='save'){const id=_ave.id,u=lavUri(_ave.c);try{localStorage.setItem('laurera_ph_'+id,u);}catch(er){}fotoData[id]=u;
+      _doc('foto').set({ph:{[id]:u}},{merge:true}).then(()=>toast('✅ Avatar salvato')).catch(er=>toast('⚠️ Avatar non salvato online: '+(er&&er.message||'errore')));
+      addLog('🎨',`Avatar di ${p.nome}`);el.classList.remove('open');_avRefresh(id);}
+  };
+  const body=el.querySelector('.ave-body');if(body)body.scrollTop=_ave.scroll||0;
+  body&&body.addEventListener('scroll',()=>{_ave.scroll=body.scrollTop;},{passive:true});
+}
 function avHtmlBig(p){return p&&phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p?p.nome:'?'))}</span>`;}
 // ordine alfabetico per cognome, poi per nome
 function bySurname(a,b){return surnameOf(a.nome).localeCompare(surnameOf(b.nome),"it")||String(a.nome).localeCompare(String(b.nome),"it");}
@@ -4086,7 +4370,7 @@ function buildPlayerCardHTML(p,opts){
   const d=getPlayerCardData(p,opts.rankPtsMap,opts.rankList);
   const lvColor=caC[p.livello]||'#e8ff00';
   const photoHtml=phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${ini(p.nome)}</span>`;
-  const ringClick=opts.interactive?` onclick="openProfile(${p.id})" title="Apri profilo"`:'';
+  const ringClick=opts.interactive?` onclick="avatarTap(${p.id})" title="${_checkViewer()?'Apri profilo':'Avatar, foto o profilo'}"`:'';
   const editBtn=opts.interactive?`<div class="pk-edit" onclick="event.stopPropagation();openEditPlayer(${p.id})" title="Modifica">✏️</div>`:'';
   const rl=rankListAll(),ri=rl.findIndex(x=>x.id===p.id);
   const tile=(lbl,val,c)=>`<div class="pk-t" style="--tc:${c}"><span>${lbl}</span><b>${val}</b></div>`;
@@ -4217,6 +4501,7 @@ function openProfile(playerId){
   const av=document.getElementById('profile-av');
   av.className=`av ${avc(p.id)}`;
   av.innerHTML=phUrl(p)?`<img src="${phUrl(p)}" alt="">`:ini(p.nome);
+  av.onclick=()=>{if(!_checkViewer())openAvMenu(p.id);};av.style.cursor=_checkViewer()?'':'pointer';   // admin: avatar/foto
   { const _w=String(p.nome||'').trim().split(/\s+/),_fn=_w.length>1?_w[0]:'',_sn=_w.length>1?_w.slice(1).join(' '):_w[0]||'';
     document.getElementById('profile-name').innerHTML=esc(dispName(p.nome)); }   // N. COGNOME su una riga
   // niente livello né bandiera nel profilo: il livello è solo per l'admin
