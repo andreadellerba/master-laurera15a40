@@ -1960,6 +1960,16 @@ html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:#0e1c
 .ave-act button:disabled,.ave-ft button:disabled{opacity:.45;cursor:default}
 .ai-txt{width:100%;box-sizing:border-box;background:#172a4b;border:1px solid rgba(255,255,255,.16);border-radius:12px;color:#fff;font:14px "DM Sans",sans-serif;padding:10px 12px;resize:vertical}
 .ai-note{font-size:11.5px;color:#9fb0c8;margin-top:6px}
+.ai-mode{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:0 14px 10px}
+.ai-mode button{border:1px solid rgba(255,255,255,.16);background:#172a4b;color:#fff;border-radius:999px;padding:7px 12px;font:700 12.5px "DM Sans",sans-serif;cursor:pointer}
+.ai-mode button.on{background:#fff;color:#0e1c33;border-color:#fff}
+.ai-mode button:disabled{opacity:.5;cursor:default}
+.ai-q{margin-left:auto;background:#172a4b;color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:6px 10px;font:700 12px "DM Sans",sans-serif}
+.ai-src{display:flex;align-items:center;gap:12px;margin:0 14px 10px;padding:10px;border:1px dashed rgba(255,255,255,.2);border-radius:14px}
+.ai-src>img{width:64px;height:64px;border-radius:12px;object-fit:cover;flex:none}
+.ai-src>span{width:64px;height:64px;border-radius:12px;background:#172a4b;display:grid;place-items:center;font-size:10px;color:#9fb0c8;text-align:center;flex:none}
+.ai-src-b{display:flex;flex-wrap:wrap;gap:6px}
+.ai-src-b button{border:1px solid rgba(255,255,255,.16);background:#172a4b;color:#fff;border-radius:999px;padding:7px 12px;font:700 12px "DM Sans",sans-serif;cursor:pointer}
 /* Telefono: la sfumatura di header e menu segue la barra invece di restare fissata allo schermo.
    Con "fixed" il browser del telefono ridisegnava a pezzi le zone animate (bottoni, voce attiva)
    e comparivano rettangoli di un altro colore. Aspetto quasi identico: header = fetta alta, menu = fetta bassa. */
@@ -2172,6 +2182,12 @@ html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:#0e1c
       <h3>⚠️ Zona Pericolosa</h3>
       <p><strong style="color:var(--red)">Cancella definitivamente TUTTI i dati del circolo: giocatori, partite, calendario, tornei, albo d'oro, fantalaurera, foto e video.</strong></p>
       <div class="btn-row"><button class="btn btn-d" onclick="resetData()">🗑️ Resetta Tutto</button></div>
+    </div>
+    <div class="card stg-block">
+      <h3>📸 Avatar realistici (AI)</h3>
+      <p>Incolla qui la chiave di Pollinations (inizia con <b>sk_</b>). Resta salvata <b>solo su questo dispositivo</b>, non va online: incollala su ogni telefono o PC da cui crei gli avatar. Con la chiave: foto migliori, niente logo, niente attesa e “Da foto”.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input id="ai-key-in" type="password" placeholder="sk_..." autocomplete="off" spellcheck="false" style="flex:1;min-width:180px;background:var(--bg4);border:1px solid var(--border2);border-radius:10px;padding:9px 11px;color:var(--text);font:13px 'DM Sans',sans-serif"><button class="btn btn-p" style="padding:8px 14px" onclick="aiKeySave()">Salva</button><button class="btn btn-g" style="padding:8px 14px" onclick="aiKeyDel()">Rimuovi</button></div>
+      <div id="ai-key-st" style="font-size:12px;margin-top:8px"></div>
     </div>
     <div class="card stg-block">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -2650,7 +2666,7 @@ function toast(msg){const t=document.getElementById('toast-el');t.textContent=ms
 function applyTheme(){document.body.classList.remove('light');}
 function initTheme(){applyTheme();}
 // ═══ TAB ═══
-function switchTab(t){currentTab=t;document.body.dataset.tab=t;if(t==='players'){setTimeout(()=>countUp(document.getElementById('cards-grid')),30);setTimeout(fitK4,60);}document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('fab').style.display=['players','calendario'].includes(t)?'flex':'none';if(t==='classifiche')renderRank();if(t==='fanta'){loadFanta();renderFantaPronostici();}if(t==='calendario'){loadTornei();renderCalTorneoSelector();}if(t==='risultati')renderRisultati();if(t==='tornei'){loadTornei();renderTornei();}if(t==='albo'){renderAlbo();}if(t==='classifiche-torneo'){loadTornei();renderRanking();}if(t==='settings'){renderLog();renderVisite();}if(t==='players')renderTickerTape();const activeBn=document.querySelector('.bn-item.active');if(activeBn)activeBn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
+function switchTab(t){currentTab=t;document.body.dataset.tab=t;if(t==='players'){setTimeout(()=>countUp(document.getElementById('cards-grid')),30);setTimeout(fitK4,60);}document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById('page-'+t).classList.add('active');document.getElementById('fab').style.display=['players','calendario'].includes(t)?'flex':'none';if(t==='classifiche')renderRank();if(t==='fanta'){loadFanta();renderFantaPronostici();}if(t==='calendario'){loadTornei();renderCalTorneoSelector();}if(t==='risultati')renderRisultati();if(t==='tornei'){loadTornei();renderTornei();}if(t==='albo'){renderAlbo();}if(t==='classifiche-torneo'){loadTornei();renderRanking();}if(t==='settings'){renderLog();renderVisite();renderAiKey();}if(t==='players')renderTickerTape();const activeBn=document.querySelector('.bn-item.active');if(activeBn)activeBn.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});}
 function fabClick(){if(_checkViewer())return;if(currentTab==='players')openNewPlayer();else if(currentTab==='calendario')openCalModal();}
 // ═══ FILTERS ═══
 // PC admin: sottomenu "Gestione"
@@ -3201,11 +3217,21 @@ function _aveRender(){
   body&&body.addEventListener('scroll',()=>{_ave.scroll=body.scrollTop;},{passive:true});
 }
 // ═══════════════════════════════════════════════
-// AVATAR REALISTICO (solo admin): una foto generata con l'intelligenza artificiale (Pollinations, gratis,
-// massimo 1 immagine ogni 45 secondi) a partire dalle caratteristiche scelte. La foto si salva come le altre
-// (documento "foto" di Firestore) e le scelte restano salvate in "ai", per poterla rigenerare modificata.
+// AVATAR REALISTICO (solo admin): foto generata con l'intelligenza artificiale (Pollinations).
+// Senza chiave: modello gratuito, 1 foto ogni 45 secondi, solo "da descrizione".
+// Con la chiave (Impostazioni, salvata solo su quel dispositivo): modello migliore e "da foto",
+// che parte da una foto vera o dall'avatar attuale e cambia solo quello che si sceglie, tenendo la stessa faccia.
+// La foto si salva come le altre (documento "foto"); le scelte restano in "ai" per poterla modificare.
 // ═══════════════════════════════════════════════
 let fotoAi={};
+const aiKey=()=>{try{return localStorage.getItem('laurera_aikey')||'';}catch(e){return'';}};
+function renderAiKey(){const st=document.getElementById('ai-key-st');if(!st)return;const k=aiKey();
+  st.innerHTML=k?`<span style="color:var(--green)">✓ Chiave salvata su questo dispositivo</span> (…${esc(k.slice(-4))})`:'<span style="color:var(--text2)">Nessuna chiave: si usa il modello gratuito (1 foto ogni 45 secondi, solo da descrizione).</span>';}
+function aiKeySave(){const i=document.getElementById('ai-key-in'),v=(i&&i.value||'').trim();
+  if(!/^(sk|pk)_[A-Za-z0-9_-]{8,}$/.test(v)){toast('❌ La chiave deve iniziare con sk_');return;}
+  try{localStorage.setItem('laurera_aikey',v);}catch(e){toast('⚠️ Non riesco a salvarla su questo dispositivo');return;}
+  i.value='';renderAiKey();toast('✅ Chiave salvata');}
+function aiKeyDel(){try{localStorage.removeItem('laurera_aikey');}catch(e){}renderAiKey();toast('🗑 Chiave rimossa da questo dispositivo');}
 const _COL=[['bianco','white','#f4f4f5'],['nero','black','#111111'],['grigio','grey','#9ca3af'],['rosso','red','#ef4444'],['bordeaux','burgundy','#7f1d1d'],['arancione','orange','#f97316'],['giallo','yellow','#facc15'],['lime','neon yellow','#e8ff00'],['verde','green','#16a34a'],['verde acqua','teal','#14b8a6'],['azzurro','light blue','#38bdf8'],['blu','royal blue','#2563eb'],['blu notte','navy blue','#1e3a8a'],['viola','purple','#7c3aed'],['rosa','pink','#ff4fb8']];
 const AIO={
   sesso:[['uomo','Uomo','man'],['donna','Donna','woman']],
@@ -3226,7 +3252,9 @@ const AIO={
 };
 const _aiE=(k,v)=>{const o=(AIO[k]||[]).find(x=>x[0]===v);return o?o[2]:'';};
 const _aiCol=v=>{const o=_COL.find(x=>x[0]===v);return o?o[1]:'white';};
+const _KEEP=['keep','Come nella foto',''];
 function aiDefault(p){const F=isDonna(p);return{sesso:F?'donna':'uomo',eta:'35',corpo:'normale',viso:'ovale',pelle:'chiara',espr:'sorriso',capelli:F?'coda':'corti',colCap:'castano',barba:'no',colBarba:'comeCapelli',occhi:'marroni',occhiali:'no',testa:'no',colTesta:'bianco',maglia:'polo',colMaglia:'blu',sfondo:'blu',dettagli:'',seed:Math.floor(Math.random()*90000)+1000};}
+function aiFotoDefault(){return{testa:'keep',colTesta:'bianco',occhiali:'keep',barba:'keep',colBarba:'comeCapelli',capelli:'keep',colCap:'keep',maglia:'polo',colMaglia:'blu',sfondo:'blu',espr:'keep',dettagli:''};}
 function aiPrompt(a){
   // prima le cose che si vedono di più (copricapo, occhiali, maglia): i modelli danno più peso alle prime parole
   const parts=[`photo of an italian ${_aiE('sesso',a.sesso)} tennis player aged ${a.eta}`];
@@ -3239,11 +3267,27 @@ function aiPrompt(a){
   parts.push('head and shoulders portrait, centered, looking at the camera',_aiE('sfondo',a.sfondo),'soft natural studio lighting, sharp focus, realistic skin texture, photorealistic photo, 85mm lens');
   return parts.filter(Boolean).join(', ');
 }
+// istruzioni per modificare una foto tenendo la stessa persona
+function aiEditPrompt(f){
+  const ch=[];
+  if(f.testa==='no')ch.push('remove any hat, cap or headband');else if(f.testa!=='keep')ch.push('the person is '+_aiE('testa',f.testa).replace('{c}',_aiCol(f.colTesta)));
+  if(f.occhiali==='no')ch.push('remove the glasses');else if(f.occhiali!=='keep')ch.push('the person is '+_aiE('occhiali',f.occhiali));
+  if(f.capelli!=='keep')ch.push('change the hairstyle to '+_aiE('capelli',f.capelli));
+  if(f.colCap!=='keep'&&f.capelli!=='pelato')ch.push('change the hair color to '+_aiE('colCap',f.colCap));
+  if(f.barba==='no')ch.push('make the person clean shaven');else if(f.barba!=='keep'){const bc=_aiE('colBarba',f.colBarba);ch.push('give the person a '+(bc?bc+' ':'')+_aiE('barba',f.barba));}
+  if(f.maglia!=='keep')ch.push(`dress the person in a ${_aiCol(f.colMaglia)} ${_aiE('maglia',f.maglia)}`);
+  if(f.espr!=='keep')ch.push('change the expression to a '+_aiE('espr',f.espr));
+  if(f.dettagli&&f.dettagli.trim())ch.push(f.dettagli.trim());
+  ch.push('use a '+(_aiE('sfondo',f.sfondo)||'plain dark blue background'));
+  return 'Photorealistic head and shoulders portrait photo of the same person shown in the input image. Keep exactly the same face, identity, facial features, skin tone, body shape and age. '
+    +ch.join('. ')+'. Centered, looking at the camera, soft natural studio lighting, sharp focus, realistic skin texture.';
+}
 let _ai=null;
 function openAiAvatar(id){
   const p=players.find(x=>x.id===id);if(!p||_checkViewer())return;
   let saved=null;try{saved=fotoAi[id]?JSON.parse(fotoAi[id]):null;}catch(e){}
-  _ai={id,a:saved||aiDefault(p),tab:0,img:null,busy:false,wait:0,msg:''};
+  const a=saved&&saved.sesso?saved:aiDefault(p),f=saved&&saved.mode==='foto'?{...aiFotoDefault(),...saved.f}:aiFotoDefault();
+  _ai={id,a,f,mode:aiKey()&&saved&&saved.mode==='foto'?'foto':'testo',src:null,tab:0,img:null,busy:false,wait:0,msg:'',q:'normale'};
   let el=document.getElementById('ai-editor');
   if(!el){el=document.createElement('div');el.id='ai-editor';el.className='ave-bg';document.body.appendChild(el);}
   el.classList.add('open');_aiRender();
@@ -3256,60 +3300,100 @@ const _AI_TABS=[
   ['Maglia',[['maglia','Tipo'],['colMaglia','Colore','col'],['sfondo','Sfondo']]],
   ['Dettagli',[['dettagli','Dettagli in più (facoltativo)','txt']]],
 ];
+const _AIF_TABS=[
+  ['Testa e occhiali',[['testa','Cappellino, fascia…'],['colTesta','Colore','col'],['occhiali','Occhiali']]],
+  ['Capelli e barba',[['capelli','Taglio'],['colCap','Colore dei capelli'],['barba','Barba e baffi'],['colBarba','Colore della barba']]],
+  ['Maglia e sfondo',[['maglia','Maglia'],['colMaglia','Colore','col'],['sfondo','Sfondo'],['espr','Espressione']]],
+  ['Dettagli',[['dettagli','Altre modifiche (facoltativo)','txt']]],
+];
+function _aiOpts(k){const base=AIO[k]||[];if(_ai.mode!=='foto')return base;
+  if(['testa','occhiali','capelli','colCap','barba','maglia','espr'].includes(k))return[_KEEP,...base];return base;}
 function _aiRender(){
-  const el=document.getElementById('ai-editor'),p=players.find(x=>x.id===_ai.id),a=_ai.a;
-  const cur=_ai.img||phUrl(p);
-  const sec=_AI_TABS[_ai.tab][1].map(([k,l,t])=>`<div class="ave-sec"><div class="ave-lb">${l}</div>${
+  const el=document.getElementById('ai-editor'),p=players.find(x=>x.id===_ai.id),key=aiKey(),fm=_ai.mode==='foto',a=fm?_ai.f:_ai.a;
+  const cur=_ai.img||phUrl(p),tabs=fm?_AIF_TABS:_AI_TABS;if(_ai.tab>=tabs.length)_ai.tab=0;
+  const sec=tabs[_ai.tab][1].map(([k,l,t])=>`<div class="ave-sec"><div class="ave-lb">${l}</div>${
     t==='col'?`<div class="ave-sw">${_COL.map(([v,n,hex])=>`<button type="button" class="ave-c${a[k]===v?' on':''}" data-k="${k}" data-v="${v}" style="background:${hex}" title="${n}" aria-label="${n}"></button>`).join('')}</div>`
-    :t==='txt'?`<textarea id="ai-det" class="ai-txt" rows="3" placeholder="Es.: naso pronunciato, lentiggini, sopracciglia folte, orecchino">${esc(a.dettagli||'')}</textarea><div class="ai-note">Scrivi cose semplici. Funziona meglio con poche parole precise.</div>`
-    :`<div class="ave-ch">${AIO[k].map(([v,lab])=>`<button type="button" class="${a[k]===v?'on':''}" data-k="${k}" data-v="${v}">${lab}</button>`).join('')}</div>`}</div>`).join('');
+    :t==='txt'?`<textarea id="ai-det" class="ai-txt" rows="3" placeholder="${fm?'Es.: togli gli orecchini, fai la barba più corta':'Es.: naso pronunciato, lentiggini, sopracciglia folte'}">${esc(a.dettagli||'')}</textarea><div class="ai-note">Funziona meglio con poche parole precise.</div>`
+    :`<div class="ave-ch">${_aiOpts(k).map(([v,lab])=>`<button type="button" class="${a[k]===v?'on':''}" data-k="${k}" data-v="${v}">${lab}</button>`).join('')}</div>`}</div>`).join('');
+  const srcBox=fm?`<div class="ai-src">${_ai.src?`<img src="${_ai.src}" alt="Foto di partenza">`:'<span>Nessuna foto</span>'}<div class="ai-src-b"><button type="button" data-a="pick">📷 Carica foto</button><button type="button" data-a="fromcur">👤 Parti dall'avatar attuale</button></div></div>`:'';
   el.innerHTML=`<div class="ave-box">
     <div class="ave-top"><div class="ai-prev">${cur?`<img src="${cur}" alt="Anteprima">`:''}${_ai.busy?'<div class="ai-spin"><i></i><span>Sto creando la foto…</span></div>':''}</div>
-      <div class="ave-ttl"><b>${esc(dispName(p.nome))}</b><span>Avatar realistico</span>
-        <div class="ave-act"><button type="button" class="ai-go" data-a="gen"${_ai.busy||_ai.wait?' disabled':''}>${_ai.wait?`⏳ Attendi ${_ai.wait}s`:'✨ Genera'}</button><button type="button" data-a="new"${_ai.busy||_ai.wait?' disabled':''}>🔄 Nuovo volto</button></div>
-        <div class="ai-msg">${_ai.msg||'Scegli le caratteristiche e premi Genera.'}</div></div>
+      <div class="ave-ttl"><b>${esc(dispName(p.nome))}</b><span>Avatar realistico${key?'':' · modello gratuito'}</span>
+        <div class="ave-act"><button type="button" class="ai-go" data-a="gen"${_ai.busy||_ai.wait?' disabled':''}>${_ai.wait?`⏳ Attendi ${_ai.wait}s`:'✨ Genera'}</button>${fm?'':`<button type="button" data-a="new"${_ai.busy||_ai.wait?' disabled':''}>🔄 Nuovo volto</button>`}${_ai.img&&key?`<button type="button" data-a="editcur">✏️ Modifica questa</button>`:''}</div>
+        <div class="ai-msg">${_ai.msg||(fm?'Carica una foto o parti dall\'avatar attuale, scegli cosa cambiare e premi Genera.':'Scegli le caratteristiche e premi Genera.')}</div></div>
       <button type="button" class="ave-x" data-a="close" aria-label="Chiudi">✕</button></div>
-    <div class="ave-tabs">${_AI_TABS.map(([t],i)=>`<button type="button" class="${i===_ai.tab?'on':''}" data-tab="${i}">${t}</button>`).join('')}</div>
+    <div class="ai-mode"><button type="button" class="${fm?'':'on'}" data-m="testo">✍️ Da descrizione</button><button type="button" class="${fm?'on':''}" data-m="foto"${key?'':' disabled title="Serve la chiave in Impostazioni"'}>📷 Da foto${key?'':' 🔒'}</button>${key?`<select id="ai-q" class="ai-q" aria-label="Qualità"><option value="normale"${_ai.q==='normale'?' selected':''}>Qualità normale</option><option value="alta"${_ai.q==='alta'?' selected':''}>Qualità alta</option></select>`:''}</div>
+    ${srcBox}
+    <div class="ave-tabs">${tabs.map(([t],i)=>`<button type="button" class="${i===_ai.tab?'on':''}" data-tab="${i}">${t}</button>`).join('')}</div>
     <div class="ave-body">${sec}</div>
     <div class="ave-ft"><button type="button" class="btn btn-g" data-a="close">Chiudi</button><button type="button" class="btn btn-p" data-a="save"${_ai.img&&!_ai.busy?'':' disabled'}>💾 Usa questa foto</button></div></div>`;
-  const ta=el.querySelector('#ai-det');if(ta)ta.oninput=()=>{_ai.a.dettagli=ta.value;};
+  const ta=el.querySelector('#ai-det');if(ta)ta.oninput=()=>{(_ai.mode==='foto'?_ai.f:_ai.a).dettagli=ta.value;};
+  const qs=el.querySelector('#ai-q');if(qs)qs.onchange=()=>{_ai.q=qs.value;};
   el.onclick=e=>{
     if(e.target===el){el.classList.remove('open');return;}
     const b=e.target.closest('button');if(!b||b.disabled)return;
+    if(b.dataset.m){_ai.mode=b.dataset.m;_ai.tab=0;_ai.msg='';_aiRender();return;}
     if(b.dataset.tab!=null){_ai.tab=+b.dataset.tab;_aiRender();return;}
-    if(b.dataset.k){_ai.a[b.dataset.k]=b.dataset.v;_aiRender();return;}
+    if(b.dataset.k){(_ai.mode==='foto'?_ai.f:_ai.a)[b.dataset.k]=b.dataset.v;_aiRender();return;}
     const act=b.dataset.a;
     if(act==='close'){el.classList.remove('open');return;}
     if(act==='new'){_ai.a.seed=Math.floor(Math.random()*90000)+1000;_aiGen();return;}
     if(act==='gen'){_aiGen();return;}
-    if(act==='save')_aiSave();
+    if(act==='save'){_aiSave();return;}
+    if(act==='pick'){const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.onchange=()=>{const fl=inp.files&&inp.files[0];if(!fl)return;const r=new FileReader();r.onload=ev=>_aiShrink(ev.target.result,1024).then(u=>{_ai.src=u;_ai.msg='Foto caricata. Scegli cosa cambiare e premi Genera.';_aiRender();});r.readAsDataURL(fl);};inp.click();return;}
+    if(act==='fromcur'){const u=phUrl(p);_aiShrink(u,1024).then(s=>{_ai.src=s;_ai.msg='Si parte dall\'avatar attuale.';_aiRender();});return;}
+    if(act==='editcur'){const bg=(_ai.mode==='foto'?_ai.f.sfondo:_ai.a.sfondo)||'blu';_ai.mode='foto';_ai.src=_ai.img;_ai.f={...aiFotoDefault(),sfondo:bg};_ai.tab=0;_ai.msg='Ora scegli cosa cambiare in questa foto: la faccia resta la stessa.';_aiRender();}
   };
 }
-// attesa tra una foto e l'altra: aggiorna solo i bottoni (non ridisegna, così non si perde quello che si sta scrivendo)
+// riduce un'immagine (anche SVG) a JPEG quadrato/proporzionato di lato massimo "max"
+function _aiShrink(src,max){return new Promise(res=>{const i=new Image();i.onload=()=>{const k=Math.min(1,max/Math.max(i.naturalWidth||max,i.naturalHeight||max)),w=Math.round((i.naturalWidth||max)*k),h=Math.round((i.naturalHeight||max)*k),c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#1e1f23';x.fillRect(0,0,w,h);x.drawImage(i,0,0,w,h);res(c.toDataURL('image/jpeg',.9));};i.onerror=()=>res(src);i.src=src;});}
+// attesa tra una foto e l'altra (solo modello gratuito): aggiorna solo i bottoni, così non si perde quello che si sta scrivendo
 function _aiBtns(){const el=document.getElementById('ai-editor');if(!el)return;const g=el.querySelector('[data-a="gen"]'),n=el.querySelector('[data-a="new"]');
   if(g){g.disabled=!!(_ai.busy||_ai.wait);g.textContent=_ai.wait?`⏳ Attendi ${_ai.wait}s`:'✨ Genera';}if(n)n.disabled=!!(_ai.busy||_ai.wait);}
 let _aiTimer=null;
 function _aiCountdown(s){_ai.wait=s;_aiRender();clearInterval(_aiTimer);_aiTimer=setInterval(()=>{if(!_ai){clearInterval(_aiTimer);return;}_ai.wait=Math.max(0,_ai.wait-1);_aiBtns();if(!_ai.wait)clearInterval(_aiTimer);},1000);}
+// ritaglio quadrato sul volto e riduzione a 220 px; senza chiave escludo il logo in basso a destra
+function _aiCrop(img,logo){const S=220,cv=document.createElement('canvas');cv.width=cv.height=S;const x=cv.getContext('2d'),w=img.naturalWidth,h=img.naturalHeight;
+  const cs=Math.round(Math.min(w,h)*(logo?.76:.86)),cx=Math.round((w-cs)/2),cy=Math.round(h*(logo?.03:.02));x.drawImage(img,cx,cy,cs,cs,0,0,S,S);return cv.toDataURL('image/jpeg',.84);}
+const _aiLoad=src=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});
 async function _aiGen(){
   if(!_ai||_ai.busy)return;
-  _ai.busy=true;_ai.msg='Ci vogliono da 5 a 30 secondi.';_aiRender();
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(aiPrompt(_ai.a))}?width=512&height=512&nologo=true&seed=${_ai.a.seed}`;
+  const key=aiKey(),fm=_ai.mode==='foto';
+  if(fm&&!_ai.src){_ai.msg='Prima carica una foto o parti dall\'avatar attuale.';_aiRender();return;}
+  _ai.busy=true;_ai.msg=fm?'Ci vogliono da 10 a 60 secondi.':'Ci vogliono da 5 a 30 secondi.';_aiRender();
+  const model=_ai.q==='alta'?'openai/gpt-image-2':'black-forest-labs/flux.2-klein-4b';
   try{
-    const r=await fetch(url);const ct=r.headers.get('content-type')||'';
-    if(!r.ok||!ct.startsWith('image/')){let s=45;try{const j=await r.json();const m=String(j&&j.error&&j.error.message||'').match(/(\d+)\s*s/);if(m)s=+m[1]+2;}catch(e){}
-      _ai.busy=false;_ai.msg='Il servizio gratuito crea una foto ogni 45 secondi: riprova tra poco.';_aiCountdown(s);return;}
-    const blob=await r.blob(),bmp=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(blob);});
-    // ritaglio quadrato sul volto (esclude il logo in basso a destra) e riduco a 220 px
-    const S=220,cv=document.createElement('canvas');cv.width=cv.height=S;const x=cv.getContext('2d');
-    const w=bmp.naturalWidth,h=bmp.naturalHeight,cs=Math.round(Math.min(w,h)*.76),cx=Math.round((w-cs)/2),cy=Math.round(h*.03);
-    x.drawImage(bmp,cx,cy,cs,cs,0,0,S,S);URL.revokeObjectURL(bmp.src);
-    _ai.img=cv.toDataURL('image/jpeg',.82);_ai.busy=false;_ai.msg='Ti piace? Premi “Usa questa foto”. Altrimenti cambia qualcosa e rigenera.';_aiCountdown(45);
-  }catch(e){_ai.busy=false;_ai.msg='Non riesco a contattare il servizio. Controlla la connessione e riprova.';_aiRender();}
+    let imgUrl;
+    if(fm){
+      const fd=new FormData(),blob=await (await fetch(_ai.src)).blob();
+      fd.append('model',model);fd.append('prompt',aiEditPrompt(_ai.f));fd.append('image',blob,'foto.jpg');fd.append('n','1');fd.append('size','1024x1024');
+      const r=await fetch('https://gen.pollinations.ai/v1/images/edits',{method:'POST',headers:{Authorization:'Bearer '+key},body:fd});
+      const j=await r.json().catch(()=>null);
+      if(!r.ok||!j||!j.data||!j.data[0])throw new Error((j&&j.error&&(j.error.message||j.error))||('errore '+r.status));
+      imgUrl=j.data[0].b64_json?'data:image/png;base64,'+j.data[0].b64_json:j.data[0].url;
+    }else if(key){
+      const r=await fetch(`https://gen.pollinations.ai/image/${encodeURIComponent(aiPrompt(_ai.a))}?model=${encodeURIComponent(model)}&width=1024&height=1024&seed=${_ai.a.seed}&nologo=true`,{headers:{Authorization:'Bearer '+key}});
+      const ct=r.headers.get('content-type')||'';
+      if(!r.ok||!ct.startsWith('image/')){let m='errore '+r.status;try{const j=await r.json();m=(j&&j.error&&(j.error.message||j.error))||m;}catch(e){}throw new Error(m);}
+      imgUrl=URL.createObjectURL(await r.blob());
+    }else{
+      const r=await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(aiPrompt(_ai.a))}?width=512&height=512&nologo=true&seed=${_ai.a.seed}`);
+      const ct=r.headers.get('content-type')||'';
+      if(!r.ok||!ct.startsWith('image/')){let s=45;try{const j=await r.json();const m=String(j&&j.error&&j.error.message||'').match(/(\d+)\s*s/);if(m)s=+m[1]+2;}catch(e){}
+        _ai.busy=false;_ai.msg='Il servizio gratuito crea una foto ogni 45 secondi: riprova tra poco.';_aiCountdown(s);return;}
+      imgUrl=URL.createObjectURL(await r.blob());
+    }
+    const im=await _aiLoad(imgUrl);_ai.img=_aiCrop(im,!key);if(imgUrl.startsWith('blob:'))URL.revokeObjectURL(imgUrl);
+    _ai.busy=false;_ai.msg=key?'Ti piace? Premi “Usa questa foto”. Per ritoccarla tenendo la stessa faccia premi “Modifica questa”.':'Ti piace? Premi “Usa questa foto”. Altrimenti cambia qualcosa e rigenera.';
+    if(key)_aiRender();else _aiCountdown(45);
+  }catch(e){_ai.busy=false;const m=String(e&&e.message||e);
+    _ai.msg=/budget|balance|insufficient|402|pollen/i.test(m)?'Crediti esauriti sulla chiave: controlla il saldo su enter.pollinations.ai.':/401|403|key|auth/i.test(m)?'La chiave non è valida o non ha il permesso per le immagini: controllala in Impostazioni.':'Non è riuscito a creare la foto ('+esc(m.slice(0,120))+'). Riprova.';
+    _aiRender();}
 }
 function _aiSave(){
   const id=_ai.id,u=_ai.img,p=players.find(x=>x.id===id);if(!u)return;
   try{localStorage.setItem('laurera_ph_'+id,u);}catch(e){}
-  fotoData[id]=u;fotoAi[id]=JSON.stringify(_ai.a);
+  fotoData[id]=u;fotoAi[id]=JSON.stringify({..._ai.a,mode:_ai.mode,f:_ai.f});
   _doc('foto').set({ph:{[id]:u},ai:{[id]:fotoAi[id]}},{merge:true}).then(()=>toast('✅ Avatar salvato')).catch(er=>toast('⚠️ Avatar non salvato online: '+(er&&er.message||'errore')));
   addLog('📸',`Avatar realistico di ${p?p.nome:id}`);
   document.getElementById('ai-editor').classList.remove('open');_avRefresh(id);
