@@ -1799,6 +1799,18 @@ html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:#0e1c
 .ios-sheet-list .vis-av{width:32px;height:32px;border-radius:50%;overflow:hidden;flex:none;background:#24507f}
 .ios-sheet-list .ios-row{min-height:48px}.ios-ok{color:#4da3ff;font-weight:800}
 body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}body.light .ios-back{color:#0a6cff}
+.ios-seg.sm button{font-size:12.5px;padding:6px 0}
+.vis-rk{width:24px;flex:none;text-align:center;font:400 19px/1 "Bebas Neue",sans-serif;color:#9fb0c8}.vis-rk.m{font-size:18px}
+.vd-head{display:flex;align-items:center;gap:14px;margin:4px 4px 14px}
+.vd-av{width:64px;height:64px;border-radius:50%;overflow:hidden;flex:none;display:grid;place-items:center;background:#24507f;border:2px solid #e8ff00;font:800 24px "DM Sans",sans-serif;color:#fff}.vd-av img{width:100%;height:100%;object-fit:cover}
+.ios-ic.vd-ic{width:56px;height:56px;border-radius:14px}.ios-ic.vd-ic svg{width:30px;height:30px}
+.vd-tx{display:flex;flex-direction:column;gap:2px;min-width:0}.vd-tx b{font:800 24px/1.1 "DM Sans",sans-serif;color:#fff}.vd-tx span{font-size:13px;color:#9fb0c8}
+.vis-tile.sm b{font:700 17px/1.2 "DM Sans",sans-serif;color:#fff;margin-top:6px}
+.vd-day{display:flex;justify-content:space-between;margin-top:16px;text-transform:none;letter-spacing:0;font-size:13.5px}.vd-day span:first-child{color:#fff;font-weight:700}
+.vd-acc{min-height:44px;cursor:default}.vd-acc:active{background:transparent}
+.vd-time{width:46px;flex:none;font:400 20px/1 "Bebas Neue",sans-serif;color:#e8ff00}
+.ios-tx b.blue{color:#4da3ff;font-weight:500}
+#vis-det .ios-grp+.ios-f,#vis-det .ios-f{margin-top:10px}
 /* Telefono: la sfumatura di header e menu segue la barra invece di restare fissata allo schermo.
    Con "fixed" il browser del telefono ridisegnava a pezzi le zone animate (bottoni, voce attiva)
    e comparivano rettangoli di un altro colore. Aspetto quasi identico: header = fetta alta, menu = fetta bassa. */
@@ -2009,6 +2021,11 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
       <div id="vis-tools" class="vis-tools"></div>
       <div id="vis-list"></div>
       <div class="ios-f">Ogni telefono o PC viene contato in modo anonimo; le tue visite da admin no. Tocca un dispositivo per dire di chi è: telefono e PC della stessa persona si raggruppano. Lo vedi solo tu.</div>
+    </div>
+
+    <div id="stg-vdet" class="stg-v" hidden>
+      <button type="button" class="ios-back" onclick="_visDet=null;stgOpen('visite')">‹ Chi apre l'app</button>
+      <div id="vis-det"></div>
     </div>
 
     <div id="stg-log" class="stg-v" hidden>
@@ -4756,11 +4773,12 @@ function trackVisit(){
     const dev=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1)?'iPad':/Android/.test(ua)?(/Mobile/.test(ua)?'Android':'Tablet Android'):/Macintosh/.test(ua)?'Mac':/Windows/.test(ua)?'PC Windows':/Linux/.test(ua)?'PC Linux':'Altro';
     const br=/FBAN|FBAV|Instagram/.test(ua)?'Facebook/Instagram':/WhatsApp/i.test(ua)?'WhatsApp':/SamsungBrowser/.test(ua)?'Samsung':/Edg\//.test(ua)?'Edge':/OPR\/|Opera/.test(ua)?'Opera':/Firefox|FxiOS/.test(ua)?'Firefox':/CriOS|Chrome\//.test(ua)?'Chrome':/Safari\//.test(ua)?'Safari':'Altro';
     const app=!!((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone);
-    const FV=firebase.firestore.FieldValue,d={last:FV.serverTimestamp(),n:FV.increment(1),dev,br,app,days:{[_dayKey(new Date())]:FV.increment(1)}};
+    const FV=firebase.firestore.FieldValue,d={last:FV.serverTimestamp(),n:FV.increment(1),dev,br,app,days:{[_dayKey(new Date())]:FV.increment(1)},log:FV.arrayUnion(Date.now())};
     if(isNew)d.first=FV.serverTimestamp();
     const ok=()=>{try{localStorage.setItem('laurera_devLast',Date.now());}catch(e){}};
     // se Firebase ha ancora le regole vecchie rifiuta browser/app/giorni: salvo almeno i dati di base
-    _visCol().doc(id).set(d,{merge:true}).then(ok).catch(()=>{const b={last:d.last,n:d.n,dev};if(isNew)b.first=d.first;_visCol().doc(id).set(b,{merge:true}).then(ok).catch(()=>{});});
+    const ref=_visCol().doc(id),base=()=>{const b={last:d.last,n:d.n,dev};if(isNew)b.first=d.first;return ref.set(b,{merge:true});};
+    ref.set(d,{merge:true}).then(ok).catch(()=>{const d2={...d};delete d2.log;ref.set(d2,{merge:true}).then(ok).catch(()=>base().then(ok).catch(()=>{}));});
   }catch(e){}
 }
 let _visite=[],_visView='persone',_visHide1=false,_visOpen=null;
@@ -4772,7 +4790,7 @@ async function renderVisite(){
   list.innerHTML='<div class="log-entry"><span class="log-text">Caricamento…</span></div>';
   try{
     const snap=await _visCol().get();
-    _visite=snap.docs.map(d=>{const x=d.data();return{id:d.id,n:x.n||0,dev:x.dev||'',br:x.br||'',app:!!x.app,nome:x.nome||'',pid:x.pid!=null?+x.pid:null,days:x.days||{},
+    _visite=snap.docs.map(d=>{const x=d.data();return{id:d.id,n:x.n||0,dev:x.dev||'',br:x.br||'',app:!!x.app,nome:x.nome||'',pid:x.pid!=null?+x.pid:null,days:x.days||{},log:Array.isArray(x.log)?x.log.filter(t=>typeof t==='number'):[],
       first:x.first?x.first.toMillis():(x.last?x.last.toMillis():0),last:x.last?x.last.toMillis():0};});
   }catch(e){list.innerHTML='<div class="log-entry"><span class="log-icon">⚠️</span><span class="log-text">Non riesco a leggere le visite. Controlla di aver aggiornato le regole su Firebase.</span></div>';sum.innerHTML='';return;}
   _visDraw();
@@ -4790,38 +4808,80 @@ const _visIc=d=>{const PH='<svg viewBox="0 0 24 24" fill="none" stroke="currentC
   TB='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2.5"/><path d="M11 18h2"/></svg>';
   const m=d==='iPhone'?['#8e8e93',PH]:d==='Android'?['#30d158',PH]:/iPad|Tablet/.test(d)?['#ff9f0a',TB]:d==='Mac'?['#5e5ce6',PC]:/PC/.test(d)?['#0a84ff',PC]:['#636366',PC];
   return`<span class="ios-ic" style="background:${m[0]}">${m[1]}</span>`;};
+// gruppi "persona": dispositivi associati allo stesso giocatore (o allo stesso nome)
+const _visGroups=()=>{const g={};_visite.forEach(v=>{const k=v.pid!=null?'p'+v.pid:v.nome?'n'+v.nome.toLowerCase():null;if(k)(g[k]=g[k]||[]).push(v);});return g;};
+// giorni diversi in cui un dispositivo ha aperto l'app (giorni registrati + giorni degli accessi + primo e ultimo accesso)
+const _visDaySet=arr=>{const s=new Set();arr.forEach(v=>{Object.keys(v.days||{}).forEach(k=>s.add(k));(v.log||[]).forEach(t=>s.add(_dayKey(new Date(t))));if(v.first)s.add(_dayKey(new Date(v.first)));if(v.last)s.add(_dayKey(new Date(v.last)));});return s;};
+let _visSort='visite',_visDet=null;
+const _visRel=ms=>{if(!ms)return'–';const now=Date.now(),t0=new Date();t0.setHours(0,0,0,0);const m=Math.round((now-ms)/60000);if(m<1)return'adesso';if(m<60)return m+' min fa';
+  const d=new Date(ms),h=d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});if(ms>=t0.getTime())return'oggi '+h;if(ms>=t0.getTime()-86400000)return'ieri '+h;return d.toLocaleDateString('it-IT',{day:'numeric',month:'short'})+' '+h;};
+const _visDot=ms=>Date.now()-ms<5*60000?'<i class="vis-on" title="Online adesso"></i>':'';
+// ordine: più visite (a pari visite più giorni), più giorni, più recenti
+const _visCmp=(a,b)=>_visSort==='recenti'?b.last-a.last:_visSort==='giorni'?(b.nd-a.nd)||(b.n-a.n)||(b.last-a.last):(b.n-a.n)||(b.nd-a.nd)||(b.last-a.last);
+const _visRk=(i,plain)=>_visSort==='recenti'?'':`<span class="vis-rk${i<3&&!plain?' m':''}">${i<3&&!plain?['🥇','🥈','🥉'][i]:i+1}</span>`;
 function _visDraw(){
   const list=document.getElementById('vis-list'),sum=document.getElementById('vis-sum'),tools=document.getElementById('vis-tools'),chart=document.getElementById('vis-chart');if(!list)return;
   [..._visite].sort((a,b)=>a.first-b.first).forEach((v,i)=>v.num=i+1);   // numero fisso per dispositivo, in ordine di primo accesso
+  _visite.forEach(v=>v.nd=Math.min(Math.max(1,v.n),_visDaySet([v]).size));
   const now=Date.now(),day=86400000,t0=new Date();t0.setHours(0,0,0,0);
-  const groups={};_visite.forEach(v=>{const k=v.pid!=null?'p'+v.pid:v.nome?'n'+v.nome.toLowerCase():null;if(k)(groups[k]=groups[k]||[]).push(v);});
+  const groups=_visGroups();
   const oggi=_visite.filter(v=>v.last>=t0.getTime()).length,sett=_visite.filter(v=>v.last>=now-7*day).length,tot=_visite.reduce((s,v)=>s+v.n,0),on=_visite.filter(v=>now-v.last<5*60000).length;
   const sub=document.getElementById('stg-vis-sub');if(sub)sub.textContent=`${_visite.length} dispositivi · ${oggi} oggi${on?` · ${on} online ora`:''}`;
   sum.innerHTML=[[_visite.length,'Dispositivi'],[Object.keys(groups).length,'Persone riconosciute'],[oggi,'Oggi'],[sett,'Ultimi 7 giorni']].map(([n,l])=>`<div class="vis-tile"><b>${n}</b><span>${l}</span></div>`).join('');
   // grafico: dispositivi diversi per giorno (ultimi 14 giorni)
   if(chart){const ds=[];for(let i=13;i>=0;i--){const d=new Date(t0.getTime()-i*day);ds.push({d,k:_dayKey(d),c:0});}
-    _visite.forEach(v=>ds.forEach(x=>{if(v.days[x.k])x.c++;}));
-    const mx=Math.max(1,...ds.map(x=>x.c)),has=ds.some(x=>x.c);
-    chart.innerHTML=`<div class="vis-ch-t"><span>Dispositivi al giorno</span><span>${tot} visite in tutto</span></div><div class="vis-ch">${ds.map(x=>`<div class="vis-b${x.k===_dayKey(t0)?' on':''}" title="${x.d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}: ${x.c}"><i>${x.c||''}</i><b style="height:${Math.round(x.c/mx*100)}%"></b><span>${x.d.getDate()}</span></div>`).join('')}</div>${has?'':'<div class="vis-ch-n">I dati per giorno si raccolgono da adesso: il grafico si riempie con le prossime visite.</div>'}`;}
+    _visite.forEach(v=>{const s=_visDaySet([v]);ds.forEach(x=>{if(s.has(x.k))x.c++;});});
+    const mx=Math.max(1,...ds.map(x=>x.c));
+    chart.innerHTML=`<div class="vis-ch-t"><span>Dispositivi al giorno</span><span>${tot} visite in tutto</span></div><div class="vis-ch">${ds.map(x=>`<div class="vis-b${x.k===_dayKey(t0)?' on':''}" title="${x.d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}: ${x.c}"><i>${x.c||''}</i><b style="height:${Math.round(x.c/mx*100)}%"></b><span>${x.d.getDate()}</span></div>`).join('')}</div>`;}
   const one=_visite.filter(v=>v.n<=1&&/PC/.test(v.dev)&&v.pid==null&&!v.nome).length;
   tools.innerHTML=`<div class="ios-seg"><button type="button" class="${_visView==='persone'?'on':''}" onclick="_visView='persone';_visDraw()">Persone</button><button type="button" class="${_visView==='disp'?'on':''}" onclick="_visView='disp';_visDraw()">Dispositivi</button></div>`
+    +`<div class="ios-seg sm"><button type="button" class="${_visSort==='visite'?'on':''}" onclick="_visSort='visite';_visDraw()">🏆 Più visite</button><button type="button" class="${_visSort==='giorni'?'on':''}" onclick="_visSort='giorni';_visDraw()">📅 Più giorni</button><button type="button" class="${_visSort==='recenti'?'on':''}" onclick="_visSort='recenti';_visDraw()">🕒 Recenti</button></div>`
     +`<div class="ios-grp"><label class="ios-row"><span class="ios-tx"><b>Nascondi visti una volta</b></span><input type="checkbox" class="ios-sw" ${_visHide1?'checked':''} onchange="_visHide1=this.checked;_visDraw()"></label>`
     +(one?`<button type="button" class="ios-row danger" onclick="visCleanTests()"><span class="ios-tx"><b>Togli ${one} PC visti una volta sola</b><small>Sono quasi tutti prove fatte durante le modifiche all'app</small></span></button>`:'')+`</div>`;
-  const rel=ms=>{if(!ms)return'–';const m=Math.round((now-ms)/60000);if(m<1)return'adesso';if(m<60)return m+' min fa';const d=new Date(ms),h=d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
-    if(ms>=t0.getTime())return'oggi '+h;if(ms>=t0.getTime()-day)return'ieri '+h;return d.toLocaleDateString('it-IT',{day:'numeric',month:'short'})+' '+h;};
-  const dot=ms=>now-ms<5*60000?'<i class="vis-on" title="Online adesso"></i>':'';
+  const nv=(n,nd)=>`${n} ${n===1?'visita':'visite'} · ${nd} ${nd===1?'giorno':'giorni'}`;
   const vis=_visite.filter(v=>!_visHide1||v.n>1);
-  const devRow=v=>`<button type="button" class="ios-row" onclick="visSheet('${v.id}')">${_visIc(v.dev)}<span class="ios-tx"><b>${_visWho(v)?esc(_visWho(v)):'Dispositivo '+v.num}</b><small>${esc(_visLbl(v))} · ${v.n} ${v.n===1?'visita':'visite'}</small></span><span class="vis-when">${dot(v.last)}${rel(v.last)}</span><span class="ios-chev">›</span></button>`;
+  const devRow=(v,i,plain)=>`<button type="button" class="ios-row" onclick="visDetail('d','${v.id}')">${_visRk(i,plain)}${_visIc(v.dev)}<span class="ios-tx"><b>${_visWho(v)?esc(_visWho(v)):'Dispositivo '+v.num}</b><small>${esc(_visLbl(v))} · ${nv(v.n,v.nd)}</small></span><span class="vis-when">${_visDot(v.last)}${_visRel(v.last)}</span><span class="ios-chev">›</span></button>`;
   let html='';
   if(_visView==='persone'){
-    const gs=Object.values(groups).map(arr=>({arr,who:_visWho(arr[0]),p:arr[0].pid!=null?players.find(x=>x.id===arr[0].pid):null,n:arr.reduce((s,v)=>s+v.n,0),last:Math.max(...arr.map(v=>v.last))})).sort((a,b)=>b.last-a.last);
-    html+=`<div class="ios-h">Persone (${gs.length})</div><div class="ios-grp">`+(gs.length?gs.map(g=>`<button type="button" class="ios-row" onclick="visSheet('${g.arr[0].id}')"><span class="vis-av">${g.p&&phUrl(g.p)?`<img src="${phUrl(g.p)}" alt="">`:esc((g.who||'?').slice(0,1))}</span>
-      <span class="ios-tx"><b>${esc(g.who)}</b><small>${g.arr.map(v=>esc(_visLbl(v))).join(' + ')} · ${g.n} ${g.n===1?'visita':'visite'}</small></span><span class="vis-when">${dot(g.last)}${rel(g.last)}</span><span class="ios-chev">›</span></button>`).join('')
-      :'<div class="ios-empty">Nessuna persona riconosciuta. Tocca un dispositivo qui sotto per dire di chi è.</div>')+`</div>`;
-    const unk=vis.filter(v=>v.pid==null&&!v.nome).sort((a,b)=>b.last-a.last);
-    if(unk.length)html+=`<div class="ios-h">Da riconoscere (${unk.length})</div><div class="ios-grp">${unk.map(devRow).join('')}</div>`;
-  }else html=`<div class="ios-h">Tutti i dispositivi (${vis.length})</div><div class="ios-grp">${[...vis].sort((a,b)=>b.last-a.last).map(devRow).join('')||'<div class="ios-empty">Ancora nessuna visita registrata.</div>'}</div>`;
+    const gs=Object.entries(groups).map(([k,arr])=>({k,arr,who:_visWho(arr[0]),p:arr[0].pid!=null?players.find(x=>x.id===arr[0].pid):null,n:arr.reduce((s,v)=>s+v.n,0),nd:Math.min(Math.max(1,arr.reduce((s,v)=>s+v.n,0)),_visDaySet(arr).size),last:Math.max(...arr.map(v=>v.last))})).sort(_visCmp);
+    html+=`<div class="ios-h">Persone (${gs.length})</div><div class="ios-grp">`+(gs.length?gs.map((g,i)=>`<button type="button" class="ios-row" onclick="visDetail('p','${g.k}')">${_visRk(i)}<span class="vis-av">${g.p&&phUrl(g.p)?`<img src="${phUrl(g.p)}" alt="">`:esc((g.who||'?').slice(0,1))}</span>
+      <span class="ios-tx"><b>${esc(g.who)}</b><small>${nv(g.n,g.nd)}${g.arr.length>1?` · ${g.arr.length} dispositivi`:` · ${esc(g.arr[0].dev||'')}`}</small></span><span class="vis-when">${_visDot(g.last)}${_visRel(g.last)}</span><span class="ios-chev">›</span></button>`).join('')
+      :'<div class="ios-empty">Nessuna persona riconosciuta. Tocca un dispositivo qui sotto e scegli di chi è.</div>')+`</div>`;
+    const unk=vis.filter(v=>v.pid==null&&!v.nome).sort(_visCmp);
+    if(unk.length)html+=`<div class="ios-h">Da riconoscere (${unk.length})</div><div class="ios-grp">${unk.map((v,i)=>devRow(v,i,1)).join('')}</div>`;
+  }else html=`<div class="ios-h">Tutti i dispositivi (${vis.length})</div><div class="ios-grp">${[...vis].sort(_visCmp).map((v,i)=>devRow(v,i)).join('')||'<div class="ios-empty">Ancora nessuna visita registrata.</div>'}</div>`;
   list.innerHTML=html;
+  if(_visDet&&!document.getElementById('stg-vdet').hidden)_visDetDraw();
+}
+// ── dettaglio di un dispositivo o di una persona: numeri e tutti gli accessi, giorno per giorno ──
+function visDetail(kind,key){_visDet={kind,key};document.querySelectorAll('#page-settings .stg-v').forEach(el=>{el.hidden=el.id!=='stg-vdet';});_visDetDraw();window.scrollTo({top:0});}
+function _visDetDraw(){
+  const box=document.getElementById('vis-det');if(!box||!_visDet)return;
+  const g=_visGroups(),arr=_visDet.kind==='d'?_visite.filter(v=>v.id===_visDet.key):(g[_visDet.key]||[]);
+  if(!arr.length){_visDet=null;stgOpen('visite');return;}
+  const v0=arr[0],who=_visWho(v0),p=v0.pid!=null?players.find(x=>x.id===v0.pid):null,isP=_visDet.kind==='p';
+  const n=arr.reduce((s,v)=>s+v.n,0),nd=Math.min(Math.max(1,n),_visDaySet(arr).size),first=Math.min(...arr.map(v=>v.first||Infinity)),last=Math.max(...arr.map(v=>v.last||0));
+  const fmtD=ms=>ms&&isFinite(ms)?new Date(ms).toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'}):'–';
+  const title=who?esc(who):'Dispositivo '+v0.num;
+  // accessi con l'orario (salvati da quando c'è il registro); per prima avevo solo primo e ultimo accesso
+  const acc=[];arr.forEach(v=>{(v.log||[]).forEach(t=>acc.push({t,v}));});
+  arr.forEach(v=>{[['first','primo accesso'],['last','']].forEach(([f,tag])=>{const t=v[f];if(t&&!acc.some(a=>a.v===v&&Math.abs(a.t-t)<5*60000))acc.push({t,v,tag});});});
+  acc.sort((a,b)=>b.t-a.t);
+  const t0=new Date();t0.setHours(0,0,0,0);
+  const dayLbl=k=>{const d=new Date(+k.slice(0,4),+k.slice(4,6)-1,+k.slice(6,8));if(d.getTime()===t0.getTime())return'Oggi';if(d.getTime()===t0.getTime()-86400000)return'Ieri';const s=d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});return s[0].toUpperCase()+s.slice(1);};
+  const byDay={};acc.forEach(a=>{(byDay[_dayKey(new Date(a.t))]=byDay[_dayKey(new Date(a.t))]||[]).push(a);});
+  // giorni registrati senza orario (conteggio del giorno più alto degli accessi con orario)
+  arr.forEach(v=>Object.entries(v.days||{}).forEach(([k,c])=>{const have=(byDay[k]||[]).filter(a=>a.v===v).length;if(c>have)(byDay[k]=byDay[k]||[]).push({t:0,v,more:c-have});}));
+  const days=Object.keys(byDay).sort().reverse();
+  const moreSum=days.reduce((s,k)=>s+byDay[k].reduce((x,a)=>x+(a.more||0),0),0),missing=n-acc.length-moreSum;
+  const head=`<div class="vd-head">${isP||p?`<span class="vd-av">${p&&phUrl(p)?`<img src="${phUrl(p)}" alt="">`:esc((who||'?').slice(0,1))}</span>`:_visIc(v0.dev).replace('ios-ic','ios-ic vd-ic')}<div class="vd-tx"><b>${title}</b><span>${isP?arr.map(v=>esc(_visLbl(v))).join(' + '):esc(_visLbl(v0))}</span></div></div>`;
+  const tiles=`<div class="vis-grid">${[[n,n===1?'Visita':'Visite'],[nd,nd===1?'Giorno':'Giorni diversi'],[fmtD(first),'Primo accesso'],[_visRel(last),'Ultimo accesso']].map(([a,b],i)=>`<div class="vis-tile${i>1?' sm':''}"><b>${a}</b><span>${b}</span></div>`).join('')}</div>`;
+  const list=days.map(k=>{const items=byDay[k].sort((a,b)=>b.t-a.t);const cnt=items.reduce((s,a)=>s+(a.more||1),0);
+    return`<div class="ios-h vd-day"><span>${dayLbl(k)}</span><span>${cnt} ${cnt===1?'accesso':'accessi'}</span></div><div class="ios-grp">${items.map(a=>`<div class="ios-row vd-acc">${a.more?'<span class="vd-time">—</span>':`<span class="vd-time">${new Date(a.t).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})}</span>`}<span class="ios-tx"><b>${a.more?`${a.more} ${a.more===1?'accesso':'accessi'} senza orario`:(a.tag?a.tag[0].toUpperCase()+a.tag.slice(1):'Ha aperto l\'app')}</b>${isP?`<small>${esc(_visLbl(a.v))}</small>`:''}</span></div>`).join('')}</div>`;}).join('');
+  const note=missing>0?`<div class="ios-f">Il registro con l'orario di ogni accesso è attivo dal 21 ottobre: per le visite di prima ci sono solo primo e ultimo accesso (${missing} ${missing===1?'visita':'visite'} senza dettaglio). Le visite a meno di 30 minuti l'una dall'altra contano come una sola.</div>`:`<div class="ios-f">Le visite a meno di 30 minuti l'una dall'altra contano come una sola.</div>`;
+  const devs=isP?`<div class="ios-h">Dispositivi (${arr.length})</div><div class="ios-grp">${arr.map(v=>`<button type="button" class="ios-row" onclick="visDetail('d','${v.id}')">${_visIc(v.dev)}<span class="ios-tx"><b>${esc(_visLbl(v))}</b><small>${v.n} ${v.n===1?'visita':'visite'} · ultimo ${_visRel(v.last)}</small></span><span class="ios-chev">›</span></button>`).join('')}</div>`:'';
+  const acts=isP?'':`<div class="ios-grp"><button type="button" class="ios-row" onclick="visSheet('${v0.id}','pick')"><span class="ios-tx"><b class="blue">${who?'Cambia giocatore':'Di chi è? Scegli il giocatore'}</b></span><span class="ios-chev">›</span></button><button type="button" class="ios-row" onclick="visAssign('${v0.id}','altro')"><span class="ios-tx"><b class="blue">Scrivi un nome</b></span></button>${who?`<button type="button" class="ios-row" onclick="visAssign('${v0.id}','none')"><span class="ios-tx"><b class="blue">Togli il nome</b></span></button>`:''}<button type="button" class="ios-row danger" onclick="visDel('${v0.id}')"><span class="ios-tx"><b>Elimina dispositivo</b></span></button></div>`;
+  box.innerHTML=head+tiles+devs+(days.length?`<div class="ios-h">Tutti gli accessi</div>`:'')+list+note+acts;
 }
 // menu dal basso (stile iPhone) per un dispositivo: di chi è, nome, elimina
 function visSheet(id,mode){

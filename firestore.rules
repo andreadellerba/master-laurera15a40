@@ -22,24 +22,27 @@ service cloud.firestore {
 
       // nuovo dispositivo (o dispositivo tolto dalla lista che torna): contatore a 1
       allow create: if devId.size() == 24
-                    && request.resource.data.keys().hasOnly(['first', 'last', 'n', 'dev', 'br', 'app', 'days'])
+                    && request.resource.data.keys().hasOnly(['first', 'last', 'n', 'dev', 'br', 'app', 'days', 'log'])
                     && request.resource.data.get('first', request.time) == request.time
                     && request.resource.data.last == request.time
                     && request.resource.data.n == 1
                     && request.resource.data.dev is string && request.resource.data.dev.size() <= 20
                     && request.resource.data.get('br', '') is string && request.resource.data.get('br', '').size() <= 20
                     && request.resource.data.get('app', false) is bool
-                    && request.resource.data.get('days', {}) is map && request.resource.data.get('days', {}).size() <= 1;
+                    && request.resource.data.get('days', {}) is map && request.resource.data.get('days', {}).size() <= 1
+                    && request.resource.data.get('log', []) is list && request.resource.data.get('log', []).size() <= 1;
 
-      // visitatore: aggiorna ora, contatore (+1), tipo di dispositivo/browser e visite del giorno
+      // visitatore: aggiorna ora, contatore (+1), tipo di dispositivo/browser, visite del giorno e orario dell'accesso
       allow update: if request.auth == null
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['last', 'n', 'dev', 'br', 'app', 'days'])
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['last', 'n', 'dev', 'br', 'app', 'days', 'log'])
                     && request.resource.data.last == request.time
                     && request.resource.data.n == resource.data.n + 1
                     && request.resource.data.dev is string && request.resource.data.dev.size() <= 20
                     && request.resource.data.get('br', '') is string && request.resource.data.get('br', '').size() <= 20
                     && request.resource.data.get('app', false) is bool
-                    && request.resource.data.get('days', {}) is map && request.resource.data.get('days', {}).size() <= 400;
+                    && request.resource.data.get('days', {}) is map && request.resource.data.get('days', {}).size() <= 400
+                    && request.resource.data.get('log', []) is list && request.resource.data.get('log', []).size() <= resource.data.get('log', []).size() + 1
+                    && request.resource.data.get('log', []).size() <= 5000;
 
       // admin: può solo dire di chi è il dispositivo (giocatore e/o nome)
       allow update: if request.auth != null
