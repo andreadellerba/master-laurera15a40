@@ -1950,6 +1950,16 @@ html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:#0e1c
 .ave-c{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;color:#fff;font:800 14px "DM Sans",sans-serif;background:#172a4b;padding:0}
 .ave-c.on{outline:3px solid #e8ff00;outline-offset:2px}
 .ave-ft{display:flex;gap:8px;justify-content:flex-end;padding:10px 14px 12px;border-top:1px solid rgba(255,255,255,.08);flex:none}
+.ai-prev{position:relative;width:120px;height:120px;border-radius:50%;overflow:hidden;border:3px solid #e8ff00;flex:none;background:#172a4b;box-shadow:0 10px 24px rgba(0,0,0,.5)}
+.ai-prev img{width:100%;height:100%;object-fit:cover;display:block}
+.ai-spin{position:absolute!important;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(14,28,51,.78);color:#fff;font:700 10px "DM Sans",sans-serif;text-align:center;padding:10px}
+.ai-spin i{width:26px;height:26px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:#e8ff00;animation:aispin 1s linear infinite}
+@keyframes aispin{to{transform:rotate(360deg)}}
+.ai-msg{font-size:11.5px;color:#9fb0c8;line-height:1.35;margin-top:4px;max-width:260px}
+.ave-act button.ai-go{background:#e8ff00;color:#111;border-color:#e8ff00}
+.ave-act button:disabled,.ave-ft button:disabled{opacity:.45;cursor:default}
+.ai-txt{width:100%;box-sizing:border-box;background:#172a4b;border:1px solid rgba(255,255,255,.16);border-radius:12px;color:#fff;font:14px "DM Sans",sans-serif;padding:10px 12px;resize:vertical}
+.ai-note{font-size:11.5px;color:#9fb0c8;margin-top:6px}
 /* Telefono: la sfumatura di header e menu segue la barra invece di restare fissata allo schermo.
    Con "fixed" il browser del telefono ridisegnava a pezzi le zone animate (bottoni, voce attiva)
    e comparivano rettangoli di un altro colore. Aspetto quasi identico: header = fetta alta, menu = fetta bassa. */
@@ -2593,7 +2603,7 @@ function delPh(id){
   if(!_checkViewer())_doc('foto').set({ph:{[id]:firebase.firestore.FieldValue.delete()}},{merge:true}).catch(()=>{});
 }
 function applyFoto(){players.forEach(p=>{if(fotoData[p.id])p.photoUrl=fotoData[p.id];});}
-async function loadFoto(){try{const s=await _doc('foto').get();fotoData=(s.exists&&s.data().ph)||{};}catch(e){}applyFoto();}
+async function loadFoto(){try{const s=await _doc('foto').get();fotoData=(s.exists&&s.data().ph)||{};fotoAi=(s.exists&&s.data().ai)||{};}catch(e){}applyFoto();}
 function saveVid(id,u){try{localStorage.setItem('laurera_vid_'+id,u);}catch(e){toast('⚠️ Video troppo grande');}}
 function delVid(id){try{localStorage.removeItem('laurera_vid_'+id);}catch(e){}}
 // ═══ HELPERS ═══
@@ -3119,7 +3129,8 @@ function _avSheet(){let el=document.getElementById('av-sheet');if(el)return el;e
 function openAvMenu(id){
   const p=players.find(x=>x.id===id);if(!p)return;const el=_avSheet();
   el.innerHTML=`<div class="avs-box"><div class="avs-hd"><div class="avs-av"><img src="${phUrl(p)}" alt=""></div><b>${esc(dispName(p.nome))}</b></div>
-    <button type="button" onclick="document.getElementById('av-sheet').classList.remove('open');openAvEditor(${id})">🎨 ${lavRead(fotoData[id])?'Modifica avatar':'Crea avatar'}</button>
+    <button type="button" onclick="document.getElementById('av-sheet').classList.remove('open');openAiAvatar(${id})">📸 ${fotoAi[id]?'Modifica avatar realistico':'Avatar realistico'}</button>
+    <button type="button" onclick="document.getElementById('av-sheet').classList.remove('open');openAvEditor(${id})">🎨 ${lavRead(fotoData[id])?'Modifica avatar disegnato':'Avatar disegnato'}</button>
     <button type="button" onclick="avPickPhoto(${id})">📷 Carica foto</button>
     ${fotoData[id]?`<button type="button" onclick="avResetAuto(${id})">↺ Torna all'avatar automatico</button>`:''}
     <button type="button" onclick="document.getElementById('av-sheet').classList.remove('open');openProfile(${id})">👤 Apri profilo</button>
@@ -3138,7 +3149,7 @@ function avPickPhoto(id){
 }
 function avResetAuto(id){
   if(!confirm('Togliere foto/avatar e tornare all\'avatar automatico?'))return;
-  delPh(id);const p=players.find(x=>x.id===id);if(p)delete p.photoUrl;
+  delPh(id);if(fotoAi[id]){delete fotoAi[id];_doc('foto').set({ai:{[id]:firebase.firestore.FieldValue.delete()}},{merge:true}).catch(()=>{});}const p=players.find(x=>x.id===id);if(p)delete p.photoUrl;
   document.getElementById('av-sheet')?.classList.remove('open');_avRefresh(id);toast('↺ Avatar automatico');
 }
 // ── editor ──
@@ -3188,6 +3199,120 @@ function _aveRender(){
   };
   const body=el.querySelector('.ave-body');if(body)body.scrollTop=_ave.scroll||0;
   body&&body.addEventListener('scroll',()=>{_ave.scroll=body.scrollTop;},{passive:true});
+}
+// ═══════════════════════════════════════════════
+// AVATAR REALISTICO (solo admin): una foto generata con l'intelligenza artificiale (Pollinations, gratis,
+// massimo 1 immagine ogni 45 secondi) a partire dalle caratteristiche scelte. La foto si salva come le altre
+// (documento "foto" di Firestore) e le scelte restano salvate in "ai", per poterla rigenerare modificata.
+// ═══════════════════════════════════════════════
+let fotoAi={};
+const _COL=[['bianco','white','#f4f4f5'],['nero','black','#111111'],['grigio','grey','#9ca3af'],['rosso','red','#ef4444'],['bordeaux','burgundy','#7f1d1d'],['arancione','orange','#f97316'],['giallo','yellow','#facc15'],['lime','neon yellow','#e8ff00'],['verde','green','#16a34a'],['verde acqua','teal','#14b8a6'],['azzurro','light blue','#38bdf8'],['blu','royal blue','#2563eb'],['blu notte','navy blue','#1e3a8a'],['viola','purple','#7c3aed'],['rosa','pink','#ff4fb8']];
+const AIO={
+  sesso:[['uomo','Uomo','man'],['donna','Donna','woman']],
+  eta:['18','22','25','28','30','33','35','38','40','45','50','55','60','65','70','75'].map(e=>[e,e+' anni',e]),
+  corpo:[['normale','Normale',''],['magro','Magro','slim build, lean face'],['atletico','Atletico','athletic build'],['robusto','Robusto','stocky build, broad face'],['sovrappeso','In carne','overweight, chubby round face']],
+  viso:[['ovale','Ovale',''],['tondo','Tondo','round face'],['squadrato','Squadrato','square jaw'],['allungato','Allungato','long narrow face'],['spigoloso','Zigomi alti','angular face with high cheekbones']],
+  pelle:[['chiara','Chiara','fair skin'],['moltoChiara','Molto chiara','very pale skin'],['olivastra','Olivastra','olive mediterranean skin'],['abbronzata','Abbronzata','tanned skin']],
+  espr:[['sorriso','Sorriso','friendly closed-mouth smile'],['aperto','Sorriso aperto','big smile showing teeth'],['serio','Serio','serious neutral expression'],['concentrato','Concentrato','focused determined expression'],['sicuro','Sicuro di sé','confident smirk']],
+  capelli:[['corti','Corti','short hair'],['rasati','Rasati','buzz cut'],['spazzola','A spazzola','short spiky crew cut'],['sfumati','Sfumati ai lati','short hair with skin fade on the sides'],['ciuffo','Ciuffo','quiff hairstyle'],['riga','Riga di lato','short hair with a side part'],['indietro','Tirati indietro','hair slicked back'],['frangia','Frangia','short hair with a fringe'],['spettinati','Spettinati','messy textured hair'],['mossi','Mossi medi','medium length wavy hair'],['ricci','Ricci','curly hair'],['ricciCorti','Ricci corti','short curly hair'],['lunghiU','Lunghi','long hair down to the shoulders'],['codino','Codino','man bun'],['cresta','Cresta','faux hawk'],['stempiato','Stempiato','receding hairline'],['radi','Radi','thinning hair'],['calvoLati','Calvo sopra','bald on top with short hair on the sides'],['pelato','Pelato','completely bald shaved head'],['coda','Coda','hair in a ponytail'],['codaAlta','Coda alta','high ponytail'],['chignon','Chignon','hair in a bun'],['caschetto','Caschetto','bob haircut'],['pixie','Corti da donna','pixie cut'],['lunghiLisci','Lunghi lisci','long straight hair'],['lunghiMossi','Lunghi mossi','long wavy hair'],['ricciLunghi','Ricci lunghi','long curly hair'],['treccia','Treccia','braided hair']],
+  colCap:[['nero','Neri','black'],['castanoScuro','Castano scuro','dark brown'],['castano','Castani','brown'],['castanoChiaro','Castano chiaro','light brown'],['biondoScuro','Biondo scuro','dark blonde'],['biondo','Biondi','blonde'],['biondoPlatino','Biondo platino','platinum blonde'],['rossi','Rossi','ginger red'],['ramati','Ramati','auburn'],['brizzolati','Brizzolati','salt and pepper'],['grigi','Grigi','grey'],['bianchi','Bianchi','white']],
+  barba:[['no','Nessuna','clean shaven'],['accenno','Accenno','light stubble'],['corta','Corta','short trimmed beard'],['piena','Piena','full beard'],['lunga','Lunga','long thick beard'],['pizzetto','Pizzetto','goatee'],['baffi','Baffi','mustache'],['baffiPizzetto','Baffi e pizzetto','mustache and goatee'],['mento','Barba sul mento','chin strap beard']],
+  colBarba:[['comeCapelli','Come i capelli',''],['grigia','Grigia','grey'],['brizzolata','Brizzolata','salt and pepper'],['bianca','Bianca','white'],['rossa','Rossa','ginger']],
+  occhi:[['marroni','Marroni','brown eyes'],['scuri','Scuri','dark brown eyes'],['nocciola','Nocciola','hazel eyes'],['verdi','Verdi','green eyes'],['azzurri','Azzurri','blue eyes'],['grigi','Grigi','grey eyes']],
+  occhiali:[['no','Nessuno',''],['vista','Da vista','wearing eyeglasses'],['vistaTondi','Da vista tondi','wearing round eyeglasses'],['vistaSottili','Montatura sottile','wearing thin metal frame eyeglasses'],['sole','Da sole','wearing sunglasses'],['sport','Sportivi','wearing wraparound sport sunglasses'],['testa','Occhiali in testa','sunglasses resting on top of the head']],
+  testa:[['no','Nessuno',''],['cappellino','Cappellino','wearing a {c} baseball cap'],['rovescio','Cappellino al contrario','wearing a {c} baseball cap backwards'],['fascia','Fascia','wearing a {c} sweatband headband on the forehead'],['visiera','Visiera','wearing a {c} tennis visor'],['bandana','Bandana','wearing a {c} bandana tied on the head'],['berretto','Berretto di lana','wearing a {c} beanie']],
+  maglia:[['polo','Polo','tennis polo shirt'],['tshirt','Maglietta','crew neck tennis t-shirt'],['canotta','Canotta','tennis tank top'],['felpa','Felpa','hoodie'],['giacca','Giacca sportiva','zip track jacket']],
+  sfondo:[['blu','Blu scuro','plain dark blue background'],['campo','Campo da tennis','blurred outdoor tennis court background'],['grigio','Grigio','plain light grey background'],['nero','Nero','plain black background']],
+};
+const _aiE=(k,v)=>{const o=(AIO[k]||[]).find(x=>x[0]===v);return o?o[2]:'';};
+const _aiCol=v=>{const o=_COL.find(x=>x[0]===v);return o?o[1]:'white';};
+function aiDefault(p){const F=isDonna(p);return{sesso:F?'donna':'uomo',eta:'35',corpo:'normale',viso:'ovale',pelle:'chiara',espr:'sorriso',capelli:F?'coda':'corti',colCap:'castano',barba:'no',colBarba:'comeCapelli',occhi:'marroni',occhiali:'no',testa:'no',colTesta:'bianco',maglia:'polo',colMaglia:'blu',sfondo:'blu',dettagli:'',seed:Math.floor(Math.random()*90000)+1000};}
+function aiPrompt(a){
+  // prima le cose che si vedono di più (copricapo, occhiali, maglia): i modelli danno più peso alle prime parole
+  const parts=[`photo of an italian ${_aiE('sesso',a.sesso)} tennis player aged ${a.eta}`];
+  if(a.testa!=='no')parts.push(_aiE('testa',a.testa).replace('{c}',_aiCol(a.colTesta)));
+  parts.push(_aiE('occhiali',a.occhiali),`wearing a ${_aiCol(a.colMaglia)} ${_aiE('maglia',a.maglia)}`);
+  const cap=_aiE('capelli',a.capelli);parts.push(a.capelli==='pelato'?cap:`${_aiE('colCap',a.colCap)} ${cap}`);
+  if(a.sesso==='uomo'||a.barba!=='no'){const b=_aiE('barba',a.barba),bc=_aiE('colBarba',a.colBarba);parts.push(a.barba!=='no'&&bc?`${bc} ${b}`:b);}
+  parts.push(_aiE('corpo',a.corpo),_aiE('viso',a.viso),_aiE('pelle',a.pelle),_aiE('occhi',a.occhi),_aiE('espr',a.espr));
+  if(a.dettagli&&a.dettagli.trim())parts.push(a.dettagli.trim());
+  parts.push('head and shoulders portrait, centered, looking at the camera',_aiE('sfondo',a.sfondo),'soft natural studio lighting, sharp focus, realistic skin texture, photorealistic photo, 85mm lens');
+  return parts.filter(Boolean).join(', ');
+}
+let _ai=null;
+function openAiAvatar(id){
+  const p=players.find(x=>x.id===id);if(!p||_checkViewer())return;
+  let saved=null;try{saved=fotoAi[id]?JSON.parse(fotoAi[id]):null;}catch(e){}
+  _ai={id,a:saved||aiDefault(p),tab:0,img:null,busy:false,wait:0,msg:''};
+  let el=document.getElementById('ai-editor');
+  if(!el){el=document.createElement('div');el.id='ai-editor';el.className='ave-bg';document.body.appendChild(el);}
+  el.classList.add('open');_aiRender();
+}
+const _AI_TABS=[
+  ['Persona',[['sesso','Sesso'],['eta','Età'],['corpo','Corporatura'],['viso','Viso'],['pelle','Carnagione'],['espr','Espressione']]],
+  ['Capelli',[['capelli','Taglio'],['colCap','Colore']]],
+  ['Barba e occhi',[['barba','Barba e baffi'],['colBarba','Colore della barba'],['occhi','Occhi'],['occhiali','Occhiali']]],
+  ['Testa',[['testa','Cappellino, fascia…'],['colTesta','Colore','col']]],
+  ['Maglia',[['maglia','Tipo'],['colMaglia','Colore','col'],['sfondo','Sfondo']]],
+  ['Dettagli',[['dettagli','Dettagli in più (facoltativo)','txt']]],
+];
+function _aiRender(){
+  const el=document.getElementById('ai-editor'),p=players.find(x=>x.id===_ai.id),a=_ai.a;
+  const cur=_ai.img||phUrl(p);
+  const sec=_AI_TABS[_ai.tab][1].map(([k,l,t])=>`<div class="ave-sec"><div class="ave-lb">${l}</div>${
+    t==='col'?`<div class="ave-sw">${_COL.map(([v,n,hex])=>`<button type="button" class="ave-c${a[k]===v?' on':''}" data-k="${k}" data-v="${v}" style="background:${hex}" title="${n}" aria-label="${n}"></button>`).join('')}</div>`
+    :t==='txt'?`<textarea id="ai-det" class="ai-txt" rows="3" placeholder="Es.: naso pronunciato, lentiggini, sopracciglia folte, orecchino">${esc(a.dettagli||'')}</textarea><div class="ai-note">Scrivi cose semplici. Funziona meglio con poche parole precise.</div>`
+    :`<div class="ave-ch">${AIO[k].map(([v,lab])=>`<button type="button" class="${a[k]===v?'on':''}" data-k="${k}" data-v="${v}">${lab}</button>`).join('')}</div>`}</div>`).join('');
+  el.innerHTML=`<div class="ave-box">
+    <div class="ave-top"><div class="ai-prev">${cur?`<img src="${cur}" alt="Anteprima">`:''}${_ai.busy?'<div class="ai-spin"><i></i><span>Sto creando la foto…</span></div>':''}</div>
+      <div class="ave-ttl"><b>${esc(dispName(p.nome))}</b><span>Avatar realistico</span>
+        <div class="ave-act"><button type="button" class="ai-go" data-a="gen"${_ai.busy||_ai.wait?' disabled':''}>${_ai.wait?`⏳ Attendi ${_ai.wait}s`:'✨ Genera'}</button><button type="button" data-a="new"${_ai.busy||_ai.wait?' disabled':''}>🔄 Nuovo volto</button></div>
+        <div class="ai-msg">${_ai.msg||'Scegli le caratteristiche e premi Genera.'}</div></div>
+      <button type="button" class="ave-x" data-a="close" aria-label="Chiudi">✕</button></div>
+    <div class="ave-tabs">${_AI_TABS.map(([t],i)=>`<button type="button" class="${i===_ai.tab?'on':''}" data-tab="${i}">${t}</button>`).join('')}</div>
+    <div class="ave-body">${sec}</div>
+    <div class="ave-ft"><button type="button" class="btn btn-g" data-a="close">Chiudi</button><button type="button" class="btn btn-p" data-a="save"${_ai.img&&!_ai.busy?'':' disabled'}>💾 Usa questa foto</button></div></div>`;
+  const ta=el.querySelector('#ai-det');if(ta)ta.oninput=()=>{_ai.a.dettagli=ta.value;};
+  el.onclick=e=>{
+    if(e.target===el){el.classList.remove('open');return;}
+    const b=e.target.closest('button');if(!b||b.disabled)return;
+    if(b.dataset.tab!=null){_ai.tab=+b.dataset.tab;_aiRender();return;}
+    if(b.dataset.k){_ai.a[b.dataset.k]=b.dataset.v;_aiRender();return;}
+    const act=b.dataset.a;
+    if(act==='close'){el.classList.remove('open');return;}
+    if(act==='new'){_ai.a.seed=Math.floor(Math.random()*90000)+1000;_aiGen();return;}
+    if(act==='gen'){_aiGen();return;}
+    if(act==='save')_aiSave();
+  };
+}
+// attesa tra una foto e l'altra: aggiorna solo i bottoni (non ridisegna, così non si perde quello che si sta scrivendo)
+function _aiBtns(){const el=document.getElementById('ai-editor');if(!el)return;const g=el.querySelector('[data-a="gen"]'),n=el.querySelector('[data-a="new"]');
+  if(g){g.disabled=!!(_ai.busy||_ai.wait);g.textContent=_ai.wait?`⏳ Attendi ${_ai.wait}s`:'✨ Genera';}if(n)n.disabled=!!(_ai.busy||_ai.wait);}
+let _aiTimer=null;
+function _aiCountdown(s){_ai.wait=s;_aiRender();clearInterval(_aiTimer);_aiTimer=setInterval(()=>{if(!_ai){clearInterval(_aiTimer);return;}_ai.wait=Math.max(0,_ai.wait-1);_aiBtns();if(!_ai.wait)clearInterval(_aiTimer);},1000);}
+async function _aiGen(){
+  if(!_ai||_ai.busy)return;
+  _ai.busy=true;_ai.msg='Ci vogliono da 5 a 30 secondi.';_aiRender();
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(aiPrompt(_ai.a))}?width=512&height=512&nologo=true&seed=${_ai.a.seed}`;
+  try{
+    const r=await fetch(url);const ct=r.headers.get('content-type')||'';
+    if(!r.ok||!ct.startsWith('image/')){let s=45;try{const j=await r.json();const m=String(j&&j.error&&j.error.message||'').match(/(\d+)\s*s/);if(m)s=+m[1]+2;}catch(e){}
+      _ai.busy=false;_ai.msg='Il servizio gratuito crea una foto ogni 45 secondi: riprova tra poco.';_aiCountdown(s);return;}
+    const blob=await r.blob(),bmp=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(blob);});
+    // ritaglio quadrato sul volto (esclude il logo in basso a destra) e riduco a 220 px
+    const S=220,cv=document.createElement('canvas');cv.width=cv.height=S;const x=cv.getContext('2d');
+    const w=bmp.naturalWidth,h=bmp.naturalHeight,cs=Math.round(Math.min(w,h)*.76),cx=Math.round((w-cs)/2),cy=Math.round(h*.03);
+    x.drawImage(bmp,cx,cy,cs,cs,0,0,S,S);URL.revokeObjectURL(bmp.src);
+    _ai.img=cv.toDataURL('image/jpeg',.82);_ai.busy=false;_ai.msg='Ti piace? Premi “Usa questa foto”. Altrimenti cambia qualcosa e rigenera.';_aiCountdown(45);
+  }catch(e){_ai.busy=false;_ai.msg='Non riesco a contattare il servizio. Controlla la connessione e riprova.';_aiRender();}
+}
+function _aiSave(){
+  const id=_ai.id,u=_ai.img,p=players.find(x=>x.id===id);if(!u)return;
+  try{localStorage.setItem('laurera_ph_'+id,u);}catch(e){}
+  fotoData[id]=u;fotoAi[id]=JSON.stringify(_ai.a);
+  _doc('foto').set({ph:{[id]:u},ai:{[id]:fotoAi[id]}},{merge:true}).then(()=>toast('✅ Avatar salvato')).catch(er=>toast('⚠️ Avatar non salvato online: '+(er&&er.message||'errore')));
+  addLog('📸',`Avatar realistico di ${p?p.nome:id}`);
+  document.getElementById('ai-editor').classList.remove('open');_avRefresh(id);
 }
 function avHtmlBig(p){return p&&phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p?p.nome:'?'))}</span>`;}
 // ordine alfabetico per cognome, poi per nome
@@ -5736,7 +5861,7 @@ document.body.dataset.tab=currentTab;initTheme();initAdmin();fillNazList();
   });
   _doc('foto').onSnapshot(snap=>{
     if(snap.metadata.hasPendingWrites)return;
-    fotoData=(snap.exists&&snap.data().ph)||{};
+    fotoData=(snap.exists&&snap.data().ph)||{};fotoAi=(snap.exists&&snap.data().ai)||{};
     Object.keys(fotoData).forEach(id=>{try{localStorage.setItem('laurera_ph_'+id,fotoData[id]);}catch(e){}});
     if(!snap.metadata.fromCache){_fotoOnline=true;
       try{Object.keys(localStorage).filter(k=>k.startsWith('laurera_ph_')&&!fotoData[k.slice(11)]).forEach(k=>localStorage.removeItem(k));}catch(e){}}
