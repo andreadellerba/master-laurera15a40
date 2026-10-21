@@ -3013,12 +3013,16 @@ function lavSvg(c){
     +`<pattern id="rz" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".7" fill="${_lc(hc,-20)}" opacity=".7"/></pattern>`
     +`<linearGradient id="fd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sk}" stop-opacity="0"/><stop offset="1" stop-color="${sk}" stop-opacity=".95"/></linearGradient>`;
   const H='url(#hg)';
+  // forma dei capelli rasati: segue il cranio (coordinate per testa larga 36, poi adattata al viso)
+  const BUZZ='M63.6 92C63.6 57.6 77.6 45.6 100 45.6C122.4 45.6 136.4 57.6 136.4 92L134.2 92C133.4 83 131.6 75.5 127.6 70.4C121 65.4 108.4 64.2 100 64.6C91.6 64.2 79 65.4 72.4 70.4C68.4 75.5 66.6 83 65.8 92Z';
+  defs+=`<pattern id="bz2" width="6" height="5.6" patternUnits="userSpaceOnUse" patternTransform="rotate(17)">${[[.6,.9],[2.3,.4],[4.1,1.3],[5.4,.2],[1.4,2.5],[3.3,3],[5,3.6],[.4,4.4],[2.4,4.9],[4.4,5.2]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r=".33" fill="${_lc(hc,25)}"/>`).join('')}</pattern><mask id="bzm"><path d="${BUZZ}" fill="#fff" filter="url(#bzb)"/></mask><filter id="bzb" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="1.3"/></filter>`;
   // ── capelli: parte dietro (passa dietro collo e spalle) e parte davanti ──
   const C=(x,y,r)=>`<circle cx="${x}" cy="${y}" r="${r}" fill="FILL"/>`;
   const capBase=`<path d="M62 96C56 52 80 34 100 34C120 34 144 52 138 96C136 80 132 72 126 68C116 64 84 64 74 68C68 72 64 80 62 96Z" fill="FILL"/>`;
   const hairs={
     corti:{f:capBase},
-    rasato:{f:`<path d="M63 92C59 54 80 38 100 38C120 38 141 54 137 92C135 80 131 73 125 70C116 67 84 67 75 70C69 73 65 80 63 92Z" fill="FILL" opacity=".55"/><path d="M63 92C59 54 80 38 100 38C120 38 141 54 137 92C135 80 131 73 125 70C116 67 84 67 75 70C69 73 65 80 63 92Z" fill="url(#rz)"/>`},
+    // rasati: aderenti al cranio (non sporgono), attaccatura sfumata, pelo fine
+    rasato:{f:`<g mask="url(#bzm)"><path d="${BUZZ}" fill="${hc}" opacity=".5"/><path d="${BUZZ}" fill="url(#bz2)"/></g>`},
     spazzola:{f:`<path d="M62 94C58 64 66 50 72 46L72 36L80 42L84 30L91 40L97 27L103 39L110 28L115 40L122 32L126 44L130 40C138 52 142 70 138 94C136 80 132 72 126 68C116 64 84 64 74 68C68 72 64 80 62 94Z" fill="FILL"/>`},
     ciuffo:{f:capBase+`<path d="M72 70C66 50 80 32 100 30C118 22 138 32 136 48C134 58 122 62 110 66C98 70 84 72 72 70Z" fill="FILL"/>`},
     riga:{f:`<path d="M62 96C56 52 80 34 100 34C120 34 144 52 138 96C136 80 130 70 120 66C110 63 98 66 86 72C80 66 72 70 66 80C64 84 63 90 62 96Z" fill="FILL"/>`,x:`<path d="M86 38Q83 56 86 72" stroke="${_lc(hc,30)}" stroke-width="1.6" fill="none"/>`},
@@ -3027,7 +3031,7 @@ function lavSvg(c){
     mossi:{b:`<path d="M58 88C52 104 54 118 62 124L68 100Z" fill="FILL"/><path d="M142 88C148 104 146 118 138 124L132 100Z" fill="FILL"/>`,f:`<path d="M60 104C52 52 80 32 100 32C122 32 148 52 140 104C138 92 136 84 130 80C128 74 120 70 112 72C114 78 110 82 104 82C104 74 96 70 86 72C76 72 66 80 60 104Z" fill="FILL"/>`},
     ricci:{f:[[70,82],[70,68],[78,56],[90,48],[104,46],[117,50],[127,59],[132,72],[134,86],[66,94],[86,58],[100,56],[114,60],[76,72],[124,72],[96,64],[110,66]].map(([x,y])=>C(x,y,11.5)).join('')},
     ricciCorti:{f:capBase+[[72,70],[80,58],[92,51],[106,50],[118,56],[128,66],[86,64],[100,60],[114,63]].map(([x,y])=>C(x,y,7.5)).join('')},
-    cresta:{f:`<g opacity=".4">${capBase}</g><path d="M84 72C80 46 90 24 100 22C110 24 120 46 116 72C110 66 90 66 84 72Z" fill="FILL"/>`},
+    cresta:{f:`<g mask="url(#bzm)"><path d="${BUZZ}" fill="${hc}" opacity=".42"/><path d="${BUZZ}" fill="url(#bz2)"/></g><path d="M88 67C86 55 90 41 100 37C110 41 114 55 112 67C107 64.5 93 64.5 88 67Z" fill="FILL"/>`},
     codino:{f:C(100,30,12)+`<path d="M63 92C58 50 80 34 100 34C120 34 142 50 137 92C135 72 128 62 116 58C108 56 92 56 84 58C72 62 65 72 63 92Z" fill="FILL"/>`},
     stempiato:{f:`<path d="M62 96C56 52 80 34 100 34C120 34 144 52 138 96C136 82 134 70 128 58C122 64 120 70 114 68C108 62 92 62 86 68C80 70 78 64 72 58C66 70 64 82 62 96Z" fill="FILL"/>`},
     chierica:{f:`<path d="M62 98C58 82 60 70 66 62L71 66C67 74 66 86 67 99Z" fill="FILL"/><path d="M138 98C142 82 140 70 134 62L129 66C133 74 134 86 133 99Z" fill="FILL"/>`,shine:1},
@@ -3092,15 +3096,39 @@ function lavSvg(c){
     largo:`<path d="M99 100Q97 109 95 111Q92 115 96 116Q100 118 104 116Q108 115 105 111" stroke="${ns}" stroke-width="1.8" fill="none" stroke-linecap="round"/>`}[c.naso]||'';
   const noseSh=`<ellipse cx="101" cy="112" rx="6" ry="3" fill="${_lc(sk,22)}" opacity=".35"/>`;
   // bocca
-  const lip='#b0544a',M=Math.min(126,cy-14);
-  const mouth={sorriso:`<path d="M88 ${M-2}Q100 ${M+7} 112 ${M-2}" stroke="${lip}" stroke-width="2.6" fill="none" stroke-linecap="round"/><path d="M94 ${M+4}Q100 ${M+6.5} 106 ${M+4}" stroke="${_lc(sk,30)}" stroke-width="1.4" fill="none" opacity=".6"/>`,
-    aperto:`<path d="M87 ${M-3}Q100 ${M+12} 113 ${M-3}Z" fill="#6b2a24"/><path d="M89 ${M-2.2}Q100 ${M+2} 111 ${M-2.2}L111 ${M-.6}Q100 ${M+4.5} 89 ${M-.6}Z" fill="#fff"/>`,
-    mezzo:`<path d="M90 ${M}Q101 ${M+3} 111 ${M-4}" stroke="${lip}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-    serio:`<path d="M91 ${M}Q100 ${M+1.5} 109 ${M}" stroke="${lip}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
-    sottile:`<path d="M90 ${M}Q100 ${M+2.5} 110 ${M}" stroke="${lip}" stroke-width="1.7" fill="none" stroke-linecap="round"/>`}[c.bocca]||'';
+  // bocca con le labbra: linea della bocca, labbro superiore sottile, inferiore più pieno con riflesso, angoli in ombra
+  const M=Math.min(126,cy-14),P=v=>+v.toFixed(2);
+  const qy=(x0,y0,q1,x1,y1,x)=>{const t=Math.max(0,Math.min(1,(x-x0)/(x1-x0)));return(1-t)*(1-t)*y0+2*t*(1-t)*q1+t*t*y1;};
+  const bk=c.bocca||'sorriso',thin=bk==='sottile';
+  const MG={sorriso:[88.5,111.5,M-1.4,M+4.6],aperto:[87.5,112.5,M-2,M+1.4],mezzo:[90,111,M+.2,M+2.4,M-3.2],serio:[91,109,M+.4,M+.9],sottile:[89,111,M-.6,M+3]}[bk]||[88.5,111.5,M-1.4,M+4.6];
+  const [mxL,mxR]=MG,mHw=(mxR-mxL)/2,mc=(mxL+mxR)/2;
+  const mLine=x=>qy(mxL,MG[2],MG[3],mxR,MG[4]!=null?MG[4]:MG[2],x);   // linea tra le labbra (per "aperto": bordo dei denti)
+  const mOpen=x=>bk==='aperto'?qy(mxL,M-2,M+11,mxR,M-2,x):mLine(x);    // bordo alto del labbro inferiore
+  const fr=(x,p)=>Math.pow(Math.max(0,1-Math.pow((x-mc)/mHw,2)),p);
+  const UH=thin?1.5:2.5,LH=thin?2.2:3.7;
+  const mUp=x=>mLine(x)-UH*fr(x,.7)+(Math.abs(x-mc)<2.2?.55*(1-Math.abs(x-mc)/2.2):0);   // bordo alto del labbro superiore (con l'arco di cupido)
+  const mLow=x=>mOpen(x)+LH*fr(x,.6);                                                  // bordo basso del labbro inferiore
+  const xs=Array.from({length:15},(_,i)=>mxL+(mxR-mxL)*i/14),pl=(f,a)=>a.map(x=>`${P(x)} ${P(f(x))}`).join('L');
+  // colore delle labbra: la pelle spostata verso il rosa scuro
+  const lipC=c.rossetto?'#b3263a':'#'+[1,3,5].map(i=>{const a=parseInt(sk.slice(i,i+2),16),b=parseInt('b8504a'.slice(i-1,i+1),16);return Math.round(a+(b-a)*.46).toString(16).padStart(2,'0');}).join('');
+  const ms=_lc(sk,48);
+  let mouth=``
+    +`<path d="M${P(mc-1.2)} ${P(mUp(mc)-4.2)}L${P(mc-1.05)} ${P(mUp(mc-1.05)-.4)}M${P(mc+1.2)} ${P(mUp(mc)-4.2)}L${P(mc+1.05)} ${P(mUp(mc+1.05)-.4)}" stroke="${ms}" stroke-width=".8" opacity=".12"/>`;   // solco sopra il labbro
+  if(bk==='aperto'){
+    mouth+=`<path d="M${pl(mLine,xs)}L${pl(mOpen,[...xs].reverse())}Z" fill="#5a1d18"/>`
+      +`<path d="M${pl(mLine,xs)}L${pl(x=>Math.min(mLine(x)+3.4,mOpen(x)),[...xs].reverse())}Z" fill="#f3efe7"/>`
+      +`<path d="M${P(mc-4.2)} ${P(mLine(mc-4.2))}V${P(mLine(mc-4.2)+3)}M${P(mc)} ${P(mLine(mc)+.2)}V${P(mLine(mc)+3.2)}M${P(mc+4.2)} ${P(mLine(mc+4.2))}V${P(mLine(mc+4.2)+3)}" stroke="#d8d0c4" stroke-width=".5"/>`;
+  }
+  mouth+=`<path d="M${pl(mLine,xs)}L${pl(mUp,[...xs].reverse())}Z" fill="${_lc(lipC,16)}"/>`
+    +`<path d="M${pl(mOpen,xs)}L${pl(mLow,[...xs].reverse())}Z" fill="${lipC}"/>`
+    +`<ellipse cx="${P(mc)}" cy="${P(mOpen(mc)+LH*.45)}" rx="3.6" ry=".95" fill="#fff" opacity=".28"/>`
+    +(bk==='aperto'?'':`<path d="M${pl(mLine,xs)}" stroke="#6b2a24" stroke-width="1.05" fill="none" stroke-linecap="round" opacity=".9"/>`)
+    +`<circle cx="${P(mxL-.6)}" cy="${P(mLine(mxL))}" r="1.1" fill="${ms}" opacity=".35"/><circle cx="${P(mxR+.6)}" cy="${P(mLine(mxR))}" r="1.1" fill="${ms}" opacity=".35"/>`
+    +`<ellipse cx="${P(mc)}" cy="${P(mLow(mc)+1.7)}" rx="5" ry="1.2" fill="${ms}" opacity=".18"/>`;   // ombra sotto il labbro
   // ── barba: segue la mascella, bordi "pelosi", trama dei peli, sfuma nella pelle sulle guance ──
   const X=d=>+(100+d).toFixed(2),jy=f.sq?126:116;
-  defs+=`<filter id="fur" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="1" seed="4" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="2.2" xChannelSelector="R" yChannelSelector="G"/></filter>`
+  defs+=`<filter id="fur2" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="7" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="1" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur in="d" stdDeviation=".45"/></filter>`
+    +`<filter id="fur" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="1" seed="4" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="2.2" xChannelSelector="R" yChannelSelector="G"/></filter>`
     +`<filter id="bl1" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation=".8"/></filter><filter id="bl2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.8"/></filter><filter id="bl4" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.5"/></filter>`
     +`<linearGradient id="bgr" x1="0" y1="90" x2="0" y2="${cy+20}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${_lc(bc,-14)}"/><stop offset=".55" stop-color="${bc}"/><stop offset="1" stop-color="${_lc(bc,28)}"/></linearGradient>`
     +`<pattern id="bst" width="7" height="6.6" patternUnits="userSpaceOnUse" patternTransform="rotate(11)">${[[.8,1.1,.45],[3.4,.6,.38],[5.6,2.2,.42],[2.1,3.5,.4],[4.6,4.6,.36],[6.3,5.6,.4],[1.2,5.8,.38],[3.9,2.7,.3]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${_lc(bc,10)}"/>`).join("")}</pattern>`
@@ -3110,28 +3138,38 @@ function lavSvg(c){
   const bOut=e=>`M${L+1} 84L${L+1} 92C${+(L+1-e*.15).toFixed(2)} ${jy+e*.3} ${+(100-f.jw-e*.5).toFixed(2)} ${cy-6+e} 100 ${+(cy+e*1.05).toFixed(2)}C${+(100+f.jw+e*.5).toFixed(2)} ${cy-6+e} ${+(R-1+e*.15).toFixed(2)} ${jy+e*.3} ${R-1} 92L${R-1} 84`;
   const bIn=`C${R-5} 96 ${R-9} 106 ${R-13} 112C${R-17} 116 ${X(14)} ${M-6} ${X(12)} ${M-8}C${X(8)} ${M-11} ${X(3)} ${M-10.5} 100 ${M-9.5}C${X(-3)} ${M-10.5} ${X(-8)} ${M-11} ${X(-12)} ${M-8}C${X(-14)} ${M-6} ${L+17} 116 ${L+13} 112C${L+9} 106 ${L+5} 96 ${L+1} 84Z`;
   const bFull=e=>bOut(e)+bIn;
-  const must=`M${X(-15)} ${M-1.5}C${X(-12)} ${M-8.5} ${X(-4)} ${M-10} 100 ${M-8}C${X(4)} ${M-10} ${X(12)} ${M-8.5} ${X(15)} ${M-1.5}C${X(9)} ${M-4.5} ${X(4)} ${M-4} 100 ${M-4.6}C${X(-4)} ${M-4} ${X(-9)} ${M-4.5} ${X(-15)} ${M-1.5}Z`;
-  const goat=`M${X(-11)} ${M+5.5}C${X(-6)} ${M+3.5} ${X(6)} ${M+3.5} ${X(11)} ${M+5.5}C${X(12)} ${cy-5} ${X(7)} ${cy+2} 100 ${cy+3}C${X(-7)} ${cy+2} ${X(-12)} ${cy-5} ${X(-11)} ${M+5.5}Z`;
-  const soul=`M${X(-3)} ${M+5}Q100 ${M+4} ${X(3)} ${M+5}L${X(1.5)} ${M+10}Q100 ${M+11} ${X(-1.5)} ${M+10}Z`;
-  const ring=`M${X(-15)} ${M-1.5}C${X(-17)} ${M+4} ${X(-14)} ${cy-6} ${X(-9)} ${cy}C${X(-5)} ${cy+3} ${X(5)} ${cy+3} ${X(9)} ${cy}C${X(14)} ${cy-6} ${X(17)} ${M+4} ${X(15)} ${M-1.5}C${X(13)} ${M+3} ${X(12)} ${M+7} ${X(9)} ${M+8}C${X(5)} ${M+9} ${X(-5)} ${M+9} ${X(-9)} ${M+8}C${X(-12)} ${M+7} ${X(-13)} ${M+3} ${X(-15)} ${M-1.5}Z`;
+  // baffi e pizzetto costruiti sulla bocca: seguono la curva del sorriso senza toccarla
+  const mTop=mUp,mh=mHw+1.6;
+  const mustPts=[];for(let i=0;i<=14;i++)mustPts.push(mxL-1.6+(mxR-mxL+3.2)*i/14);
+  const mBot=x=>mTop(Math.max(mxL,Math.min(mxR,x)))-1.1,mTh=x=>2+4.4*Math.max(0,1-Math.pow((x-mc)/mh,2));
+  const must='M'+mustPts.map(x=>`${P(x)} ${P(mBot(x))}`).join('L')+'L'+[...mustPts].reverse().map(x=>`${P(x)} ${P(mBot(x)-mTh(x)-(Math.abs(x-mc)<1.2?-.6:0))}`).join('L')+'Z';
+  const gTop=x=>mLow(x)+2.2,gy0=gTop(100),gBot=Math.min(cy-3.4,gy0+5.6),gL=X(-5.2),gR=X(5.2);
+  const goat=`M${gL} ${P(gTop(gL))}`+[-2.6,0,2.6,5.2].map(d=>`L${X(d)} ${P(gTop(X(d)))}`).join('')+`C${X(6.2)} ${P(gTop(gR)+2.4)} ${X(5.4)} ${P(gBot-2)} ${X(3.4)} ${P(gBot-.4)}C${X(1.8)} ${P(gBot+.5)} ${X(-1.8)} ${P(gBot+.5)} ${X(-3.4)} ${P(gBot-.4)}C${X(-5.4)} ${P(gBot-2)} ${X(-6.2)} ${P(gTop(gL)+2.4)} ${gL} ${P(gTop(gL))}Z`;
+  const soul='';
+  // a cerchio: baffo e pizzetto uniti da due strisce sottili che girano attorno agli angoli della bocca
+  const rs=s=>{const xe=s<0?mxL:mxR,o=s*1.4,w=s*1.9,gx=X(s*4.6),gy=gTop(gx);return`M${P(xe+o)} ${P(mBot(xe)-.6)}C${P(xe+o+s*1.6)} ${P(mBot(xe)+5)} ${P(xe+o)} ${P(gy+2.6)} ${gx} ${P(gy+1)}L${gx} ${P(gy+2.8)}C${P(xe+o+w)} ${P(gy+4.2)} ${P(xe+o+w+s*1.6)} ${P(mBot(xe)+5)} ${P(xe+o+w)} ${P(mBot(xe)-.6)}Z`;};
+  const ring=rs(-1)+rs(1);
   const strap=bOut(1)+`C${R-6} 96 ${R-7} 110 ${R-9} 118C${R-12} 128 ${X(f.jw-4)} ${cy-10} 100 ${cy-3}C${X(-f.jw+4)} ${cy-10} ${L+12} 128 ${L+9} 118C${L+7} 110 ${L+6} 96 ${L+1} 84Z`;
   const burns=`M${L+1} 82L${L+7.5} 82C${L+8} 92 ${L+8.5} 102 ${L+7} 112L${L+1.5} 108ZM${R-1} 82L${R-7.5} 82C${R-8} 92 ${R-8.5} 102 ${R-7} 112L${R-1.5} 108Z`;
   // dense = barba piena con trama; stub = solo pelo corto (puntini)
   const dense=(d,op=1)=>`<g filter="url(#fur)" opacity="${op}"><path d="${d}" fill="url(#bgr)"/><path d="${d}" fill="url(#bsn)"/></g>`;
+  // pezzi piccoli (baffi, pizzetto): bordo morbido senza deformarli
+  const fine=(d,op=.9,fl="url(#bgr)")=>`<g filter="url(#fur2)" opacity="${op}"><path d="${d}" fill="${fl}"/><path d="${d}" fill="url(#bsn)"/></g>`;
+  defs+=`<linearGradient id="bgg" x1="0" y1="${P(gy0-1)}" x2="0" y2="${P(gBot)}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${bc}" stop-opacity=".35"/><stop offset=".45" stop-color="${bc}" stop-opacity=".9"/><stop offset="1" stop-color="${_lc(bc,18)}"/></linearGradient>`;
   const stub=(d,op)=>`<path d="${d}" fill="${bc}" opacity="${op*.28}" filter="url(#bl1)"/><path d="${d}" fill="url(#bst)" opacity="${op}"/>`;
   const chinSh=e=>`<path d="M${X(-f.jw+2)} ${cy-8+e}Q100 ${cy+6+e*1.1} ${X(f.jw-2)} ${cy-8+e}" stroke="#000" stroke-width="5" fill="none" opacity=".2" filter="url(#bl2)"/>`;
   const bt=c.barba||'no';
   const beard={no:'',
     accenno:`<g mask="url(#bmk)">${stub(bFull(0),.75)}</g>`,
-    corta:`<g mask="url(#bmk)">${stub(bFull(0),.9)}${dense(bFull(1),.6)}</g>${dense(must,.8)}`,
-    incolta:`<g mask="url(#bmk)">${stub(bFull(1),1)}${dense(bFull(3),.75)}</g>${dense(must,.9)}`,
-    piena:`<g mask="url(#bmk)">${stub(bFull(1),1)}${dense(bFull(4))}${chinSh(4)}</g>${dense(must)}`,
-    lunga:`<g mask="url(#bmk)">${stub(bFull(2),1)}${dense(bFull(20))}${chinSh(20)}</g>${dense(must)}`,
-    pizzetto:`<g mask="url(#bmk)">${stub(bFull(0),.35)}</g>${dense(goat)}`,
-    cerchio:`<g mask="url(#bmk)">${stub(bFull(0),.35)}</g>${dense(ring)}${dense(must)}`,
-    baffi:`<g mask="url(#bmk)">${stub(bFull(0),.3)}</g>${dense(must)}`,
-    baffiPizzetto:`<g mask="url(#bmk)">${stub(bFull(0),.35)}</g>${dense(must)}${dense(goat,.95)}${dense(soul)}`,
-    mento:`<g mask="url(#bmk)">${stub(bFull(0),.3)}</g>${dense(strap)}`,
+    corta:`<g mask="url(#bmk)">${stub(bFull(0),.9)}${dense(bFull(1),.6)}</g>${fine(must,.85)}`,
+    incolta:`<g mask="url(#bmk)">${stub(bFull(1),1)}${dense(bFull(3),.75)}</g>${fine(must,.95)}`,
+    piena:`<g mask="url(#bmk)">${stub(bFull(1),1)}${dense(bFull(4))}${chinSh(4)}</g>${fine(must)}`,
+    lunga:`<g mask="url(#bmk)">${stub(bFull(2),1)}${dense(bFull(20))}${chinSh(20)}</g>${fine(must)}`,
+    pizzetto:fine(goat,.92,"url(#bgg)"),
+    cerchio:fine(must)+fine(ring,.8)+fine(goat,.92,"url(#bgg)"),
+    baffi:fine(must),
+    baffiPizzetto:fine(must)+fine(goat,.92,"url(#bgg)"),
+    mento:dense(strap),
     basette:dense(burns,.95)}[bt]||'';
   // ── occhiali: montatura sottile, lenti con riflesso, ombra sul viso ──
   const gx1=+(100-ex).toFixed(2),gx2=+(100+ex).toFixed(2),arm=(dy=0)=>`M${gx1-10.5} ${E-2+dy}L${L+1} ${E-4}M${gx2+10.5} ${E-2+dy}L${R-1} ${E-4}`;
