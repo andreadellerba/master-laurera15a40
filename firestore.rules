@@ -15,29 +15,37 @@ service cloud.firestore {
                    && docId in ['main', 'tornei', 'fanta', 'albo', 'log', 'foto'];
     }
 
-    // Visite anonime: ogni telefono scrive solo il proprio contatore (nessun login),
-    // solo l'admin può leggere, dare un nome al telefono o cancellare.
+    // Visite anonime: ogni dispositivo scrive solo il proprio contatore (nessun login),
+    // solo l'admin può leggere, dire di chi è il dispositivo o cancellarlo.
     match /clubs/{clubId}/visite/{devId} {
       allow read, delete: if request.auth != null;
 
+      // nuovo dispositivo (o dispositivo tolto dalla lista che torna): contatore a 1
       allow create: if devId.size() == 24
-                    && request.resource.data.keys().hasOnly(['first', 'last', 'n', 'dev'])
-                    && request.resource.data.first == request.time
+                    && request.resource.data.keys().hasOnly(['first', 'last', 'n', 'dev', 'br', 'app', 'days'])
+                    && request.resource.data.get('first', request.time) == request.time
                     && request.resource.data.last == request.time
                     && request.resource.data.n == 1
-                    && request.resource.data.dev is string && request.resource.data.dev.size() <= 20;
+                    && request.resource.data.dev is string && request.resource.data.dev.size() <= 20
+                    && request.resource.data.get('br', '') is string && request.resource.data.get('br', '').size() <= 20
+                    && request.resource.data.get('app', false) is bool
+                    && request.resource.data.get('days', {}) is map && request.resource.data.get('days', {}).size() <= 1;
 
-      // visitatore: aggiorna solo ora e contatore (+1), il resto resta com'è
+      // visitatore: aggiorna ora, contatore (+1), tipo di dispositivo/browser e visite del giorno
       allow update: if request.auth == null
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['last', 'n', 'dev'])
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['last', 'n', 'dev', 'br', 'app', 'days'])
                     && request.resource.data.last == request.time
                     && request.resource.data.n == resource.data.n + 1
-                    && request.resource.data.dev is string && request.resource.data.dev.size() <= 20;
+                    && request.resource.data.dev is string && request.resource.data.dev.size() <= 20
+                    && request.resource.data.get('br', '') is string && request.resource.data.get('br', '').size() <= 20
+                    && request.resource.data.get('app', false) is bool
+                    && request.resource.data.get('days', {}) is map && request.resource.data.get('days', {}).size() <= 400;
 
-      // admin: può solo cambiare il nome del telefono
+      // admin: può solo dire di chi è il dispositivo (giocatore e/o nome)
       allow update: if request.auth != null
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nome'])
-                    && request.resource.data.nome is string && request.resource.data.nome.size() <= 40;
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nome', 'pid'])
+                    && request.resource.data.get('nome', '') is string && request.resource.data.get('nome', '').size() <= 40
+                    && (request.resource.data.get('pid', 0) is int || request.resource.data.get('pid', 0) is float);
     }
 
     // Tutto il resto: negato di default.

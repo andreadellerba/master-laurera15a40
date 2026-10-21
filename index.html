@@ -1950,6 +1950,26 @@ html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:#0e1c
 .ave-c{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.25);cursor:pointer;color:#fff;font:800 14px "DM Sans",sans-serif;background:#172a4b;padding:0}
 .ave-c.on{outline:3px solid #e8ff00;outline-offset:2px}
 .ave-ft{display:flex;gap:8px;justify-content:flex-end;padding:10px 14px 12px;border-top:1px solid rgba(255,255,255,.08);flex:none}
+.vis-chart{background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:10px 10px 6px;margin-bottom:10px}
+.vis-ch-t{font:800 10px "DM Sans",sans-serif;letter-spacing:.6px;text-transform:uppercase;color:var(--text2);margin-bottom:6px}
+.vis-ch{display:flex;align-items:flex-end;gap:4px;height:84px}
+.vis-b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0}
+.vis-b b{display:block;width:100%;max-width:22px;min-height:2px;border-radius:5px 5px 2px 2px;background:#38bdf8}
+.vis-b.on b{background:#e8ff00}
+.vis-b i{font:700 9.5px "DM Sans",sans-serif;font-style:normal;color:var(--text2);margin-bottom:2px}
+.vis-b span{font:600 9.5px "DM Sans",sans-serif;color:var(--text2);margin-top:3px}
+.vis-ch-n{font-size:11px;color:var(--text2);margin-top:6px}
+.vis-tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.vis-seg{display:flex;gap:3px;background:var(--bg4);border:1px solid var(--border);border-radius:999px;padding:3px}
+.vis-seg button,.vis-chip{border:0;background:transparent;color:var(--text2);font:700 12px "DM Sans",sans-serif;padding:6px 11px;border-radius:999px;cursor:pointer}
+.vis-seg button.on{background:#e8ff00;color:#111}
+.vis-chip{border:1px solid var(--border2);background:var(--bg4)}.vis-chip.on{border-color:#e8ff00;color:#e8ff00}.vis-chip.warn{color:#fbbf24;border-color:rgba(251,191,36,.45)}
+.vis-row .log-text small+small{margin-top:0}
+.vis-side{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.vis-btns{display:flex;gap:4px}.vis-btns .vis-ed{opacity:.85;font-size:16px;padding:4px 5px;border-radius:8px;background:var(--bg3)}
+.vis-av{width:34px;height:34px;border-radius:50%;overflow:hidden;flex:none;display:grid;place-items:center;background:var(--bg3);font-size:16px}.vis-av img{width:100%;height:100%;object-fit:cover}
+.vis-sep{font:800 10.5px "DM Sans",sans-serif;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);padding:12px 12px 6px;border-bottom:1px solid var(--border)}
+.vis-pick{display:block;margin-top:6px}.vis-pick select{width:100%;max-width:320px;background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:9px;padding:7px 9px;font:13px "DM Sans",sans-serif}
 /* Telefono: la sfumatura di header e menu segue la barra invece di restare fissata allo schermo.
    Con "fixed" il browser del telefono ridisegnava a pezzi le zone animate (bottoni, voce attiva)
    e comparivano rettangoli di un altro colore. Aspetto quasi identico: header = fetta alta, menu = fetta bassa. */
@@ -2168,9 +2188,11 @@ html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:#0e1c
         <h3 style="margin:0">👀 Chi apre l'app</h3>
         <button class="btn btn-g" style="padding:4px 10px;font-size:12px" onclick="renderVisite()">↻ Aggiorna</button>
       </div>
-      <p style="margin-bottom:10px">Ogni telefono che apre l'app viene contato in modo anonimo (le tue visite da admin no). Tocca ✏️ per dare un nome a un telefono se sai di chi è. Lo vedi solo tu.</p>
+      <p style="margin-bottom:10px">Ogni dispositivo (telefono o PC) che apre l'app viene contato in modo anonimo; le tue visite da admin no. Tocca 👤 su un dispositivo per dire di chi è: così telefono e PC della stessa persona si raggruppano. Lo vedi solo tu.</p>
       <div id="vis-sum" class="vis-sum"></div>
-      <div id="vis-list" style="max-height:320px;overflow-y:auto;background:var(--bg4);border-radius:8px;border:1px solid var(--border)"></div>
+      <div id="vis-chart" class="vis-chart"></div>
+      <div id="vis-tools" class="vis-tools"></div>
+      <div id="vis-list" style="max-height:420px;overflow-y:auto;background:var(--bg4);border-radius:8px;border:1px solid var(--border)"></div>
     </div>
     <div class="card stg-block">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
@@ -4870,53 +4892,103 @@ function clearLog(){
 }
 
 // ═══════════════════════════════════════════════
-// CHI APRE L'APP: un codice anonimo per telefono, salvato solo sul telefono.
-// Chi legge non vede e non fa niente; le visite si leggono solo da admin.
+// CHI APRE L'APP: un codice anonimo per dispositivo (telefono o PC), salvato solo lì.
+// Chi legge non vede e non fa niente; le visite si leggono solo da admin, che può associare
+// ogni dispositivo a un giocatore (così telefono e PC della stessa persona si raggruppano).
 // ═══════════════════════════════════════════════
 const _visCol=()=>_db.collection('clubs').doc('laurera15a40').collection('visite');
+const _dayKey=d=>d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0');
 function trackVisit(){
   try{
-    if(localStorage.getItem('laurera_noTrack'))return;   // telefono dell'admin: non conta
+    if(localStorage.getItem('laurera_noTrack'))return;   // dispositivo dell'admin: non conta
+    const ua=navigator.userAgent;
+    // prove automatiche e pagina aperta come file dal PC: non contano
+    if(location.protocol==='file:'||/HeadlessChrome|Lighthouse|bot|crawler|spider/i.test(ua)||navigator.webdriver)return;
     let id=localStorage.getItem('laurera_dev'),isNew=false;
     if(!id){id=Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');localStorage.setItem('laurera_dev',id);isNew=true;}
     // una visita ogni 30 minuti al massimo (ricaricare la pagina non conta doppio)
     const last=+localStorage.getItem('laurera_devLast')||0;if(!last)isNew=true;   // la prima scrittura non era andata: si riparte da capo
     if(!isNew&&Date.now()-last<30*60*1000)return;
-    const ua=navigator.userAgent;
-    const dev=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)?'iPad':/Android/.test(ua)?'Android':/Macintosh/.test(ua)?'Mac':/Windows/.test(ua)?'PC Windows':'Altro';
-    const FV=firebase.firestore.FieldValue,d={last:FV.serverTimestamp(),n:FV.increment(1),dev};
+    const dev=/iPhone/.test(ua)?'iPhone':/iPad/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1)?'iPad':/Android/.test(ua)?(/Mobile/.test(ua)?'Android':'Tablet Android'):/Macintosh/.test(ua)?'Mac':/Windows/.test(ua)?'PC Windows':/Linux/.test(ua)?'PC Linux':'Altro';
+    const br=/FBAN|FBAV|Instagram/.test(ua)?'Facebook/Instagram':/WhatsApp/i.test(ua)?'WhatsApp':/SamsungBrowser/.test(ua)?'Samsung':/Edg\//.test(ua)?'Edge':/OPR\/|Opera/.test(ua)?'Opera':/Firefox|FxiOS/.test(ua)?'Firefox':/CriOS|Chrome\//.test(ua)?'Chrome':/Safari\//.test(ua)?'Safari':'Altro';
+    const app=!!((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone);
+    const FV=firebase.firestore.FieldValue,d={last:FV.serverTimestamp(),n:FV.increment(1),dev,br,app,days:{[_dayKey(new Date())]:FV.increment(1)}};
     if(isNew)d.first=FV.serverTimestamp();
-    _visCol().doc(id).set(d,{merge:true}).then(()=>{try{localStorage.setItem('laurera_devLast',Date.now());}catch(e){}}).catch(()=>{});
+    const ok=()=>{try{localStorage.setItem('laurera_devLast',Date.now());}catch(e){}};
+    // se Firebase ha ancora le regole vecchie rifiuta browser/app/giorni: salvo almeno i dati di base
+    _visCol().doc(id).set(d,{merge:true}).then(ok).catch(()=>{const b={last:d.last,n:d.n,dev};if(isNew)b.first=d.first;_visCol().doc(id).set(b,{merge:true}).then(ok).catch(()=>{});});
   }catch(e){}
 }
-let _visite=[];
+let _visite=[],_visView='persone',_visHide1=false,_visOpen=null;
+const _visIco=d=>/iPhone|Android$/.test(d)?'📱':/iPad|Tablet/.test(d)?'📱':/PC|Mac/.test(d)?'💻':'🌐';
+const _visLbl=v=>[v.dev||'Dispositivo',v.br,v.app?'app':''].filter(Boolean).join(' · ');
+const _visWho=v=>{const p=v.pid!=null?players.find(x=>x.id===v.pid):null;return p?dispName(p.nome):(v.nome||'');};
 async function renderVisite(){
   const list=document.getElementById('vis-list'),sum=document.getElementById('vis-sum');if(!list||_checkViewer())return;
   list.innerHTML='<div class="log-entry"><span class="log-text">Caricamento…</span></div>';
   try{
     const snap=await _visCol().get();
-    _visite=snap.docs.map(d=>{const x=d.data();return{id:d.id,n:x.n||0,dev:x.dev||'',nome:x.nome||'',first:x.first?x.first.toMillis():0,last:x.last?x.last.toMillis():0};});
+    _visite=snap.docs.map(d=>{const x=d.data();return{id:d.id,n:x.n||0,dev:x.dev||'',br:x.br||'',app:!!x.app,nome:x.nome||'',pid:x.pid!=null?+x.pid:null,days:x.days||{},
+      first:x.first?x.first.toMillis():(x.last?x.last.toMillis():0),last:x.last?x.last.toMillis():0};});
   }catch(e){list.innerHTML='<div class="log-entry"><span class="log-icon">⚠️</span><span class="log-text">Non riesco a leggere le visite. Controlla di aver aggiornato le regole su Firebase.</span></div>';sum.innerHTML='';return;}
-  // numero fisso per telefono, in ordine di primo accesso
-  [..._visite].sort((a,b)=>a.first-b.first).forEach((v,i)=>v.num=i+1);
+  _visDraw();
+}
+function _visDraw(){
+  const list=document.getElementById('vis-list'),sum=document.getElementById('vis-sum'),tools=document.getElementById('vis-tools'),chart=document.getElementById('vis-chart');if(!list)return;
+  [..._visite].sort((a,b)=>a.first-b.first).forEach((v,i)=>v.num=i+1);   // numero fisso per dispositivo, in ordine di primo accesso
   const now=Date.now(),day=86400000,t0=new Date();t0.setHours(0,0,0,0);
-  const oggi=_visite.filter(v=>v.last>=t0.getTime()).length,sett=_visite.filter(v=>v.last>=now-7*day).length;
-  const tot=_visite.reduce((s,v)=>s+v.n,0);
-  sum.innerHTML=`<div><b>${_visite.length}</b><span>Telefoni</span></div><div><b>${oggi}</b><span>Oggi</span></div><div><b>${sett}</b><span>Ultimi 7 giorni</span></div><div><b>${tot}</b><span>Visite totali</span></div>`;
-  if(!_visite.length){list.innerHTML='<div class="log-entry"><span class="log-icon">ℹ️</span><span class="log-text">Ancora nessuna visita registrata.</span></div>';return;}
+  const groups={};_visite.forEach(v=>{const k=v.pid!=null?'p'+v.pid:v.nome?'n'+v.nome.toLowerCase():null;if(k)(groups[k]=groups[k]||[]).push(v);});
+  const oggi=_visite.filter(v=>v.last>=t0.getTime()).length,sett=_visite.filter(v=>v.last>=now-7*day).length,tot=_visite.reduce((s,v)=>s+v.n,0);
+  sum.innerHTML=`<div><b>${_visite.length}</b><span>Dispositivi</span></div><div><b>${Object.keys(groups).length}</b><span>Persone riconosciute</span></div><div><b>${oggi}</b><span>Oggi</span></div><div><b>${sett}</b><span>Ultimi 7 giorni</span></div><div><b>${tot}</b><span>Visite totali</span></div>`;
+  // grafico: dispositivi diversi per giorno (ultimi 14 giorni)
+  if(chart){const ds=[];for(let i=13;i>=0;i--){const d=new Date(t0.getTime()-i*day);ds.push({d,k:_dayKey(d),c:0});}
+    _visite.forEach(v=>ds.forEach(x=>{if(v.days[x.k])x.c++;}));
+    const mx=Math.max(1,...ds.map(x=>x.c)),has=ds.some(x=>x.c);
+    chart.innerHTML=`<div class="vis-ch-t">Dispositivi diversi al giorno · ultimi 14 giorni</div><div class="vis-ch">${ds.map(x=>`<div class="vis-b${x.k===_dayKey(t0)?' on':''}" title="${x.d.toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'})}: ${x.c}"><i>${x.c||''}</i><b style="height:${Math.round(x.c/mx*100)}%"></b><span>${x.d.getDate()}</span></div>`).join('')}</div>${has?'':'<div class="vis-ch-n">I dati per giorno si raccolgono da oggi: il grafico si riempie con le prossime visite.</div>'}`;}
+  const one=_visite.filter(v=>v.n<=1&&/PC/.test(v.dev)&&v.pid==null&&!v.nome).length;
+  tools.innerHTML=`<div class="vis-seg"><button type="button" class="${_visView==='persone'?'on':''}" onclick="_visView='persone';_visDraw()">👤 Persone</button><button type="button" class="${_visView==='disp'?'on':''}" onclick="_visView='disp';_visDraw()">📱 Dispositivi</button></div>`
+    +`<button type="button" class="vis-chip${_visHide1?' on':''}" onclick="_visHide1=!_visHide1;_visDraw()">Nascondi visti 1 volta</button>`
+    +(one?`<button type="button" class="vis-chip warn" onclick="visCleanTests()">🧹 Togli ${one} PC visti 1 volta</button>`:'');
   const fmt=ms=>{if(!ms)return'–';const d=new Date(ms),h=d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
     if(ms>=t0.getTime())return'oggi '+h;if(ms>=t0.getTime()-day)return'ieri '+h;return d.toLocaleDateString('it-IT',{day:'numeric',month:'short'})+' '+h;};
-  const ico={iPhone:'📱',iPad:'📱',Android:'📱',Mac:'💻','PC Windows':'💻'};
-  list.innerHTML=[..._visite].sort((a,b)=>b.last-a.last).map(v=>`<div class="log-entry vis-row"><span class="log-icon">${ico[v.dev]||'🌐'}</span>
-    <span class="log-text"><strong>${v.nome?esc(v.nome):'Telefono '+v.num}</strong> <button class="vis-ed" onclick="nameVisita('${v.id}')" title="Dai un nome">✏️</button>
-    <small>${esc(v.dev)}${v.nome?' · n. '+v.num:''} · ${v.n} ${v.n===1?'visita':'visite'} · primo accesso ${fmt(v.first)}</small></span>
-    <span class="log-time">${fmt(v.last)}</span></div>`).join('');
+  const vis=_visite.filter(v=>!_visHide1||v.n>1);
+  const devRow=v=>`<div class="log-entry vis-row"><span class="log-icon">${_visIco(v.dev)}</span>
+    <span class="log-text"><strong>${_visWho(v)?esc(_visWho(v)):'Dispositivo '+v.num}</strong><small>${esc(_visLbl(v))} · ${v.n} ${v.n===1?'visita':'visite'} · primo accesso ${fmt(v.first)}</small>
+    ${_visOpen===v.id?_visPicker(v):''}</span>
+    <span class="vis-side"><span class="log-time">${fmt(v.last)}</span><span class="vis-btns"><button class="vis-ed" onclick="_visOpen=_visOpen==='${v.id}'?null:'${v.id}';_visDraw()" title="Di chi è?">👤</button><button class="vis-ed" onclick="visDel('${v.id}')" title="Elimina">🗑</button></span></span></div>`;
+  let html='';
+  if(_visView==='persone'){
+    const gs=Object.values(groups).map(arr=>({arr,who:_visWho(arr[0]),p:arr[0].pid!=null?players.find(x=>x.id===arr[0].pid):null,n:arr.reduce((s,v)=>s+v.n,0),last:Math.max(...arr.map(v=>v.last))})).sort((a,b)=>b.last-a.last);
+    html+=gs.length?gs.map(g=>`<div class="log-entry vis-row vis-pp"><span class="vis-av">${g.p&&phUrl(g.p)?`<img src="${phUrl(g.p)}" alt="">`:'👤'}</span>
+      <span class="log-text"><strong>${esc(g.who)}</strong><small>${g.arr.map(v=>`${_visIco(v.dev)} ${esc(_visLbl(v))}`).join('  ·  ')}</small><small>${g.n} ${g.n===1?'visita':'visite'} in tutto${g.arr.length>1?` · ${g.arr.length} dispositivi`:''}</small></span>
+      <span class="log-time">${fmt(g.last)}</span></div>`).join(''):'<div class="log-entry"><span class="log-icon">ℹ️</span><span class="log-text">Nessuna persona riconosciuta. Vai su “Dispositivi” e tocca 👤 per dire di chi è un dispositivo.</span></div>';
+    const unk=vis.filter(v=>v.pid==null&&!v.nome).sort((a,b)=>b.last-a.last);
+    if(unk.length)html+=`<div class="vis-sep">Da riconoscere (${unk.length})</div>`+unk.map(devRow).join('');
+  }else html=[...vis].sort((a,b)=>b.last-a.last).map(devRow).join('')||'<div class="log-entry"><span class="log-icon">ℹ️</span><span class="log-text">Ancora nessuna visita registrata.</span></div>';
+  list.innerHTML=html;
+  const sel=document.getElementById('vis-pick');if(sel)sel.focus();
 }
-function nameVisita(id){
-  const v=_visite.find(x=>x.id===id);if(!v||_checkViewer())return;
-  const nome=prompt('Di chi è questo telefono? (lascia vuoto per togliere il nome)',v.nome||'');
-  if(nome===null)return;
-  _visCol().doc(id).update({nome:nome.trim().slice(0,40)}).then(renderVisite).catch(()=>toast('⚠️ Nome non salvato'));
+function _visPicker(v){
+  const opts=[...players].filter(p=>!p.archiviato).sort((a,b)=>dispName(a.nome).localeCompare(dispName(b.nome)));
+  return`<span class="vis-pick"><select id="vis-pick" onchange="visAssign('${v.id}',this.value)"><option value="">— Di chi è questo dispositivo? —</option>${opts.map(p=>`<option value="p${p.id}"${v.pid===p.id?' selected':''}>${esc(dispName(p.nome))}</option>`).join('')}<option value="altro">Un'altra persona (scrivi il nome)…</option>${v.pid!=null||v.nome?'<option value="none">Togli il nome</option>':''}</select></span>`;
+}
+function visAssign(id,val){
+  if(_checkViewer()||!val)return;let upd;
+  if(val==='none')upd={pid:firebase.firestore.FieldValue.delete(),nome:firebase.firestore.FieldValue.delete()};
+  else if(val==='altro'){const v=_visite.find(x=>x.id===id),n=prompt('Di chi è questo dispositivo?',v&&v.nome||'');if(n===null||!n.trim())return;upd={nome:n.trim().slice(0,40),pid:firebase.firestore.FieldValue.delete()};}
+  else{const p=players.find(x=>'p'+x.id===val);if(!p)return;upd={pid:p.id,nome:dispName(p.nome).slice(0,40)};}
+  _visCol().doc(id).update(upd).then(()=>{_visOpen=null;renderVisite();}).catch(()=>toast('⚠️ Non salvato: controlla le regole di Firebase'));
+}
+function visDel(id){
+  if(_checkViewer())return;const v=_visite.find(x=>x.id===id);
+  if(!confirm(`Eliminare ${v&&_visWho(v)?_visWho(v):'questo dispositivo'} (${v?_visLbl(v):''}) dalla lista?`))return;
+  _visCol().doc(id).delete().then(renderVisite).catch(()=>toast('⚠️ Non eliminato'));
+}
+async function visCleanTests(){
+  if(_checkViewer())return;const ids=_visite.filter(v=>v.n<=1&&/PC/.test(v.dev)&&v.pid==null&&!v.nome).map(v=>v.id);
+  if(!ids.length||!confirm(`Togliere ${ids.length} PC visti una sola volta e senza nome?\nSono quasi tutti prove fatte durante le modifiche all'app. Se uno di loro torna, ricompare da solo.`))return;
+  try{for(let i=0;i<ids.length;i+=400){const b=_db.batch();ids.slice(i,i+400).forEach(id=>b.delete(_visCol().doc(id)));await b.commit();}toast(`🧹 Tolti ${ids.length} dispositivi`);}catch(e){toast('⚠️ Pulizia non riuscita');}
+  renderVisite();
 }
 
 // ═══════════════════════════════════════════════
