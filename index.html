@@ -2955,13 +2955,13 @@ const LAV={
   viso:[['ovale','Ovale'],['tondo','Tondo'],['squadrato','Squadrato'],['allungato','Allungato'],['cuore','A cuore']],
   capelli:[['corti','Corti'],['rasato','Rasati'],['spazzola','A spazzola'],['ciuffo','Ciuffo'],['riga','Riga di lato'],['indietro','Tirati indietro'],['frangia','Frangia'],['mossi','Mossi'],['ricci','Ricci'],['ricciCorti','Ricci corti'],['cresta','Cresta'],['codino','Codino'],['stempiato','Stempiato'],['chierica','Calvo ai lati'],['pelato','Pelato'],['pixie','Corti da donna'],['caschetto','Caschetto'],['lunghi','Lunghi lisci'],['lunghiMossi','Lunghi mossi'],['coda','Coda'],['codaAlta','Coda alta'],['chignon','Chignon'],['treccia','Treccia']],
   sfum:[['no','Nessuna'],['fade','Sfumati ai lati'],['tempie','Tempie grigie'],['brizzolato','Brizzolati'],['meches','Colpi di sole'],['ombre','Punte chiare']],
-  barba:[['no','Nessuna'],['accenno','Accenno'],['corta','Corta'],['piena','Piena'],['lunga','Lunga'],['pizzetto','Pizzetto'],['baffi','Baffi'],['baffiPizzetto','Baffi e pizzetto'],['basette','Basette']],
+  barba:[['no','Nessuna'],['accenno','Accenno'],['corta','Corta'],['incolta','Incolta'],['piena','Piena'],['lunga','Lunga'],['pizzetto','Pizzetto'],['cerchio','A cerchio'],['baffi','Baffi'],['baffiPizzetto','Baffi e pizzetto'],['mento','Sul mento'],['basette','Basette']],
   sopr:[['normali','Normali'],['arcuate','Arcuate'],['dritte','Dritte'],['folte','Folte'],['sottili','Sottili'],['angolate','Angolate']],
   occhi:[['mandorla','A mandorla'],['tondi','Tondi'],['piccoli','Piccoli'],['sottili','Socchiusi']],
   naso:[['piccolo','Piccolo'],['medio','Medio'],['grande','Grande'],['aquilino','Aquilino'],['largo','Largo']],
   bocca:[['sorriso','Sorriso'],['aperto','Sorriso aperto'],['mezzo','Mezzo sorriso'],['serio','Serio'],['sottile','Labbra sottili']],
-  occhiali:[['no','Nessuno'],['tondi','Da vista tondi'],['rett','Da vista squadrati'],['sole','Da sole'],['sport','Sportivi']],
-  testa:[['no','Nessuno'],['fascia','Fascia'],['fasciaLarga','Fascia larga'],['cappello','Cappellino'],['rovescio','Cappellino al contrario'],['visiera','Visiera'],['bandana','Bandana'],['berretto','Berretto di lana']],
+  occhiali:[['no','Nessuno'],['tondi','Da vista tondi'],['rett','Da vista squadrati'],['meta','Mezza montatura'],['sole','Da sole'],['aviator','Aviatore'],['sport','Sportivi']],
+  testa:[['no','Nessuno'],['fascia','Fascia'],['fasciaLarga','Fascia larga'],['cappello','Cappellino'],['rovescio','Cappellino al contrario'],['visiera','Visiera'],['bandana','Bandana'],['berretto','Berretto di lana'],['pescatore','Cappello da pescatore']],
   maglia:[['polo','Polo'],['girocollo','Girocollo'],['scolloV','Scollo a V'],['sport','Sportiva'],['canotta','Canotta'],['felpa','Felpa']],
 };
 const _lc=(c,a)=>{if(!/^#[0-9a-f]{6}$/i.test(c))return c;const n=parseInt(c.slice(1),16),f=v=>Math.max(0,Math.min(255,v-a));return`rgb(${f(n>>16)},${f((n>>8)&255)},${f(n&255)})`;};   // a>0 scurisce, a<0 schiarisce
@@ -2974,9 +2974,9 @@ function lavDefault(p){
 function lavRandom(p){
   const r=a=>a[Math.floor(Math.random()*a.length)],k=a=>r(a)[0],F=isDonna(p);
   const cap=F?r(['pixie','caschetto','lunghi','lunghiMossi','coda','codaAlta','chignon','treccia','ricci']):r(['corti','rasato','spazzola','ciuffo','riga','indietro','frangia','mossi','ricci','ricciCorti','cresta','stempiato']);
-  return{...lavDefault(p),viso:k(LAV.viso),pelle:r(LAV.pelle.slice(0,7)),capelli:cap,colCap:r(LAV.colCap.slice(0,13)),barba:F?'no':r(['no','no','accenno','corta','piena','pizzetto','baffi']),
-    sopr:k(LAV.sopr),occhi:k(LAV.occhi),colOcchi:r(LAV.colOcchi),naso:k(LAV.naso),bocca:k(LAV.bocca),occhiali:r(['no','no','no','tondi','rett','sole']),
-    testa:r(['no','no','fascia','cappello','visiera']),colTesta:r(LAV.colori),maglia:k(LAV.maglia),colMaglia:r(LAV.colori),colDett:r(LAV.colori),lentiggini:Math.random()<.15};
+  return{...lavDefault(p),viso:k(LAV.viso),pelle:r(LAV.pelle.slice(0,7)),capelli:cap,colCap:r(LAV.colCap.slice(0,13)),barba:F?'no':r(['no','no','accenno','corta','incolta','piena','pizzetto','cerchio','baffi']),
+    sopr:k(LAV.sopr),occhi:k(LAV.occhi),colOcchi:r(LAV.colOcchi),naso:k(LAV.naso),bocca:k(LAV.bocca),occhiali:r(['no','no','no','tondi','rett','meta','sole','aviator']),
+    testa:r(['no','no','fascia','cappello','rovescio','visiera','berretto','pescatore']),colTesta:r(LAV.colori),maglia:k(LAV.maglia),colMaglia:r(LAV.colori),colDett:r(LAV.colori),lentiggini:Math.random()<.15};
 }
 // disegno dell'avatar (SVG 200×200, inquadratura come gli avatar automatici)
 function lavSvg(c){
@@ -3043,7 +3043,7 @@ function lavSvg(c){
   const face=`M${L} 92C${L} 58 ${100-f.w*.62} 46 100 46C${100+f.w*.62} 46 ${R} 58 ${R} 92C${R} ${f.sq?126:116} ${100+f.jw} ${cy-6} 100 ${cy}C${100-f.jw} ${cy-6} ${L} ${f.sq?126:116} ${L} 92Z`;
   const ears=`<ellipse cx="${L+1}" cy="98" rx="7" ry="11" fill="${sk}"/><ellipse cx="${R-1}" cy="98" rx="7" ry="11" fill="${sk}"/><path d="M${L-1} 92Q${L-4} 98 ${L} 104M${R+1} 92Q${R+4} 98 ${R} 104" stroke="${_lc(sk,30)}" stroke-width="1.6" fill="none"/>`
     +(c.orecchini?`<circle cx="${L}" cy="110" r="2.6" fill="#f0c040"/><circle cx="${R}" cy="110" r="2.6" fill="#f0c040"/>`:'');
-  const neck=`<path d="M86 ${cy-24}L86 163Q100 171 114 163L114 ${cy-24}Z" fill="${_lc(sk,16)}"/><ellipse cx="100" cy="${cy+3}" rx="18" ry="6" fill="${_lc(sk,42)}" opacity=".35"/>`;
+  const neck=`<path d="M86 ${cy-24}L86 163Q100 171 114 163L114 ${cy-24}Z" fill="${_lc(sk,16)}"/><ellipse cx="100" cy="${cy+4}" rx="16" ry="5" fill="${_lc(sk,42)}" opacity=".3" filter="url(#bl2)"/>`;
   // occhi
   const eye=(x)=>{const ir=c.occhi==='tondi'?3.8:c.occhi==='piccoli'?2.9:3.4;let w='',lid='';
     if(c.occhi==='tondi'){w=`<ellipse cx="${x}" cy="${E}" rx="6.6" ry="5.6" fill="#fff"/>`;lid=`<path d="M${x-6.6} ${E}Q${x} ${E-7.5} ${x+6.6} ${E}" stroke="#2b1d16" stroke-width="1.6" fill="none"/>`;}
@@ -3076,30 +3076,94 @@ function lavSvg(c){
     mezzo:`<path d="M90 ${M}Q101 ${M+3} 111 ${M-4}" stroke="${lip}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
     serio:`<path d="M91 ${M}Q100 ${M+1.5} 109 ${M}" stroke="${lip}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`,
     sottile:`<path d="M90 ${M}Q100 ${M+2.5} 110 ${M}" stroke="${lip}" stroke-width="1.7" fill="none" stroke-linecap="round"/>`}[c.bocca]||'';
-  // barba
-  const bArea=(ext=0)=>`M${L+3} 100C${L+3} ${f.sq?132:126} ${100-f.jw-4} ${cy+4+ext} 100 ${cy+5+ext}C${100+f.jw+4} ${cy+4+ext} ${R-3} ${f.sq?132:126} ${R-3} 100C${R-6} 114 112 118 100 118C88 118 ${L+6} 114 ${L+3} 100Z`;
-  const must=`<path d="M86 ${M-4}Q93 ${M-12} 100 ${M-7}Q107 ${M-12} 114 ${M-4}Q107 ${M-6} 100 ${M-4}Q93 ${M-6} 86 ${M-4}Z" fill="${bc}"/>`;
-  const goat=`<path d="M91 ${M+6}Q100 ${M+3} 109 ${M+6}Q110 ${cy+3} 100 ${cy+6}Q90 ${cy+3} 91 ${M+6}Z" fill="${bc}"/>`;
-  const beard={no:'',accenno:`<path d="${bArea()}" fill="${bc}" opacity=".22"/>`,corta:`<path d="${bArea()}" fill="${bc}" opacity=".7"/>`+must.replace('fill=','opacity=".8" fill='),
-    piena:`<path d="${bArea(4)}" fill="${bc}"/>`+must,lunga:`<path d="${bArea(22)}" fill="${bc}"/>`+must,pizzetto:goat,baffi:must,baffiPizzetto:must+goat,
-    basette:`<path d="M${L+1} 84L${L+8} 84L${L+7} 110L${L+2} 106Z M${R-1} 84L${R-8} 84L${R-7} 110L${R-2} 106Z" fill="${bc}"/>`}[c.barba]||'';
-  // occhiali
-  const gx1=100-ex,gx2=100+ex;
+  // ── barba: segue la mascella, bordi "pelosi", trama dei peli, sfuma nella pelle sulle guance ──
+  const X=d=>+(100+d).toFixed(2),jy=f.sq?126:116;
+  defs+=`<filter id="fur" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="1" seed="4" result="t"/><feDisplacementMap in="SourceGraphic" in2="t" scale="2.2" xChannelSelector="R" yChannelSelector="G"/></filter>`
+    +`<filter id="bl1" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation=".8"/></filter><filter id="bl2" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.8"/></filter><filter id="bl4" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="3.5"/></filter>`
+    +`<linearGradient id="bgr" x1="0" y1="90" x2="0" y2="${cy+20}" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="${_lc(bc,-14)}"/><stop offset=".55" stop-color="${bc}"/><stop offset="1" stop-color="${_lc(bc,28)}"/></linearGradient>`
+    +`<pattern id="bst" width="7" height="6.6" patternUnits="userSpaceOnUse" patternTransform="rotate(11)">${[[.8,1.1,.45],[3.4,.6,.38],[5.6,2.2,.42],[2.1,3.5,.4],[4.6,4.6,.36],[6.3,5.6,.4],[1.2,5.8,.38],[3.9,2.7,.3]].map(([x,y,r])=>`<circle cx="${x}" cy="${y}" r="${r}" fill="${_lc(bc,10)}"/>`).join("")}</pattern>`
+    +`<pattern id="bsn" width="9" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(7)"><path d="M1 .5l.6 3.2M6.2 .8l.7 3.4M2.2 4.8l.5 2.8M7.4 5.6l.3 2.2" stroke="${_lc(bc,34)}" stroke-width=".7" stroke-linecap="round" opacity=".5"/><path d="M3.6 2.2l.3 2.8M8 3.2l.4 2.4M5 5.4l.6 2.4" stroke="${_lc(bc,-30)}" stroke-width=".55" stroke-linecap="round" opacity=".35"/></pattern>`
+    +`<linearGradient id="bmg" x1="0" y1="86" x2="0" y2="104" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#000"/><stop offset="1" stop-color="#fff"/></linearGradient><mask id="bmk"><rect width="200" height="220" fill="url(#bmg)"/></mask>`
+    +`<clipPath id="fcl"><path d="${face}"/></clipPath>`;
+  const bOut=e=>`M${L+1} 84L${L+1} 92C${+(L+1-e*.15).toFixed(2)} ${jy+e*.3} ${+(100-f.jw-e*.5).toFixed(2)} ${cy-6+e} 100 ${+(cy+e*1.05).toFixed(2)}C${+(100+f.jw+e*.5).toFixed(2)} ${cy-6+e} ${+(R-1+e*.15).toFixed(2)} ${jy+e*.3} ${R-1} 92L${R-1} 84`;
+  const bIn=`C${R-5} 96 ${R-9} 106 ${R-13} 112C${R-17} 116 ${X(14)} ${M-6} ${X(12)} ${M-8}C${X(8)} ${M-11} ${X(3)} ${M-10.5} 100 ${M-9.5}C${X(-3)} ${M-10.5} ${X(-8)} ${M-11} ${X(-12)} ${M-8}C${X(-14)} ${M-6} ${L+17} 116 ${L+13} 112C${L+9} 106 ${L+5} 96 ${L+1} 84Z`;
+  const bFull=e=>bOut(e)+bIn;
+  const must=`M${X(-15)} ${M-1.5}C${X(-12)} ${M-8.5} ${X(-4)} ${M-10} 100 ${M-8}C${X(4)} ${M-10} ${X(12)} ${M-8.5} ${X(15)} ${M-1.5}C${X(9)} ${M-4.5} ${X(4)} ${M-4} 100 ${M-4.6}C${X(-4)} ${M-4} ${X(-9)} ${M-4.5} ${X(-15)} ${M-1.5}Z`;
+  const goat=`M${X(-11)} ${M+5.5}C${X(-6)} ${M+3.5} ${X(6)} ${M+3.5} ${X(11)} ${M+5.5}C${X(12)} ${cy-5} ${X(7)} ${cy+2} 100 ${cy+3}C${X(-7)} ${cy+2} ${X(-12)} ${cy-5} ${X(-11)} ${M+5.5}Z`;
+  const soul=`M${X(-3)} ${M+5}Q100 ${M+4} ${X(3)} ${M+5}L${X(1.5)} ${M+10}Q100 ${M+11} ${X(-1.5)} ${M+10}Z`;
+  const ring=`M${X(-15)} ${M-1.5}C${X(-17)} ${M+4} ${X(-14)} ${cy-6} ${X(-9)} ${cy}C${X(-5)} ${cy+3} ${X(5)} ${cy+3} ${X(9)} ${cy}C${X(14)} ${cy-6} ${X(17)} ${M+4} ${X(15)} ${M-1.5}C${X(13)} ${M+3} ${X(12)} ${M+7} ${X(9)} ${M+8}C${X(5)} ${M+9} ${X(-5)} ${M+9} ${X(-9)} ${M+8}C${X(-12)} ${M+7} ${X(-13)} ${M+3} ${X(-15)} ${M-1.5}Z`;
+  const strap=bOut(1)+`C${R-6} 96 ${R-7} 110 ${R-9} 118C${R-12} 128 ${X(f.jw-4)} ${cy-10} 100 ${cy-3}C${X(-f.jw+4)} ${cy-10} ${L+12} 128 ${L+9} 118C${L+7} 110 ${L+6} 96 ${L+1} 84Z`;
+  const burns=`M${L+1} 82L${L+7.5} 82C${L+8} 92 ${L+8.5} 102 ${L+7} 112L${L+1.5} 108ZM${R-1} 82L${R-7.5} 82C${R-8} 92 ${R-8.5} 102 ${R-7} 112L${R-1.5} 108Z`;
+  // dense = barba piena con trama; stub = solo pelo corto (puntini)
+  const dense=(d,op=1)=>`<g filter="url(#fur)" opacity="${op}"><path d="${d}" fill="url(#bgr)"/><path d="${d}" fill="url(#bsn)"/></g>`;
+  const stub=(d,op)=>`<path d="${d}" fill="${bc}" opacity="${op*.28}" filter="url(#bl1)"/><path d="${d}" fill="url(#bst)" opacity="${op}"/>`;
+  const chinSh=e=>`<path d="M${X(-f.jw+2)} ${cy-8+e}Q100 ${cy+6+e*1.1} ${X(f.jw-2)} ${cy-8+e}" stroke="#000" stroke-width="5" fill="none" opacity=".2" filter="url(#bl2)"/>`;
+  const bt=c.barba||'no';
+  const beard={no:'',
+    accenno:`<g mask="url(#bmk)">${stub(bFull(0),.75)}</g>`,
+    corta:`<g mask="url(#bmk)">${stub(bFull(0),.9)}${dense(bFull(1),.6)}</g>${dense(must,.8)}`,
+    incolta:`<g mask="url(#bmk)">${stub(bFull(1),1)}${dense(bFull(3),.75)}</g>${dense(must,.9)}`,
+    piena:`<g mask="url(#bmk)">${stub(bFull(1),1)}${dense(bFull(4))}${chinSh(4)}</g>${dense(must)}`,
+    lunga:`<g mask="url(#bmk)">${stub(bFull(2),1)}${dense(bFull(20))}${chinSh(20)}</g>${dense(must)}`,
+    pizzetto:`<g mask="url(#bmk)">${stub(bFull(0),.35)}</g>${dense(goat)}`,
+    cerchio:`<g mask="url(#bmk)">${stub(bFull(0),.35)}</g>${dense(ring)}${dense(must)}`,
+    baffi:`<g mask="url(#bmk)">${stub(bFull(0),.3)}</g>${dense(must)}`,
+    baffiPizzetto:`<g mask="url(#bmk)">${stub(bFull(0),.35)}</g>${dense(must)}${dense(goat,.95)}${dense(soul)}`,
+    mento:`<g mask="url(#bmk)">${stub(bFull(0),.3)}</g>${dense(strap)}`,
+    basette:dense(burns,.95)}[bt]||'';
+  // ── occhiali: montatura sottile, lenti con riflesso, ombra sul viso ──
+  const gx1=+(100-ex).toFixed(2),gx2=+(100+ex).toFixed(2),arm=(dy=0)=>`M${gx1-10.5} ${E-2+dy}L${L+1} ${E-4}M${gx2+10.5} ${E-2+dy}L${R-1} ${E-4}`;
+  defs+=`<linearGradient id="lens" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".24"/><stop offset=".42" stop-color="#fff" stop-opacity=".04"/><stop offset=".5" stop-color="#fff" stop-opacity=".16"/><stop offset=".62" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>`
+    +`<linearGradient id="dlens" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d0f12"/><stop offset="1" stop-color="#3b4048"/></linearGradient>`
+    +`<linearGradient id="tort" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7a4a26"/><stop offset=".5" stop-color="#3a2212"/><stop offset="1" stop-color="#8a5a30"/></linearGradient>`
+    +`<linearGradient id="slens" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1e3a8a"/><stop offset=".5" stop-color="#6d28d9"/><stop offset="1" stop-color="#ea580c"/></linearGradient>`;
+  const gSh=s=>`<g transform="translate(.8 2.4)" opacity=".22" filter="url(#bl1)">${s}</g>`;
+  const lensR=(x,w,h,r)=>`<rect x="${x-w/2}" y="${E-h/2-1}" width="${w}" height="${h}" rx="${r}"/>`;
+  const gl=c.occhiali||'no';
   const glasses={no:'',
-    tondi:`<g fill="none" stroke="#1f2937" stroke-width="2.2"><circle cx="${gx1}" cy="${E}" r="10"/><circle cx="${gx2}" cy="${E}" r="10"/><path d="M${gx1+10} ${E-1}Q100 ${E-5} ${gx2-10} ${E-1}M${gx1-10} ${E-2}L${L} ${E-4}M${gx2+10} ${E-2}L${R} ${E-4}"/></g>`,
-    rett:`<g fill="none" stroke="#111827" stroke-width="2.6"><rect x="${gx1-11}" y="${E-8}" width="22" height="15" rx="4"/><rect x="${gx2-11}" y="${E-8}" width="22" height="15" rx="4"/><path d="M${gx1+11} ${E-2}Q100 ${E-6} ${gx2-11} ${E-2}M${gx1-11} ${E-3}L${L} ${E-5}M${gx2+11} ${E-3}L${R} ${E-5}"/></g>`,
-    sole:`<g><rect x="${gx1-12}" y="${E-8}" width="23" height="15" rx="6" fill="#111"/><rect x="${gx2-11}" y="${E-8}" width="23" height="15" rx="6" fill="#111"/><path d="M${gx1+11} ${E-3}Q100 ${E-6} ${gx2-11} ${E-3}M${gx1-12} ${E-3}L${L} ${E-5}M${gx2+12} ${E-3}L${R} ${E-5}" stroke="#111" stroke-width="2.4" fill="none"/><path d="M${gx1-8} ${E-5}l6 0M${gx2-7} ${E-5}l6 0" stroke="#fff" stroke-width="1.6" opacity=".4"/></g>`,
-    sport:`<path d="M${L} ${E-4}C${gx1-6} ${E-11} ${gx2+6} ${E-11} ${R} ${E-4}L${R-2} ${E+4}C${gx2} ${E+8} ${gx1} ${E+8} ${L+2} ${E+4}Z" fill="#1e3a8a"/><path d="M${L+6} ${E-3}C${gx1} ${E-8} ${gx2} ${E-8} ${R-6} ${E-3}" stroke="#f97316" stroke-width="3" fill="none" opacity=".75"/>`}[c.occhiali]||'';
-  // copricapo
-  const tc=c.colTesta,td=_lc(tc,40);
-  const head={no:'',
-    fascia:`<path d="M60 72C80 62 120 62 140 72L140 81C120 71 80 71 60 81Z" fill="${tc}"/><path d="M62 77C82 68 118 68 138 77" stroke="${td}" stroke-width="1.4" fill="none" opacity=".6"/>`,
-    fasciaLarga:`<path d="M60 66C80 54 120 54 140 66L140 82C120 70 80 70 60 82Z" fill="${tc}"/><path d="M92 60h16v10h-16z" fill="${td}" opacity=".5"/>`,
-    cappello:`<path d="M60 82C56 42 80 26 100 26C120 26 144 42 140 82C120 74 80 74 60 82Z" fill="${tc}"/><path d="M100 28V76M80 34Q86 54 82 78M120 34Q114 54 118 78" stroke="${td}" stroke-width="1.4" fill="none" opacity=".5"/><circle cx="100" cy="28" r="3" fill="${td}"/><path d="M100 77C126 73 154 75 164 84C154 91 126 89 100 86Z" fill="${td}"/>`,
-    rovescio:`<path d="M100 74C74 70 46 72 36 80C46 86 74 84 100 82Z" fill="${td}"/><path d="M60 82C56 42 80 26 100 26C120 26 144 42 140 82C120 74 80 74 60 82Z" fill="${tc}"/><path d="M88 74Q100 64 112 74" stroke="${td}" stroke-width="3" fill="none"/><circle cx="100" cy="28" r="3" fill="${td}"/>`,
-    visiera:`<path d="M60 74C80 66 120 66 140 74L140 82C120 75 80 75 60 82Z" fill="${tc}"/><path d="M100 78C126 74 154 76 164 85C154 92 126 90 100 87Z" fill="${td}"/>`,
-    bandana:`<path d="M60 76C76 50 124 50 140 76L140 82C120 70 80 70 60 82Z" fill="${tc}"/><path d="M60 76L46 70L50 84L60 80Z" fill="${td}"/><circle cx="80" cy="66" r="1.8" fill="#fff" opacity=".7"/><circle cx="104" cy="62" r="1.8" fill="#fff" opacity=".7"/><circle cx="124" cy="68" r="1.8" fill="#fff" opacity=".7"/>`,
-    berretto:`<path d="M60 84C56 40 80 22 100 22C120 22 144 40 140 84Z" fill="${tc}"/><path d="M58 70C80 62 120 62 142 70L142 86C120 78 80 78 58 86Z" fill="${td}"/><path d="M76 30V64M88 25V62M100 23V62M112 25V62M124 30V64" stroke="${td}" stroke-width="1.4" opacity=".5"/><circle cx="100" cy="20" r="8" fill="${tc}"/>`}[c.testa]||'';
+    tondi:gSh(`<g fill="none" stroke="#000" stroke-width="2"><circle cx="${gx1}" cy="${E}" r="9.6"/><circle cx="${gx2}" cy="${E}" r="9.6"/></g>`)
+      +`<circle cx="${gx1}" cy="${E}" r="9.6" fill="url(#lens)"/><circle cx="${gx2}" cy="${E}" r="9.6" fill="url(#lens)"/><g fill="none" stroke="url(#tort)" stroke-width="2.1"><circle cx="${gx1}" cy="${E}" r="9.6"/><circle cx="${gx2}" cy="${E}" r="9.6"/><path d="M${gx1+9.6} ${E-1.6}Q100 ${E-5.5} ${gx2-9.6} ${E-1.6}${arm()}"/></g>`,
+    rett:gSh(`<g fill="none" stroke="#000" stroke-width="2.4">${lensR(gx1,21,14,3.5)}${lensR(gx2,21,14,3.5)}</g>`)
+      +`<g fill="url(#lens)">${lensR(gx1,21,14,3.5)}${lensR(gx2,21,14,3.5)}</g><g fill="none" stroke="#16181d" stroke-width="2.3">${lensR(gx1,21,14,3.5)}${lensR(gx2,21,14,3.5)}<path d="M${gx1+10.5} ${E-2.5}Q100 ${E-6} ${gx2-10.5} ${E-2.5}${arm()}"/></g><path d="M${gx1-8} ${E-6.6}H${gx1+3}M${gx2-8} ${E-6.6}H${gx2+3}" stroke="#fff" stroke-width=".6" opacity=".35"/>`,
+    meta:gSh(`<path d="M${gx1-10.5} ${E-6}Q${gx1} ${E-8.5} ${gx1+10.5} ${E-6}M${gx2-10.5} ${E-6}Q${gx2} ${E-8.5} ${gx2+10.5} ${E-6}" stroke="#000" stroke-width="3" fill="none"/>`)
+      +`<g fill="url(#lens)">${lensR(gx1,21,13,4)}${lensR(gx2,21,13,4)}</g><g fill="none" stroke="#9aa3ad" stroke-width=".7" opacity=".8"><path d="M${gx1-10.5} ${E-3}V${E+3}Q${gx1-10.5} ${E+5.5} ${gx1-7} ${E+5.5}H${gx1+7}Q${gx1+10.5} ${E+5.5} ${gx1+10.5} ${E+2}"/><path d="M${gx2-10.5} ${E-3}V${E+3}Q${gx2-10.5} ${E+5.5} ${gx2-7} ${E+5.5}H${gx2+7}Q${gx2+10.5} ${E+5.5} ${gx2+10.5} ${E+2}"/></g><path d="M${gx1-10.5} ${E-6}Q${gx1} ${E-8.5} ${gx1+10.5} ${E-6}M${gx2-10.5} ${E-6}Q${gx2} ${E-8.5} ${gx2+10.5} ${E-6}" stroke="#1a1410" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M${gx1+10.5} ${E-5}Q100 ${E-7.5} ${gx2-10.5} ${E-5}${arm(-3)}" stroke="#9aa3ad" stroke-width="1.1" fill="none"/>`,
+    sole:gSh(`<g fill="#000">${lensR(gx1,23,15,6)}${lensR(gx2,23,15,6)}</g>`)
+      +`<g fill="url(#dlens)">${lensR(gx1,23,15,6)}${lensR(gx2,23,15,6)}</g><g fill="none" stroke="#0b0b0b" stroke-width="2">${lensR(gx1,23,15,6)}${lensR(gx2,23,15,6)}<path d="M${gx1+11.5} ${E-3.5}Q100 ${E-7} ${gx2-11.5} ${E-3.5}${arm()}"/></g><path d="M${gx1-8} ${E-3}L${gx1-1} ${E-6.5}M${gx2-7} ${E-3}L${gx2} ${E-6.5}" stroke="#fff" stroke-width="1.3" opacity=".32" stroke-linecap="round"/>`,
+    aviator:gSh(`<g fill="#000"><path d="M${gx1-11} ${E-7}H${gx1+10}C${gx1+11} ${E+1} ${gx1+6} ${E+8} ${gx1-2} ${E+8}C${gx1-9} ${E+8} ${gx1-12} ${E+1} ${gx1-11} ${E-7}Z"/><path d="M${gx2+11} ${E-7}H${gx2-10}C${gx2-11} ${E+1} ${gx2-6} ${E+8} ${gx2+2} ${E+8}C${gx2+9} ${E+8} ${gx2+12} ${E+1} ${gx2+11} ${E-7}Z"/></g>`)
+      +`<g fill="url(#dlens)" stroke="#c9a54a" stroke-width="1.2"><path d="M${gx1-11} ${E-7}H${gx1+10}C${gx1+11} ${E+1} ${gx1+6} ${E+8} ${gx1-2} ${E+8}C${gx1-9} ${E+8} ${gx1-12} ${E+1} ${gx1-11} ${E-7}Z"/><path d="M${gx2+11} ${E-7}H${gx2-10}C${gx2-11} ${E+1} ${gx2-6} ${E+8} ${gx2+2} ${E+8}C${gx2+9} ${E+8} ${gx2+12} ${E+1} ${gx2+11} ${E-7}Z"/></g><path d="M${gx1+10} ${E-6}Q100 ${E-9} ${gx2-10} ${E-6}M${gx1+9} ${E-3}Q100 ${E-5} ${gx2-9} ${E-3}${arm(-4)}" stroke="#c9a54a" stroke-width="1.1" fill="none"/><path d="M${gx1-7} ${E-4}L${gx1} ${E-6}M${gx2-6} ${E-4}L${gx2+1} ${E-6}" stroke="#fff" stroke-width="1.2" opacity=".3" stroke-linecap="round"/>`,
+    sport:gSh(`<path d="M${L+2} ${E-4}C${gx1-6} ${E-11} ${gx2+6} ${E-11} ${R-2} ${E-4}L${R-4} ${E+4}C${gx2} ${E+9} ${X(4)} ${E+5} 100 ${E+1}C${X(-4)} ${E+5} ${gx1} ${E+9} ${L+4} ${E+4}Z" fill="#000"/>`)
+      +`<path d="M${L+2} ${E-4}C${gx1-6} ${E-11} ${gx2+6} ${E-11} ${R-2} ${E-4}L${R-4} ${E+4}C${gx2} ${E+9} ${X(4)} ${E+5} 100 ${E+1}C${X(-4)} ${E+5} ${gx1} ${E+9} ${L+4} ${E+4}Z" fill="url(#slens)" opacity=".93"/><path d="M${L+2} ${E-4}C${gx1-6} ${E-11} ${gx2+6} ${E-11} ${R-2} ${E-4}" stroke="#111" stroke-width="2.6" fill="none"/><path d="M${gx1-5} ${E-4}C${gx1} ${E-7} ${gx2} ${E-7} ${gx2+5} ${E-4}" stroke="#fff" stroke-width="1.1" fill="none" opacity=".4"/>`}[gl]||'';
+  // ── copricapi: seguono la testa, hanno volume e ombre, nascondono i capelli che ci stanno sotto ──
+  const tc=c.colTesta||'#ffffff',tdk=_lc(tc,45),tlt=_lc(tc,-38),tt=c.testa||'no';
+  defs+=`<linearGradient id="hatg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${tlt}"/><stop offset=".45" stop-color="${tc}"/><stop offset="1" stop-color="${tdk}"/></linearGradient>`
+    +`<linearGradient id="bandg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tlt}"/><stop offset=".5" stop-color="${tc}"/><stop offset="1" stop-color="${tdk}"/></linearGradient>`
+    +`<linearGradient id="brg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${_lc(tc,-12)}"/><stop offset="1" stop-color="${_lc(tc,30)}"/></linearGradient>`;
+  const hatLine={cappello:79,rovescio:79,bandana:73,berretto:84,pescatore:80}[tt]||0;
+  if(hatLine)defs+=`<clipPath id="hcl"><rect x="0" y="${hatLine}" width="200" height="220"/></clipPath>`;
+  const crown=`M${L-3} 80C${L-5} 48 ${X(-20)} 30 100 29C${X(20)} 30 ${R+5} 48 ${R+3} 80C${R-12} 74 ${L+12} 74 ${L-3} 80Z`;
+  const crownDet=`<g stroke="${tdk}" stroke-width=".9" fill="none" opacity=".6"><path d="M100 30C${X(-12)} 42 ${X(-18)} 60 ${X(-20)} 76"/><path d="M100 30V74"/><path d="M100 30C${X(12)} 42 ${X(18)} 60 ${X(20)} 76"/></g><g stroke="${tlt}" stroke-width=".5" fill="none" opacity=".55" stroke-dasharray="1.2 1.3"><path d="M98.4 32C${X(-13.5)} 44 ${X(-19.5)} 60 ${X(-21.5)} 76"/><path d="M101.6 32C${X(13.5)} 44 ${X(19.5)} 60 ${X(21.5)} 76"/></g><circle cx="100" cy="30" r="2.8" fill="${tdk}"/><circle cx="99.3" cy="29.3" r="1" fill="${tlt}" opacity=".8"/><circle cx="${X(-11)}" cy="50" r=".9" fill="${tdk}"/><circle cx="${X(11)}" cy="50" r=".9" fill="${tdk}"/><path d="M${L-2} 79C${L+12} 73.5 ${R-12} 73.5 ${R+2} 79" stroke="#000" stroke-width="2.4" fill="none" opacity=".22" filter="url(#bl1)"/>`;
+  const logo=`<circle cx="100" cy="60" r="5.2" fill="${_lc(tc,-60)}" opacity=".85"/><path d="M96.6 60.4l2.4 2.2 4.2-4.6" stroke="${tdk}" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+  const brim=`M${L-2} 79C${L+12} 73.5 ${R-12} 73.5 ${R+2} 79C${R+8} 83 ${R+9} 89 ${R+5} 92C${R-14} 85.5 ${L+14} 85.5 ${L-5} 92C${L-9} 89 ${L-8} 83 ${L-2} 79Z`;
+  const brimDet=`<path d="${brim}" fill="url(#brg)"/><path d="M${L-5} 92C${L+14} 85.5 ${R-14} 85.5 ${R+5} 92" stroke="${_lc(tc,70)}" stroke-width="1.6" fill="none"/><path d="M${L+1} 82.5C${L+14} 78 ${R-14} 78 ${R-1} 82.5" stroke="${tlt}" stroke-width=".55" fill="none" opacity=".6" stroke-dasharray="1.2 1.3"/>`;
+  // ombre che il copricapo proietta sul viso
+  const faceSh={cappello:`<ellipse cx="100" cy="90" rx="${f.w+6}" ry="8" fill="#1a0e08" opacity=".38" filter="url(#bl4)"/>`,visiera:`<ellipse cx="100" cy="90" rx="${f.w+6}" ry="8" fill="#1a0e08" opacity=".38" filter="url(#bl4)"/>`,pescatore:`<ellipse cx="100" cy="84" rx="${f.w+8}" ry="7" fill="#1a0e08" opacity=".32" filter="url(#bl4)"/>`,
+    rovescio:`<ellipse cx="100" cy="80" rx="${f.w}" ry="3.5" fill="#1a0e08" opacity=".25" filter="url(#bl2)"/>`,berretto:`<ellipse cx="100" cy="86" rx="${f.w}" ry="3.5" fill="#1a0e08" opacity=".25" filter="url(#bl2)"/>`,bandana:`<ellipse cx="100" cy="75" rx="${f.w}" ry="3" fill="#1a0e08" opacity=".22" filter="url(#bl2)"/>`,
+    fascia:`<path d="M${L} 79C${L+10} 72 ${R-10} 72 ${R} 79" stroke="#1a0e08" stroke-width="4" fill="none" opacity=".28" filter="url(#bl2)"/>`,fasciaLarga:`<path d="M${L} 81C${L+10} 74 ${R-10} 74 ${R} 81" stroke="#1a0e08" stroke-width="4" fill="none" opacity=".28" filter="url(#bl2)"/>`}[tt]||'';
+  const ribs=(x0,x1,y0,y1,n,col,op)=>`<g stroke="${col}" stroke-width=".6" opacity="${op}">${Array.from({length:n},(_,i)=>`<path d="M${(x0+(x1-x0)*i/(n-1)).toFixed(1)} ${y0}V${y1}"/>`).join('')}</g>`;
+  let head='';
+  if(tt==='cappello')head=`<path d="${crown}" fill="url(#hatg)"/>${crownDet}${logo}${brimDet}`;
+  else if(tt==='rovescio')head=`<path d="${crown}" fill="url(#hatg)"/>${crownDet}<path d="M89 80C89.5 69 110.5 69 111 80Z" fill="url(#hg)"/><path d="M89 80C89.5 69 110.5 69 111 80" stroke="${tdk}" stroke-width="1.4" fill="none"/><path d="M87 77.5H113V81H87Z" fill="${tdk}"/><rect x="97" y="76.6" width="6" height="5.2" rx="1" fill="#cfcfcf"/><rect x="98.3" y="77.8" width="3.4" height="2.8" rx=".5" fill="${tdk}"/>`;
+  else if(tt==='visiera'){const band=`M${L-2} 72C${L+10} 63 ${R-10} 63 ${R+2} 72L${R+2} 80C${R-10} 72 ${L+10} 72 ${L-2} 80Z`;defs+=`<clipPath id="vcl"><path d="${band}"/></clipPath>`;
+    head=`<path d="${band}" fill="url(#bandg)"/><g clip-path="url(#vcl)">${ribs(L-2,R+2,60,82,30,tdk,.25)}</g>${brimDet}`;}
+  else if(tt==='fascia'||tt==='fasciaLarga'){const t0=tt==='fascia'?61:54,b0=tt==='fascia'?72:73;const band=`M${L-2} ${t0+9}C${L+10} ${t0} ${R-10} ${t0} ${R+2} ${t0+9}L${R+2} ${b0+8}C${R-10} ${b0} ${L+10} ${b0} ${L-2} ${b0+8}Z`;
+    defs+=`<clipPath id="bndc"><path d="${band}"/></clipPath>`;
+    head=`<path d="${band}" fill="url(#bandg)"/><g clip-path="url(#bndc)">${ribs(L-2,R+2,t0-2,b0+10,34,tdk,.28)}${tt==='fasciaLarga'?`<rect x="93" y="${t0+4}" width="14" height="${b0-t0-3}" rx="2" fill="${_lc(tc,-60)}" opacity=".7"/>`:''}</g><path d="M${L-2} ${t0+9}C${L+10} ${t0} ${R-10} ${t0} ${R+2} ${t0+9}" stroke="${tlt}" stroke-width="1" fill="none" opacity=".7"/><path d="M${L-2} ${b0+8}C${L+10} ${b0} ${R-10} ${b0} ${R+2} ${b0+8}" stroke="${tdk}" stroke-width="1.1" fill="none" opacity=".8"/>`;}
+  else if(tt==='bandana'){const cap=`M${L-2} 75C${L-4} 46 ${X(-20)} 30 100 30C${X(20)} 30 ${R+4} 46 ${R+2} 75C${R-12} 69 ${L+12} 69 ${L-2} 75Z`;defs+=`<clipPath id="bdc"><path d="${cap}"/></clipPath>`;
+    head=`<path d="M${R} 66C${R+8} 66 ${R+14} 70 ${R+12} 78L${R+18} 92L${R+10} 90L${R+6} 80Z" fill="${tdk}"/><path d="M${R+2} 70C${R+12} 74 ${R+18} 84 ${R+16} 96L${R+9} 92Z" fill="${_lc(tc,25)}"/><path d="${cap}" fill="url(#hatg)"/><g clip-path="url(#bdc)" fill="none" stroke="${_lc(tc,-70)}" stroke-width="1" opacity=".7">${[[78,44],[96,38],[114,42],[86,58],[104,52],[122,58],[72,62],[128,66],[96,66]].map(([x,y])=>`<path d="M${x} ${y}c2.5-3 6-1 4.5 2c-1.5 2.5-5 2-4.5-2zM${x+5} ${y+3}l2 2"/>`).join('')}</g><path d="M${L-2} 75C${L+12} 69 ${R-12} 69 ${R+2} 75" stroke="${tdk}" stroke-width="1.6" fill="none"/><circle cx="${R+3}" cy="70" r="4" fill="${tdk}"/>`;}
+  else if(tt==='berretto'){const dome=`M${L-4} 86C${L-8} 46 ${X(-22)} 22 100 22C${X(22)} 22 ${R+8} 46 ${R+4} 86Z`,cuff=`M${L-5} 70C${L+10} 62 ${R-10} 62 ${R+5} 70L${R+5} 88C${R-10} 80 ${L+10} 80 ${L-5} 88Z`;defs+=`<clipPath id="dmc"><path d="${dome}"/></clipPath><clipPath id="cfc"><path d="${cuff}"/></clipPath>`;
+    head=`<path d="${dome}" fill="url(#hatg)"/><g clip-path="url(#dmc)" stroke="${tdk}" stroke-width=".9" fill="none" opacity=".3">${Array.from({length:7},(_,j)=>`<path d="${Array.from({length:18},(_,i)=>`M${L-6+i*((R-L+12)/17)} ${30+j*6.5}l2 2.4l2-2.4`).join('')}"/>`).join('')}</g><path d="${cuff}" fill="url(#bandg)"/><g clip-path="url(#cfc)">${ribs(L-5,R+5,58,92,32,tdk,.45)}</g><circle cx="100" cy="21" r="9" fill="${tlt}" filter="url(#fur)"/><circle cx="98" cy="19" r="4" fill="#fff" opacity=".18"/>`;}
+  else if(tt==='pescatore'){const cr=`M${L-1} 78C${L-2} 48 ${X(-18)} 32 100 32C${X(18)} 32 ${R+2} 48 ${R+1} 78Z`,bb=`M${L-12} 90C${L-7} 74 ${R+7} 74 ${R+12} 90C${R-4} 83 ${L+4} 83 ${L-12} 90Z`;
+    head=`<path d="${cr}" fill="url(#hatg)"/><path d="M${L} 70C${L+10} 65 ${R-10} 65 ${R} 70" stroke="${tdk}" stroke-width="2.4" fill="none" opacity=".5"/><path d="${bb}" fill="url(#brg)"/><path d="M${L-12} 90C${L+4} 83 ${R-4} 83 ${R+12} 90" stroke="${_lc(tc,70)}" stroke-width="1.4" fill="none"/><path d="M${L-8} 86C${L+6} 79 ${R-6} 79 ${R+8} 86" stroke="${tlt}" stroke-width=".55" fill="none" opacity=".6" stroke-dasharray="1.2 1.3"/>`;}
   // dettagli del viso
   const extra=(c.guance?`<ellipse cx="${100-ex-2}" cy="110" rx="7" ry="4.5" fill="#ff7b7b" opacity=".25"/><ellipse cx="${100+ex+2}" cy="110" rx="7" ry="4.5" fill="#ff7b7b" opacity=".25"/>`:'')
     +(c.lentiggini?[[-22,106],[-17,109],[-24,111],[-14,104],[22,106],[17,109],[24,111],[14,104],[-3,104],[4,105]].map(([dx,y])=>`<circle cx="${100+dx}" cy="${y}" r="1.1" fill="#a0603a" opacity=".55"/>`).join(''):'')
@@ -3108,7 +3172,7 @@ function lavSvg(c){
   const shine=hs.shine?`<ellipse cx="88" cy="58" rx="12" ry="6" fill="#fff" opacity=".18" transform="rotate(-20 88 58)"/>`:'';
   const cfg=`<desc>LAV:${encodeURIComponent(JSON.stringify(c))}</desc>`;
   return`<svg xmlns="http://www.w3.org/2000/svg" viewBox="18 16 164 164">${cfg}<defs>${defs}</defs><rect x="0" y="0" width="200" height="200" fill="url(#bg)"/>`
-    +sx(hairBack)+neck+`<g transform="translate(0 -7)">${under}${shirt}</g>`+ears+`<path d="${face}" fill="url(#sk)"/>`+shine+extra+noseSh+beard+nose+mouth+eyes+brows+sx(hairFront+hairOver)+glasses+sx(head)+`</svg>`;
+    +sx(hairBack)+neck+`<g transform="translate(0 -7)">${under}${shirt}</g>`+ears+`<path d="${face}" fill="url(#sk)"/>`+shine+extra+noseSh+beard+nose+mouth+eyes+brows+(faceSh?`<g clip-path="url(#fcl)">${faceSh}</g>`:'')+(hatLine?`<g clip-path="url(#hcl)">${sx(hairFront+hairOver)}</g>`:sx(hairFront+hairOver))+glasses+head+`</svg>`;
 }
 const lavUri=c=>'data:image/svg+xml,'+encodeURIComponent(lavSvg(c));
 function lavRead(uri){try{if(!uri||!uri.startsWith('data:image/svg+xml'))return null;const s=decodeURIComponent(uri.slice(uri.indexOf(',')+1)),m=s.match(/<desc>LAV:([^<]*)<\/desc>/);return m?JSON.parse(decodeURIComponent(m[1])):null;}catch(e){return null;}}
