@@ -296,8 +296,8 @@ body:not(.viewer) .tabs-inner{justify-content:space-between;}
   .fgroup{flex-wrap:wrap}
   .sort-sel{order:1;width:auto;margin-left:0;margin-top:0;flex-shrink:0;}
 
-  /* EXPORT PDF — nascosti su mobile, restano disponibili su desktop */
-  .pdf-btn,[onclick*="openExportCalModal"],#fanta-pdf-row{display:none!important;}
+  /* EXPORT PDF — su mobile solo calendario, classifiche e risultati (classe pdf-m): creano un file PDF da condividere */
+  .pdf-btn:not(.pdf-m),#fanta-pdf-row{display:none!important;}
 
   /* FORMS — font-size 16px per evitare lo zoom automatico di iOS Safari al focus, che rende i campi inutilizzabili */
   .form-grid{grid-template-columns:1fr}
@@ -1191,7 +1191,9 @@ body[data-tab="players"],body:not([data-tab]){--page:#ff2d3d}
 #page-classifiche .wrap>div:first-child{display:grid!important;grid-template-columns:auto 1fr auto;align-items:center;gap:12px}
 #page-classifiche .wrap>div:first-child>div:last-child{display:contents!important}
 #rank-seg{justify-self:center}
-@media(max-width:640px){#page-classifiche .wrap>div:first-child{grid-template-columns:1fr}#page-classifiche .pdf-btn{display:none}#rank-seg{justify-self:stretch}}
+/* Risultati: titolo con il bottone PDF a destra */
+.ris-hd{position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:14px}.ris-hd .pg-title{margin:0!important}.ris-hd .pdf-btn{position:absolute;right:0;top:50%;transform:translateY(-50%)}
+@media(max-width:640px){#page-classifiche .wrap>div:first-child{grid-template-columns:1fr auto}#page-classifiche .pdf-btn{grid-row:1;grid-column:2}#rank-seg{justify-self:stretch;grid-column:1/-1}}
 /* Calendario aperto: titolo grande con accanto torneo e mese, meno spazi vuoti */
 .cal-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px!important}
 .cal-titlebox{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
@@ -1496,7 +1498,7 @@ body .cards-grid .pcrd.k4c.k4g{display:flex!important;align-items:center;gap:14p
 .mk-vs{color:#a78bfa!important;text-shadow:0 0 12px rgba(167,139,250,.45)!important}
 body:not(.light) .cmc.mk{background:var(--aur)!important;background-attachment:fixed!important;background-size:100vw 100vh!important}
 @media(max-width:640px){#page-calendario .wrap{padding-top:10px!important}}
-@media(max-width:640px){body #page-classifiche .pdf-btn{display:none!important}}
+
 /* ═══ NOVITÀ ═══ */
 /* 1 · luccichio che passa ogni tanto sul giocatore della settimana */
 .hl .hf-feat::before{content:"";position:absolute;top:0;bottom:0;left:-60%;width:40%;pointer-events:none;z-index:2;
@@ -1926,7 +1928,7 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
           <option value="pg">Partite Giocate ↓</option>
           <option value="name">A→Z</option>
         </select>
-        <button class="pdf-btn" onclick="exportRankPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
+        <button class="pdf-btn pdf-m" onclick="exportRankPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
       </div>
     </div>
     <div id="rank-body"></div>
@@ -1984,7 +1986,7 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
 
 <div id="page-risultati" class="page">
   <div class="wrap">
-    <div class="pg-title pg-big">RISUL<span>TATI</span></div>
+    <div class="ris-hd"><div class="pg-title pg-big">RISUL<span>TATI</span></div><button class="pdf-btn pdf-m" onclick="openExportCalModal('ris')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button></div>
     <div id="ris-list"></div>
   </div>
 </div>
@@ -2177,14 +2179,14 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
 
 <div class="modal-bg" id="modal-exp-cal" onclick="if(event.target===this)this.classList.remove('open')">
   <div class="modal" onclick="event.stopPropagation()" style="max-width:400px">
-    <h2>📤 Esporta Calendario</h2>
+    <h2 id="exp-title">📤 Esporta Calendario</h2>
     <div class="form-grid">
       <div class="fg"><label>Da</label><input type="date" id="exp-from"></div>
       <div class="fg"><label>A</label><input type="date" id="exp-to"></div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-g" onclick="document.getElementById('modal-exp-cal').classList.remove('open')">Annulla</button>
-      <button class="pdf-btn" onclick="exportCalendarPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
+      <button class="pdf-btn pdf-m" onclick="exportCalendarPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
     </div>
   </div>
 </div>
@@ -3630,8 +3632,73 @@ function pdfHeaderHtml(subtitle,extra){
 function pdfFooterHtml(){
   return `<div style="text-align:center;padding:16px 24px 4px;font-size:10px;color:#999999;border-top:1px solid #e5e5e5;margin-top:24px;">LAURERA 15A40 · La nuova era del tennis inizia qui!</div>`;
 }
+// Telefono: niente finestra di stampa (su iPhone/Android non funziona bene). Si crea un vero file PDF
+// (html2canvas + jsPDF, caricati solo al primo uso) e lo si condivide o apre con un tocco.
+const isPdfMobile=()=>matchMedia('(max-width:640px)').matches||/iPhone|iPad|Android/i.test(navigator.userAgent);
+let _pdfLibs=null;
+function pdfLoadLibs(){
+  if(_pdfLibs)return _pdfLibs;
+  const load=src=>new Promise((ok,ko)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=ko;document.head.appendChild(s);});
+  _pdfLibs=Promise.all([load('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')]).catch(e=>{_pdfLibs=null;throw e;});
+  return _pdfLibs;
+}
+async function pdfMakeFile(html){
+  await pdfLoadLibs();
+  // la pagina va disegnata in un iframe nascosto largo come un A4, così i suoi stili non toccano l'app
+  const fr=document.createElement('iframe');
+  fr.style.cssText='position:fixed;left:-10000px;top:0;width:794px;height:1123px;border:0;visibility:hidden';
+  document.body.appendChild(fr);
+  try{
+    const d=fr.contentDocument;d.open();d.write(html);d.close();
+    await new Promise(r=>{if(d.readyState==='complete')r();else fr.onload=r;setTimeout(r,2500);});
+    if(d.fonts&&d.fonts.ready)await Promise.race([d.fonts.ready,new Promise(r=>setTimeout(r,2500))]);
+    await Promise.all([...d.images].map(im=>im.complete?0:new Promise(r=>{im.onload=im.onerror=r;setTimeout(r,2500);})));
+    const body=d.body,W=794;
+    fr.style.height=body.scrollHeight+'px';
+    const canvas=await html2canvas(body,{scale:2,backgroundColor:'#ffffff',width:W,windowWidth:W,useCORS:true,logging:false});
+    // A4 con margini di 10mm; i salti pagina cadono tra una riga e l'altra, mai a metà riga
+    const {jsPDF}=window.jspdf,pdf=new jsPDF({unit:'mm',format:'a4'}),M=10,PW=210-2*M,PH=297-2*M;
+    const pageH=Math.floor(W*PH/PW),total=body.scrollHeight,top0=body.getBoundingClientRect().top;
+    const cuts=[...body.querySelectorAll('tr,h3,.pdf-keep')].map(e=>Math.round(e.getBoundingClientRect().top-top0)).sort((a,b)=>a-b);
+    let y=0,first=true;
+    while(y<total-2){
+      let end=Math.min(total,y+pageH);
+      if(end<total){const c=cuts.filter(v=>v>y+pageH*0.5&&v<=y+pageH).pop();if(c)end=c;}
+      const h=end-y,sl=document.createElement('canvas');sl.width=canvas.width;sl.height=Math.ceil(h*2);
+      const cx=sl.getContext('2d');cx.fillStyle='#ffffff';cx.fillRect(0,0,sl.width,sl.height);cx.drawImage(canvas,0,-y*2);
+      if(!first)pdf.addPage();first=false;
+      pdf.addImage(sl.toDataURL('image/jpeg',0.92),'JPEG',M,M,PW,h*PW/W);
+      y=end;
+    }
+    return pdf.output('blob');
+  }finally{fr.remove();}
+}
+async function pdfMobile(html,onDone){
+  const title=(html.match(/<title>([^<]*)<\/title>/)||[])[1]||'Laurera';
+  const name=`Laurera ${title} ${fmtD(new Date())}.pdf`;
+  toast('⏳ Preparo il PDF…');
+  let blob;
+  try{blob=await pdfMakeFile(html);}catch(e){console.error(e);toast('❌ PDF non riuscito: controlla la connessione');return;}
+  if(onDone)onDone();
+  const file=new File([blob],name,{type:'application/pdf'}),url=URL.createObjectURL(blob);
+  // la condivisione richiede un tocco "fresco": il file pronto si condivide dal riquadro
+  let m=document.getElementById('modal-pdf-ready');
+  if(!m){m=document.createElement('div');m.id='modal-pdf-ready';m.className='modal-bg';m.onclick=e=>{if(e.target===m)m.classList.remove('open');};document.body.appendChild(m);}
+  const canShare=!!(navigator.canShare&&navigator.canShare({files:[file]}));
+  m.innerHTML=`<div class="modal" style="max-width:400px;text-align:center"><h2>📄 PDF pronto</h2>
+    <p style="font-size:13px;color:var(--text2);margin:6px 0 16px;word-break:break-word">${esc(name)}</p>
+    <div class="modal-actions" style="justify-content:center;flex-wrap:wrap">
+      ${canShare?'<button class="btn btn-p" id="pdf-share">Condividi / Salva</button>':''}
+      <a class="btn ${canShare?'btn-g':'btn-p'}" id="pdf-open" href="${url}" download="${esc(name)}" target="_blank" rel="noopener">${canShare?'Apri':'Scarica'}</a>
+      <button class="btn btn-g" onclick="document.getElementById('modal-pdf-ready').classList.remove('open')">Chiudi</button>
+    </div></div>`;
+  const sb=m.querySelector('#pdf-share');
+  if(sb)sb.onclick=async()=>{try{await navigator.share({files:[file],title:name});m.classList.remove('open');}catch(e){if(e&&e.name!=='AbortError')toast('⚠️ Condivisione non riuscita: usa Apri');}};
+  m.classList.add('open');
+}
 function pdfOpenAndPrint(html,onDone){
   if(_checkViewer()){toast('🔒 Esportazione PDF riservata agli admin');return;}
+  if(isPdfMobile()){pdfMobile(html,onDone);return;}
   const w=window.open('','_blank');
   if(!w){toast('⚠️ Abilita i popup');return;}
   w.document.write(html);w.document.close();
@@ -4068,8 +4135,34 @@ function saveCalMatch(){
 }
 function deleteCalMatch(){if(!editSchedId)return;const m=sched.find(x=>x.id===editSchedId);undoMatchStats(m);sched=sched.filter(m=>m.id!==editSchedId);refreshAll();toast('🗑️ Eliminato — statistiche ripristinate');}
 function clearCalResult(){if(!editSchedId)return;const m=sched.find(x=>x.id===editSchedId);if(!m||!m.risultato){toast('ℹ️ Nessun risultato');return;}undoMatchStats(m);m.risultato='';m.winnerId=null;m.gv1=0;m.gv2=0;refreshAll();toast('✅ Risultato eliminato — statistiche aggiornate');}
-function openExportCalModal(){const dates=getWeekDates();document.getElementById('exp-from').value=fmtD(dates[0]);document.getElementById('exp-to').value=fmtD(dates[6]);document.getElementById('modal-exp-cal').classList.add('open');}
-function exportCalendarPDF(){const from=document.getElementById('exp-from').value,to=document.getElementById('exp-to').value;if(!from||!to){toast('❌ Seleziona le date');return;}const filtered=sched.filter(m=>m.data>=from&&m.data<=to).sort((a,b)=>a.data.localeCompare(b.data)||a.ora.localeCompare(b.ora));if(!filtered.length){toast('ℹ️ Nessun incontro nel periodo');return;}const byDate={};filtered.forEach(m=>{if(!byDate[m.data])byDate[m.data]=[];byDate[m.data].push(m);});const fmtD2=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});const _gtn=(m,pid)=>{if(!pid)return'—';const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){const entries=[bm.p1,bm.p2];for(const e of entries){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(+pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?pdfName(p.nome):'?';}).join(' / ');}}}}const p=players.find(x=>x.id===+pid);if(p)return pdfName(p.nome);if(m.teamName1&&+pid===m.p1Id)return pdfName(m.teamName1);if(m.teamName2&&+pid===m.p2Id)return pdfName(m.teamName2);return'—';};const blocks=Object.keys(byDate).sort().map(date=>{const rows=byDate[date].map(m=>{const n1=_gtn(m,m.p1Id),n2=_gtn(m,m.p2Id);const win=m.winnerId&&m.winnerId!=='draw'?_gtn(m,m.winnerId):null;return`<tr><td style="color:#b8860b;font-weight:600">${m.ora||'—'}</td><td style="font-weight:700">${n1}</td><td style="color:#888888;text-align:center">vs</td><td style="font-weight:700">${n2}</td><td style="color:${m.risultato?'#15803d':'#666666'};font-weight:${m.risultato?700:400}">${m.risultato||'—'}</td><td style="color:#b8860b">${win?'🏆 '+win:''}</td></tr>`;}).join('');return`<div style="margin-bottom:22px;padding:0 24px"><h3 style="font-size:16px;margin:0 0 8px;color:#111111;border-bottom:2px solid #b8860b;padding-bottom:6px;text-transform:capitalize">${fmtD2(date)}</h3><table><thead><tr><th>Ora</th><th>G1</th><th></th><th>G2</th><th>Risultato</th><th>Vincitore</th></tr></thead><tbody>${rows}</tbody></table></div>`;}).join('');const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Calendario</title>${pdfFontsLink()}<style>${pdfDarkStyle()}</style></head><body>${pdfHeaderHtml('CALENDARIO PARTITE',filtered.length+' incontri')}${blocks}${pdfFooterHtml()}</body></html>`;pdfOpenAndPrint(html,()=>{document.getElementById('modal-exp-cal').classList.remove('open');});}
+// lo stesso riquadro esporta il calendario (settimana visibile) o i risultati (ultimi 30 giorni)
+let _expMode='cal';
+function openExportCalModal(mode){_expMode=mode==='ris'?'ris':'cal';document.getElementById('exp-title').textContent=_expMode==='ris'?'📤 Esporta Risultati':'📤 Esporta Calendario';if(_expMode==='ris'){const t=new Date(),f=new Date();f.setDate(f.getDate()-30);document.getElementById('exp-from').value=fmtD(f);document.getElementById('exp-to').value=fmtD(t);document.getElementById('modal-exp-cal').classList.add('open');return;}const dates=getWeekDates();document.getElementById('exp-from').value=fmtD(dates[0]);document.getElementById('exp-to').value=fmtD(dates[6]);document.getElementById('modal-exp-cal').classList.add('open');}
+function exportCalendarPDF(){
+  // Calendario: solo le partite da giocare, divise per giorno (ora e giocatori).
+  // Risultati: una sola tabella con data, ora, giocatori, risultato e vincitore, dalla più recente.
+  // Colonne a larghezza fissa, così restano allineate in tutto il PDF.
+  const from=document.getElementById('exp-from').value,to=document.getElementById('exp-to').value;if(!from||!to){toast('❌ Seleziona le date');return;}
+  const ris=_expMode==='ris';
+  const filtered=sched.filter(m=>m.data>=from&&m.data<=to&&(ris?!!m.risultato:!m.risultato)).sort((a,b)=>ris?(b.data.localeCompare(a.data)||(b.ora||'').localeCompare(a.ora||'')):(a.data.localeCompare(b.data)||(a.ora||'').localeCompare(b.ora||'')));
+  if(!filtered.length){toast(ris?'ℹ️ Nessun risultato nel periodo':'ℹ️ Nessuna partita da giocare nel periodo');return;}
+  const _gtn=(m,pid)=>{if(!pid)return'—';const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){for(const e of [bm.p1,bm.p2]){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(+pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?pdfName(p.nome):'?';}).join(' / ');}}}}const p=players.find(x=>x.id===+pid);if(p)return pdfName(p.nome);if(m.teamName1&&+pid===m.p1Id)return pdfName(m.teamName1);if(m.teamName2&&+pid===m.p2Id)return pdfName(m.teamName2);return'—';};
+  const vs='<td style="color:#888888;text-align:center">vs</td>';
+  let body;
+  if(ris){
+    const dShort=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
+    const rows=filtered.map(m=>{const draw=!m.winnerId||m.winnerId==='draw',w1=!draw&&+m.winnerId===m.p1Id,w2=!draw&&+m.winnerId===m.p2Id;
+      return `<tr><td style="text-transform:capitalize">${dShort(m.data)}</td><td style="color:#b8860b;font-weight:600">${m.ora||'—'}</td><td style="font-weight:${w1?800:500}">${esc(_gtn(m,m.p1Id))}</td>${vs}<td style="font-weight:${w2?800:500}">${esc(_gtn(m,m.p2Id))}</td><td style="text-align:center;font-weight:700;color:#15803d">${esc(m.risultato)}</td><td style="color:#b8860b;font-weight:700">${draw?'Pareggio':'🏆 '+esc(_gtn(m,m.winnerId))}</td></tr>`;}).join('');
+    body=`<div style="padding:0 24px"><table style="table-layout:fixed"><colgroup><col style="width:15%"><col style="width:9%"><col style="width:20%"><col style="width:5%"><col style="width:20%"><col style="width:11%"><col style="width:20%"></colgroup><thead><tr><th>Data</th><th>Ora</th><th>Giocatore 1</th><th></th><th>Giocatore 2</th><th style="text-align:center">Risultato</th><th>Vincitore</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }else{
+    const byDate={};filtered.forEach(m=>{(byDate[m.data]=byDate[m.data]||[]).push(m);});
+    const fmtD2=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    body=Object.keys(byDate).sort().map(date=>{const rows=byDate[date].map(m=>`<tr><td style="color:#b8860b;font-weight:600">${m.ora||'—'}</td><td style="font-weight:700">${esc(_gtn(m,m.p1Id))}</td>${vs}<td style="font-weight:700">${esc(_gtn(m,m.p2Id))}</td></tr>`).join('');
+      return `<div style="margin-bottom:22px;padding:0 24px"><h3 style="font-size:16px;margin:0 0 8px;color:#111111;border-bottom:2px solid #b8860b;padding-bottom:6px;text-transform:capitalize">${fmtD2(date)}</h3><table style="table-layout:fixed"><colgroup><col style="width:16%"><col style="width:37%"><col style="width:10%"><col style="width:37%"></colgroup><thead><tr><th>Ora</th><th>Giocatore 1</th><th></th><th>Giocatore 2</th></tr></thead><tbody>${rows}</tbody></table></div>`;}).join('');
+  }
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${ris?'Risultati':'Calendario'}</title>${pdfFontsLink()}<style>${pdfDarkStyle()}</style></head><body>${pdfHeaderHtml(ris?'RISULTATI':'CALENDARIO PARTITE',filtered.length+(ris?' partite giocate':' partite da giocare'))}${body}${pdfFooterHtml()}</body></html>`;
+  pdfOpenAndPrint(html,()=>{document.getElementById('modal-exp-cal').classList.remove('open');});
+}
 // ═══ RISULTATI ═══
 function renderRisultati(){
   // Ogni partita come un tabellone: vincitore a sinistra (VINCE), sconfitto attenuato a destra (PERDE),
@@ -6400,7 +6493,7 @@ function exportAlboPDF(){
         +'</td><td style="padding:12px 12px;font-size:13px">'+noteHtml+'</td></tr>';
     }).join('');
     return '<div style="margin-bottom:24px;padding:0 24px"><div style="font-family:\'Bebas Neue\',Arial,sans-serif;font-size:24px;letter-spacing:3px;color:#111111;border-bottom:2px solid #b8860b;padding-bottom:4px">'+year+'</div>'
-      +'<table style="width:100%;border-collapse:collapse">'+rows+'</table></div>';
+      +'<table style="width:100%;border-collapse:collapse;table-layout:fixed"><colgroup><col style="width:70px"><col style="width:48%"><col></colgroup>'+rows+'</table></div>';
   }).join('');
   var doc='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Albo Oro</title>'
     +pdfFontsLink()
