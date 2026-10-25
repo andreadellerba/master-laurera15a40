@@ -303,6 +303,9 @@ body:not(.viewer) .tabs-inner{justify-content:space-between;}
   .form-grid{grid-template-columns:1fr}
   .fg-full{grid-column:span 1}
   .fg input,.fg select,.fg textarea{font-size:16px;}
+  /* iOS: i campi data ignorano width:100% e escono dallo schermo */
+  .fg{min-width:0}.fg input[type=date],.fg input[type=time]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;width:100%;text-align:left}
+  #modal-exp-cal .modal-actions>*,#modal-pdf-ready .modal-actions>*{flex:1 1 auto;justify-content:center;text-align:center}
   .modal{padding:16px;border-radius:12px}
   .modal h2{font-size:17px}
 
@@ -3629,6 +3632,13 @@ function pdfHeaderHtml(subtitle,extra){
     </div>
   </div>`;
 }
+// tabelle con classe "fit": nomi sempre su una riga; se non ci stanno si stringono prima gli spazi, poi il testo
+function pdfFitScript(){
+  return `<script>(function(){function fit(){document.querySelectorAll('table.fit').forEach(function(t){var box=t.parentElement,w=box.clientWidth-parseFloat(getComputedStyle(box).paddingLeft)-parseFloat(getComputedStyle(box).paddingRight),px=12,fs=13;t.style.setProperty('--px',px+'px');t.style.setProperty('--fs',fs+'px');
+    while(t.scrollWidth>w&&px>4){px-=2;t.style.setProperty('--px',px+'px');}
+    while(t.scrollWidth>w&&fs>8){fs-=0.5;t.style.setProperty('--fs',fs+'px');}});}
+    fit();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);window.addEventListener('load',fit);})();<\/script>`;
+}
 function pdfFooterHtml(){
   return `<div style="text-align:center;padding:16px 24px 4px;font-size:10px;color:#999999;border-top:1px solid #e5e5e5;margin-top:24px;">LAURERA 15A40 · La nuova era del tennis inizia qui!</div>`;
 }
@@ -4135,32 +4145,31 @@ function saveCalMatch(){
 }
 function deleteCalMatch(){if(!editSchedId)return;const m=sched.find(x=>x.id===editSchedId);undoMatchStats(m);sched=sched.filter(m=>m.id!==editSchedId);refreshAll();toast('🗑️ Eliminato — statistiche ripristinate');}
 function clearCalResult(){if(!editSchedId)return;const m=sched.find(x=>x.id===editSchedId);if(!m||!m.risultato){toast('ℹ️ Nessun risultato');return;}undoMatchStats(m);m.risultato='';m.winnerId=null;m.gv1=0;m.gv2=0;refreshAll();toast('✅ Risultato eliminato — statistiche aggiornate');}
-// lo stesso riquadro esporta il calendario (settimana visibile) o i risultati (ultimi 30 giorni)
+// lo stesso riquadro esporta il calendario o i risultati, settimana per settimana (parte dalla settimana visibile nel calendario)
 let _expMode='cal';
-function openExportCalModal(mode){_expMode=mode==='ris'?'ris':'cal';document.getElementById('exp-title').textContent=_expMode==='ris'?'📤 Esporta Risultati':'📤 Esporta Calendario';if(_expMode==='ris'){const t=new Date(),f=new Date();f.setDate(f.getDate()-30);document.getElementById('exp-from').value=fmtD(f);document.getElementById('exp-to').value=fmtD(t);document.getElementById('modal-exp-cal').classList.add('open');return;}const dates=getWeekDates();document.getElementById('exp-from').value=fmtD(dates[0]);document.getElementById('exp-to').value=fmtD(dates[6]);document.getElementById('modal-exp-cal').classList.add('open');}
+function openExportCalModal(mode){_expMode=mode==='ris'?'ris':'cal';document.getElementById('exp-title').textContent=_expMode==='ris'?'📤 Esporta Risultati':'📤 Esporta Calendario';const dates=getWeekDates();document.getElementById('exp-from').value=fmtD(dates[0]);document.getElementById('exp-to').value=fmtD(dates[6]);document.getElementById('modal-exp-cal').classList.add('open');}
 function exportCalendarPDF(){
-  // Calendario: solo le partite da giocare, divise per giorno (ora e giocatori).
-  // Risultati: una sola tabella con data, ora, giocatori, risultato e vincitore, dalla più recente.
-  // Colonne a larghezza fissa, così restano allineate in tutto il PDF.
+  // Calendario: partite da giocare (ora e giocatori). Risultati: partite giocate con risultato e vincitore.
+  // Entrambi settimana per settimana, divisi per giorno, in un'unica tabella: colonne allineate e nomi sempre su una riga.
   const from=document.getElementById('exp-from').value,to=document.getElementById('exp-to').value;if(!from||!to){toast('❌ Seleziona le date');return;}
   const ris=_expMode==='ris';
-  const filtered=sched.filter(m=>m.data>=from&&m.data<=to&&(ris?!!m.risultato:!m.risultato)).sort((a,b)=>ris?(b.data.localeCompare(a.data)||(b.ora||'').localeCompare(a.ora||'')):(a.data.localeCompare(b.data)||(a.ora||'').localeCompare(b.ora||'')));
+  const filtered=sched.filter(m=>m.data>=from&&m.data<=to&&(ris?!!m.risultato:!m.risultato)).sort((a,b)=>a.data.localeCompare(b.data)||(a.ora||'').localeCompare(b.ora||''));
   if(!filtered.length){toast(ris?'ℹ️ Nessun risultato nel periodo':'ℹ️ Nessuna partita da giocare nel periodo');return;}
   const _gtn=(m,pid)=>{if(!pid)return'—';const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){for(const e of [bm.p1,bm.p2]){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(+pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?pdfName(p.nome):'?';}).join(' / ');}}}}const p=players.find(x=>x.id===+pid);if(p)return pdfName(p.nome);if(m.teamName1&&+pid===m.p1Id)return pdfName(m.teamName1);if(m.teamName2&&+pid===m.p2Id)return pdfName(m.teamName2);return'—';};
-  const vs='<td style="color:#888888;text-align:center">vs</td>';
-  let body;
-  if(ris){
-    const dShort=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
-    const rows=filtered.map(m=>{const draw=!m.winnerId||m.winnerId==='draw',w1=!draw&&+m.winnerId===m.p1Id,w2=!draw&&+m.winnerId===m.p2Id;
-      return `<tr><td style="text-transform:capitalize">${dShort(m.data)}</td><td style="color:#b8860b;font-weight:600">${m.ora||'—'}</td><td style="font-weight:${w1?800:500}">${esc(_gtn(m,m.p1Id))}</td>${vs}<td style="font-weight:${w2?800:500}">${esc(_gtn(m,m.p2Id))}</td><td style="text-align:center;font-weight:700;color:#15803d">${esc(m.risultato)}</td><td style="color:#b8860b;font-weight:700">${draw?'Pareggio':'🏆 '+esc(_gtn(m,m.winnerId))}</td></tr>`;}).join('');
-    body=`<div style="padding:0 24px"><table style="table-layout:fixed"><colgroup><col style="width:15%"><col style="width:9%"><col style="width:20%"><col style="width:5%"><col style="width:20%"><col style="width:11%"><col style="width:20%"></colgroup><thead><tr><th>Data</th><th>Ora</th><th>Giocatore 1</th><th></th><th>Giocatore 2</th><th style="text-align:center">Risultato</th><th>Vincitore</th></tr></thead><tbody>${rows}</tbody></table></div>`;
-  }else{
-    const byDate={};filtered.forEach(m=>{(byDate[m.data]=byDate[m.data]||[]).push(m);});
-    const fmtD2=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-    body=Object.keys(byDate).sort().map(date=>{const rows=byDate[date].map(m=>`<tr><td style="color:#b8860b;font-weight:600">${m.ora||'—'}</td><td style="font-weight:700">${esc(_gtn(m,m.p1Id))}</td>${vs}<td style="font-weight:700">${esc(_gtn(m,m.p2Id))}</td></tr>`).join('');
-      return `<div style="margin-bottom:22px;padding:0 24px"><h3 style="font-size:16px;margin:0 0 8px;color:#111111;border-bottom:2px solid #b8860b;padding-bottom:6px;text-transform:capitalize">${fmtD2(date)}</h3><table style="table-layout:fixed"><colgroup><col style="width:16%"><col style="width:37%"><col style="width:10%"><col style="width:37%"></colgroup><thead><tr><th>Ora</th><th>Giocatore 1</th><th></th><th>Giocatore 2</th></tr></thead><tbody>${rows}</tbody></table></div>`;}).join('');
-  }
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${ris?'Risultati':'Calendario'}</title>${pdfFontsLink()}<style>${pdfDarkStyle()}</style></head><body>${pdfHeaderHtml(ris?'RISULTATI':'CALENDARIO PARTITE',filtered.length+(ris?' partite giocate':' partite da giocare'))}${body}${pdfFooterHtml()}</body></html>`;
+  const fmtD2=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const byDate={};filtered.forEach(m=>{(byDate[m.data]=byDate[m.data]||[]).push(m);});
+  const cols=ris?7:4;
+  const rows=Object.keys(byDate).sort().map(date=>`<tr class="pdf-day"><td colspan="${cols}">${fmtD2(date)}</td></tr>`+byDate[date].map(m=>{
+    const draw=!m.winnerId||m.winnerId==='draw',w1=!draw&&+m.winnerId===m.p1Id,w2=!draw&&+m.winnerId===m.p2Id;
+    const b=w=>ris?(w?800:500):700;
+    return `<tr><td class="o">${m.ora||'—'}</td><td style="font-weight:${b(w1)}">${esc(_gtn(m,m.p1Id))}</td><td class="vs">vs</td><td style="font-weight:${b(w2)}">${esc(_gtn(m,m.p2Id))}</td>`
+      +(ris?`<td class="r">${esc(m.risultato)}</td><td class="sp"></td><td class="w">${draw?'<span class="x">✕</span> Pareggio':'🏆 '+esc(_gtn(m,m.winnerId))}</td>`:'')+'</tr>';
+  }).join('')).join('');
+  const head=ris?'<th>Ora</th><th>Giocatore 1</th><th></th><th>Giocatore 2</th><th class="r">Risultato</th><th class="sp"></th><th>Vincitore</th>':'<th>Ora</th><th>Giocatore 1</th><th></th><th>Giocatore 2</th>';
+  const css=`td,th{white-space:nowrap}table.fit td,table.fit th{padding-left:var(--px,12px);padding-right:var(--px,12px)}table.fit td{font-size:var(--fs,13px)}table.fit tr.pdf-day td{font-size:17px}td.o{color:#b8860b;font-weight:600;width:1%}td.vs,th.vs{color:#888888;text-align:center;width:1%;padding-left:4px;padding-right:4px}
+    .r{text-align:center!important}td.r{font-weight:700;color:#15803d}td.w{color:#b8860b;font-weight:700}td.sp,th.sp{width:1%;padding:0}.x{display:inline-block;color:#b91c1c;font-weight:900}
+    tr.pdf-day td{background:#ffffff!important;font-family:"Bebas Neue",Arial,sans-serif;font-size:17px;letter-spacing:1px;color:#111111;text-transform:capitalize;border-bottom:2px solid #b8860b;padding:16px 8px 6px}`;
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${ris?'Risultati':'Calendario'}</title>${pdfFontsLink()}<style>${pdfDarkStyle()}${css}</style></head><body>${pdfHeaderHtml(ris?'RISULTATI':'CALENDARIO PARTITE',filtered.length+(ris?' partite giocate':' partite da giocare'))}<div style="padding:0 24px"><table class="fit"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>${pdfFooterHtml()}${pdfFitScript()}</body></html>`;
   pdfOpenAndPrint(html,()=>{document.getElementById('modal-exp-cal').classList.remove('open');});
 }
 // ═══ RISULTATI ═══
