@@ -1817,6 +1817,8 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
 .ios-tx b.blue{color:#4da3ff;font-weight:500}
 #vis-det .ios-grp+.ios-f,#vis-det .ios-f{margin-top:10px}
 /* ═══ finestra "Installa l'app" ═══ */
+#punti-bg{position:fixed;inset:0;z-index:7000;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px;animation:instFade .25s ease}
+.punti-t{margin:0 0 14px;display:grid;gap:6px}.punti-t div{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;background:rgba(255,255,255,.06);font:600 15px "DM Sans",sans-serif;color:#fff}.punti-t b{font:800 18px "DM Sans",sans-serif;color:#4ade80}
 #inst-bg{position:fixed!important;inset:0;z-index:7000!important;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center;padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom));animation:instFade .25s ease}
 @keyframes instFade{from{opacity:0}to{opacity:1}}
 .inst-box{width:100%;max-width:420px;background:#0e1c33;border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:22px 18px 14px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);animation:sheetUp .3s ease-out}
@@ -3627,7 +3629,7 @@ function pdfDarkStyle(){
     td{padding:9px 12px;border-bottom:1px solid #e5e5e5;font-size:13px;color:#111111;}
     tr:nth-child(even) td{background:#fafafa;}
     th,td{text-align:center;vertical-align:middle;}
-    .pl{display:inline-block;white-space:nowrap;vertical-align:middle;}.pl>span{vertical-align:middle;margin-left:.5em;}
+    .pl{display:inline-block;white-space:nowrap;vertical-align:middle;}.pl>.n{vertical-align:middle;margin-left:.5em;}.avs{display:inline-block;vertical-align:middle;text-align:left;white-space:nowrap;}.dbl .avs{width:2.9em;}
     .pav{display:inline-block;width:2em;height:2em;border-radius:50%;object-fit:cover;vertical-align:middle;}.pav+.pav{margin-left:-1.1em;}
     @media print{@page{size:A4;margin:12mm}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#ffffff;}}`;
 }
@@ -3645,7 +3647,7 @@ function pdfHeaderHtml(subtitle,extra){
 }
 // avatar e nome di un giocatore (o di una coppia) in una cella del PDF
 function pdfSide(ids,name,weight){const av=ids.map(id=>players.find(x=>x.id===+id)).filter(p=>p&&phUrl(p)).map(p=>`<img class="pav" src="${phUrl(p)}" alt="">`).join('');
-  return `<span class="pl"${weight?` style="font-weight:${weight}"`:''}>${av}<span>${esc(name)}</span></span>`;}
+  return `<span class="pl"${weight?` style="font-weight:${weight}"`:''}>${av?`<span class="avs">${av}</span>`:''}<span class="n">${esc(name)}</span></span>`;}
 // tabelle con classe "fit": nomi sempre su una riga; se non ci stanno si stringono prima gli spazi, poi il testo
 function pdfFitScript(){
   return `<script>(function(){function fit(){document.querySelectorAll('table.fit').forEach(function(t){var box=t.parentElement,w=box.clientWidth-parseFloat(getComputedStyle(box).paddingLeft)-parseFloat(getComputedStyle(box).paddingRight),px=12,fs=13;t.style.setProperty('--px',px+'px');t.style.setProperty('--fs',fs+'px');
@@ -3755,23 +3757,23 @@ function exportRankPDF(){
   const sortKey=document.getElementById('rank-sort-sel')?document.getElementById('rank-sort-sel').value:'gv';
   const list=rankSorted(sortKey),isName=sortKey==='name',showD=sortKey==='gv';
   const hl=k=>sortKey===k?'font-size:16px;font-weight:900;color:#111111':'';
-  const rows=list.map((p,i)=>{const med=!isName&&rankVal(p,sortKey)>0&&i<3;
+  const rows=list.map((p,i)=>{const med=!isName&&rankVal(p,sortKey)>0&&i<3,dt=showD&&(+p.gv||0)>0?deltaText(p.id):'';
     return `<tr>
-      <td style="font-size:15px;font-weight:800;color:${i===0?'#f0c040':i===1?'#9ca3b0':i===2?'#cd7c3f':'#888888'}">${isName?'':med?['🥇','🥈','🥉'][i]:i+1}</td>
-      ${showD?`<td style="font-size:12px;font-weight:800;color:${{"▲":"#15803d","▼":"#b91c1c"}[deltaText(p.id)[0]]||"#888888"}">${(+p.gv||0)>0?deltaText(p.id):""}</td>`:''}
-      <td>${pdfSide([p.id],pdfName(p.nome),700)}</td>
-      <td style="${hl('pg')}">${p.pg||0}</td>
-      <td>${storicoHtml(p.storico)}</td>
-      <td style="color:#15803d;font-weight:700;${hl('pt')}">${puntiOf(p)}</td>
-      <td style="color:#b8860b;font-weight:700;${hl('mg')}">${(p.mg||0).toFixed(2)}</td>
-      <td style="font-weight:700;${hl('gv')}">${p.gv||0}</td>
+      <td class="pos" style="font-size:15px;font-weight:800;color:${i===0?'#f0c040':i===1?'#9ca3b0':i===2?'#cd7c3f':'#888888'}">${isName?'':med?['🥇','🥈','🥉'][i]:i+1}${dt?` <span style="font-size:11px;color:${{"▲":"#15803d","▼":"#b91c1c"}[dt[0]]||"#888888"}">${dt}</span>`:''}</td>
+      <td class="nm">${pdfSide([p.id],pdfName(p.nome),700)}</td>
+      <td class="st" style="${hl('pg')}">${p.pg||0}</td>
+      <td class="st" style="color:#15803d;font-weight:700;${hl('pt')}">${puntiOf(p)}</td>
+      <td class="st" style="font-weight:700;${hl('gv')}">${p.gv||0}</td>
+      <td class="st" style="color:#b8860b;font-weight:700;${hl('mg')}">${(p.mg||0).toFixed(2)}</td>
+      <td class="st">${storicoHtml(p.storico)}</td>
     </tr>`;}).join('');
   const by={gv:'Game',pt:'Punti',mg:'Media',pg:'Partite',name:'A–Z'}[sortKey];
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Classifiche</title>
   ${pdfFontsLink()}
-  <style>${pdfDarkStyle()}td,th{white-space:nowrap}table.fit td,table.fit th{padding-left:var(--px,12px);padding-right:var(--px,12px)}table.fit td{font-size:var(--fs,13px)}</style></head><body>
+  <style>${pdfDarkStyle()}td,th{white-space:nowrap}table.fit td,table.fit th{padding-left:var(--px,12px);padding-right:var(--px,12px)}table.fit td{font-size:var(--fs,13px)}
+  table.fit .pos{width:1%;padding-right:4px;text-align:left}table.fit .nm{text-align:left;padding-left:4px}.st{width:12%}</style></head><body>
   ${pdfHeaderHtml('CLASSIFICA GENERALE',list.length+' giocatori · ordine: '+by)}
-  <div style="padding:0 24px"><table class="fit"><thead><tr><th>#</th>${showD?'<th>±</th>':''}<th>Giocatore</th><th>Partite</th><th>V/P/S</th><th>Punti</th><th>Media</th><th>Game</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div style="padding:0 24px"><table class="fit"><thead><tr><th class="pos">#</th><th class="nm">Giocatore</th><th class="st">Partite</th><th class="st">Punti</th><th class="st">Game</th><th class="st">Media</th><th class="st">Storico</th></tr></thead><tbody>${rows}</tbody></table></div>
   ${pdfFooterHtml()}${pdfFitScript()}
   </body></html>`;
   pdfOpenAndPrint(html);
@@ -4198,14 +4200,15 @@ function exportCalendarPDF(){
   const rows=Object.keys(byDate).sort().map(date=>`<tr class="pdf-day"><td colspan="${cols}">${fmtD2(date)}</td></tr>`+byDate[date].map(m=>{
     const draw=!m.winnerId||m.winnerId==='draw',w1=!draw&&+m.winnerId===m.p1Id,w2=!draw&&+m.winnerId===m.p2Id;
     const b=w=>ris?(w?800:500):700;
-    return `<tr><td class="o">${m.ora||'—'}</td><td>${_side(m,m.p1Id,b(w1))}</td><td class="vs">vs</td><td>${_side(m,m.p2Id,b(w2))}</td>`
-      +(ris?`<td class="r">${esc(m.risultato)}</td><td class="sp"></td><td class="w">${draw?'<span class="x">✕</span> Pareggio':'🏆 '+_side(m,m.winnerId)}</td>`:'')+'</tr>';
+    return `<tr><td class="o">${m.ora||'—'}</td><td class="pn">${_side(m,m.p1Id,b(w1))}</td><td class="vs">vs</td><td class="pn">${_side(m,m.p2Id,b(w2))}</td>`
+      +(ris?`<td class="r">${esc(m.risultato)}</td><td class="sp"></td><td class="w">${draw?'-':'🏆 '+_side(m,m.winnerId)}</td>`:'')+'</tr>';
   }).join('')).join('');
-  const head=ris?'<th>Ora</th><th>Giocatore 1</th><th></th><th>Giocatore 2</th><th class="r">Risultato</th><th class="sp"></th><th>Vincitore</th>':'<th>Ora</th><th>Giocatore 1</th><th></th><th>Giocatore 2</th>';
+  const hasDbl=filtered.some(m=>_gids(m,m.p1Id).length>1||_gids(m,m.p2Id).length>1);
   const css=`td,th{white-space:nowrap}table.fit td,table.fit th{padding-left:var(--px,12px);padding-right:var(--px,12px)}table.fit td{font-size:var(--fs,13px)}table.fit tr.pdf-day td{font-size:17px}td.o{color:#b8860b;font-weight:600;width:1%}td.vs,th.vs{color:#888888;text-align:center;width:1%;padding-left:4px;padding-right:4px}
     .r{text-align:center!important}td.r{font-weight:700;color:#15803d}td.w{color:#b8860b;font-weight:700}td.sp,th.sp{width:1%;padding:0}.x{display:inline-block;color:#b91c1c;font-weight:900}
-    tr.pdf-day td{background:#ffffff!important;font-family:"Bebas Neue",Arial,sans-serif;font-size:17px;letter-spacing:1px;color:#111111;text-transform:capitalize;border-bottom:2px solid #b8860b;padding:16px 8px 6px;text-align:center}`;
-  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${ris?'Risultati':'Calendario'}</title>${pdfFontsLink()}<style>${pdfDarkStyle()}${css}</style></head><body>${pdfHeaderHtml(ris?'RISULTATI':'CALENDARIO PARTITE',filtered.length+(ris?' partite giocate':' partite da giocare'))}<div style="padding:0 24px"><table class="fit"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>${pdfFooterHtml()}${pdfFitScript()}</body></html>`;
+    tr.pdf-day td{background:#ffffff!important;font-family:"Bebas Neue",Arial,sans-serif;font-size:17px;letter-spacing:1px;color:#111111;text-transform:capitalize;border-bottom:0;padding:16px 8px 6px;text-align:center}
+    table.fit td.o{padding-right:4px}table.fit td.pn{text-align:left;padding-left:4px}td.r,td.w{text-align:left!important}td.w{width:1%}`;
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${ris?'Risultati':'Calendario'}</title>${pdfFontsLink()}<style>${pdfDarkStyle()}${css}</style></head><body>${pdfHeaderHtml(ris?'RISULTATI':'CALENDARIO PARTITE',filtered.length+(ris?' partite giocate':' partite da giocare'))}<div style="padding:0 24px"><table class="fit${hasDbl?' dbl':''}"><tbody>${rows}</tbody></table></div>${pdfFooterHtml()}${pdfFitScript()}</body></html>`;
   pdfOpenAndPrint(html,()=>{document.getElementById('modal-exp-cal').classList.remove('open');});
 }
 // ═══ RISULTATI ═══
@@ -7087,6 +7090,29 @@ document.addEventListener('click',function(e){
   window.__showInstall=show;   // per le prove
   // aspetto che l'app sia caricata (e su Android che arrivi il prompt del sistema)
   setTimeout(show,isAndroid?5000:3000);
+})();
+</script>
+<script>
+// Avviso della nuova classifica a Punti: una sola volta per dispositivo, quando non ci sono altre finestre aperte
+(function(){
+  var KEY='laurera_punti_popup';
+  try{if(localStorage.getItem(KEY))return;}catch(e){return;}
+  function close(){var b=document.getElementById('punti-bg');if(b)b.remove();}
+  function show(){
+    try{localStorage.setItem(KEY,'1');}catch(e){}
+    var bg=document.createElement('div');bg.id='punti-bg';
+    bg.innerHTML='<div class="inst-box" role="dialog" aria-labelledby="punti-tt"><h3 id="punti-tt">🏆 Nuova classifica a Punti</h3>'
+      +'<p>In Classifiche ora puoi vedere anche i Punti, già calcolati su tutte le partite giocate.</p>'
+      +'<div class="punti-t"><div>Vittoria<b>3 punti</b></div><div>Pareggio<b>1 punto</b></div><div>Sconfitta<b>0 punti</b></div></div>'
+      +'<button type="button" id="punti-go" class="inst-go">Vedi la classifica</button><button type="button" id="punti-no" class="inst-no">Chiudi</button></div>';
+    document.body.appendChild(bg);
+    document.getElementById('punti-go').onclick=function(){close();switchTab('classifiche');setRankSort('pt');};
+    document.getElementById('punti-no').onclick=close;
+  }
+  var t=setInterval(function(){
+    if(document.hidden||document.getElementById('inst-bg')||document.querySelector('.modal-bg.open'))return;
+    clearInterval(t);show();
+  },4000);
 })();
 </script>
 </body>
