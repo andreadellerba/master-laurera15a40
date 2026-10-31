@@ -3756,22 +3756,21 @@ function pdfOpenAndPrint(html,onDone){
 function exportRankPDF(){
   const sortKey=document.getElementById('rank-sort-sel')?document.getElementById('rank-sort-sel').value:'gv';
   const list=rankSorted(sortKey),isName=sortKey==='name',showD=sortKey==='gv';
-  const hl=k=>sortKey===k?'font-size:16px;font-weight:900;color:#111111':'';
   const rows=list.map((p,i)=>{const med=!isName&&rankVal(p,sortKey)>0&&i<3,dt=showD&&(+p.gv||0)>0?deltaText(p.id):'';
     return `<tr>
-      <td class="pos" style="font-size:15px;font-weight:800;color:${i===0?'#f0c040':i===1?'#9ca3b0':i===2?'#cd7c3f':'#888888'}">${isName?'':med?['🥇','🥈','🥉'][i]:i+1}${dt?` <span style="font-size:11px;color:${{"▲":"#15803d","▼":"#b91c1c"}[dt[0]]||"#888888"}">${dt}</span>`:''}</td>
+      <td class="pos" style="color:${i===0?'#f0c040':i===1?'#9ca3b0':i===2?'#cd7c3f':'#888888'}">${isName?'':med?['🥇','🥈','🥉'][i]:i+1}${dt?` <span style="color:${{"▲":"#15803d","▼":"#b91c1c"}[dt[0]]||"#888888"}">${dt}</span>`:''}</td>
       <td class="nm">${pdfSide([p.id],pdfName(p.nome),700)}</td>
-      <td class="st" style="${hl('pg')}">${p.pg||0}</td>
-      <td class="st" style="color:#15803d;font-weight:700;${hl('pt')}">${puntiOf(p)}</td>
-      <td class="st" style="font-weight:700;${hl('gv')}">${p.gv||0}</td>
-      <td class="st" style="color:#b8860b;font-weight:700;${hl('mg')}">${(p.mg||0).toFixed(2)}</td>
+      <td class="st">${p.pg||0}</td>
+      <td class="st" style="color:#15803d">${puntiOf(p)}</td>
+      <td class="st">${p.gv||0}</td>
+      <td class="st" style="color:#b8860b">${(p.mg||0).toFixed(2)}</td>
       <td class="st">${storicoHtml(p.storico)}</td>
     </tr>`;}).join('');
   const by={gv:'Game',pt:'Punti',mg:'Media',pg:'Partite',name:'A–Z'}[sortKey];
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Classifiche</title>
   ${pdfFontsLink()}
   <style>${pdfDarkStyle()}td,th{white-space:nowrap}table.fit td,table.fit th{padding-left:var(--px,12px);padding-right:var(--px,12px)}table.fit td{font-size:var(--fs,13px)}
-  table.fit .pos{width:1%;padding-right:4px;text-align:left}table.fit .nm{text-align:left;padding-left:4px}.st{width:12%}</style></head><body>
+  table.fit .pos{width:1%;padding-right:4px;text-align:left}table.fit .nm{text-align:left;padding-left:4px}.st{width:12%}td.pos,td.st,td.st .sv,td.st .sep{font-weight:700}</style></head><body>
   ${pdfHeaderHtml('CLASSIFICA GENERALE',list.length+' giocatori · ordine: '+by)}
   <div style="padding:0 24px"><table class="fit"><thead><tr><th class="pos">#</th><th class="nm">Giocatore</th><th class="st">Partite</th><th class="st">Punti</th><th class="st">Game</th><th class="st">Media</th><th class="st">Storico</th></tr></thead><tbody>${rows}</tbody></table></div>
   ${pdfFooterHtml()}${pdfFitScript()}
@@ -4196,18 +4195,18 @@ function exportCalendarPDF(){
   const _side=(m,pid,w)=>pdfSide(_gids(m,pid),_gtn(m,pid),w);
   const fmtD2=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const byDate={};filtered.forEach(m=>{(byDate[m.data]=byDate[m.data]||[]).push(m);});
-  const cols=ris?7:4;
+  const cols=ris?5:2;
   const rows=Object.keys(byDate).sort().map(date=>`<tr class="pdf-day"><td colspan="${cols}">${fmtD2(date)}</td></tr>`+byDate[date].map(m=>{
     const draw=!m.winnerId||m.winnerId==='draw',w1=!draw&&+m.winnerId===m.p1Id,w2=!draw&&+m.winnerId===m.p2Id;
     const b=w=>ris?(w?800:500):700;
-    return `<tr><td class="o">${m.ora||'—'}</td><td class="pn">${_side(m,m.p1Id,b(w1))}</td><td class="vs">vs</td><td class="pn">${_side(m,m.p2Id,b(w2))}</td>`
+    return `<tr><td class="o">${m.ora||'—'}</td><td class="pn">${_side(m,m.p1Id,b(w1))}<span class="vs">vs</span>${_side(m,m.p2Id,b(w2))}</td>`
       +(ris?`<td class="r">${esc(m.risultato)}</td><td class="sp"></td><td class="w">${draw?'-':'🏆 '+_side(m,m.winnerId)}</td>`:'')+'</tr>';
   }).join('')).join('');
   const hasDbl=filtered.some(m=>_gids(m,m.p1Id).length>1||_gids(m,m.p2Id).length>1);
   const css=`td,th{white-space:nowrap}table.fit td,table.fit th{padding-left:var(--px,12px);padding-right:var(--px,12px)}table.fit td{font-size:var(--fs,13px)}table.fit tr.pdf-day td{font-size:17px}td.o{color:#b8860b;font-weight:600;width:1%}td.vs,th.vs{color:#888888;text-align:center;width:1%;padding-left:4px;padding-right:4px}
     .r{text-align:center!important}td.r{font-weight:700;color:#15803d}td.w{color:#b8860b;font-weight:700}td.sp,th.sp{width:1%;padding:0}.x{display:inline-block;color:#b91c1c;font-weight:900}
     tr.pdf-day td{background:#ffffff!important;font-family:"Bebas Neue",Arial,sans-serif;font-size:17px;letter-spacing:1px;color:#111111;text-transform:capitalize;border-bottom:0;padding:16px 8px 6px;text-align:center}
-    table.fit td.o{padding-right:4px}table.fit td.pn{text-align:left;padding-left:4px}td.r,td.w{text-align:left!important}td.w{width:1%}`;
+    table.fit td.o{padding-right:4px}table.fit td.pn{text-align:left;padding-left:4px}td.r,td.w{text-align:left!important}td.r,td.w{width:1%}span.vs{color:#888888;margin:0 .5em;vertical-align:middle}.dbl span.vs+.pl .avs{width:auto}`;
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${ris?'Risultati':'Calendario'}</title>${pdfFontsLink()}<style>${pdfDarkStyle()}${css}</style></head><body>${pdfHeaderHtml(ris?'RISULTATI':'CALENDARIO PARTITE',filtered.length+(ris?' partite giocate':' partite da giocare'))}<div style="padding:0 24px"><table class="fit${hasDbl?' dbl':''}"><tbody>${rows}</tbody></table></div>${pdfFooterHtml()}${pdfFitScript()}</body></html>`;
   pdfOpenAndPrint(html,()=>{document.getElementById('modal-exp-cal').classList.remove('open');});
 }
