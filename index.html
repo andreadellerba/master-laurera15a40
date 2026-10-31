@@ -1119,7 +1119,7 @@ body:not(.light) .cmc.mk{display:grid!important;grid-template-columns:auto minma
 .rk-seg button{border:0;background:none;color:#aaa;font-family:"DM Sans",sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:8px 14px;border-radius:999px;cursor:pointer}
 .rk-seg button.on{background:var(--page);color:#111}
 .rk-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
-.rk-row{display:grid;grid-template-columns:44px auto minmax(0,1fr) repeat(4,76px);align-items:center;gap:10px;padding:9px 14px;border-radius:16px;cursor:pointer;
+.rk-row{display:grid;grid-template-columns:44px auto minmax(0,1fr) repeat(5,70px);align-items:center;gap:10px;padding:9px 14px;border-radius:16px;cursor:pointer;
   background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);transition:transform .12s}
 .rk-row:hover{transform:translateY(-2px)}
 .rk-row.top{background:linear-gradient(90deg,color-mix(in srgb,var(--m) 22%,transparent),rgba(255,255,255,.03) 60%);border-color:color-mix(in srgb,var(--m) 50%,transparent)}
@@ -1371,7 +1371,7 @@ html{background-color:#000!important}
 .rk-c.k b{text-shadow:0 0 14px currentColor}
 .rk-leg{display:none}
 @media(min-width:641px){
-  .rk-leg{display:grid;grid-template-columns:44px auto minmax(0,1fr) repeat(4,76px);gap:10px;padding:0 15px 6px;font:700 11px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.7)}
+  .rk-leg{display:grid;grid-template-columns:44px auto minmax(0,1fr) repeat(5,70px);gap:10px;padding:0 15px 6px;font:700 11px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.7)}
   .rk-leg span:nth-child(2){width:38px}
   .rk-leg span{text-align:center}
   .rk-leg span.k{color:#fff!important;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
@@ -1921,12 +1921,14 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
         <!-- ordinamento a pillole (la tendina resta nascosta e tiene il valore scelto) -->
         <div class="rk-seg" id="rank-seg">
           <button type="button" data-k="gv" class="on" onclick="setRankSort('gv')">Game</button>
+          <button type="button" data-k="pt" onclick="setRankSort('pt')">Punti</button>
           <button type="button" data-k="mg" onclick="setRankSort('mg')">Media</button>
           <button type="button" data-k="pg" onclick="setRankSort('pg')">Partite</button>
           <button type="button" data-k="name" onclick="setRankSort('name')">A–Z</button>
         </div>
         <select class="sort-sel" id="rank-sort-sel" onchange="renderRank()" hidden>
           <option value="gv">Game Totali ↓</option>
+          <option value="pt">Punti ↓</option>
           <option value="mg">Media Game ↓</option>
           <option value="pg">Partite Giocate ↓</option>
           <option value="name">A→Z</option>
@@ -2724,9 +2726,9 @@ document.addEventListener('pointermove',e=>{
 document.addEventListener('pointerleave',()=>document.querySelectorAll('.tilt').forEach(o=>{o.classList.remove('tilt');o.style.transform='';}),true);
 // ═══ WOW 5: podio animato in cima a Classifiche ═══
 function podioHtml(list,sortKey){
-  const top=list.slice(0,3).filter(p=>(+p.gv||0)>0);if(!top.length)return'';
-  const val=p=>sortKey==='mg'?(+p.mg||0).toFixed(2):sortKey==='pg'?(+p.pg||0):(+p.gv||0);
-  const lbl=sortKey==='mg'?'MEDIA':sortKey==='pg'?'PARTITE':'GAME';
+  const top=list.slice(0,3).filter(p=>(sortKey==='pt'?puntiOf(p):+p.gv||0)>0);if(!top.length)return'';
+  const val=p=>sortKey==='mg'?(+p.mg||0).toFixed(2):sortKey==='pg'?(+p.pg||0):sortKey==='pt'?puntiOf(p):(+p.gv||0);
+  const lbl=sortKey==='mg'?'MEDIA':sortKey==='pg'?'PARTITE':sortKey==='pt'?'PUNTI':'GAME';
   const av=p=>phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${ini(p.nome)}</span>`;
   const slot=(p,pos)=>p?`<div class="podio-slot p${pos}" style="animation-delay:${pos===1?.35:pos===2?.15:0}s">
       <div class="podio-av">${av(p)}</div><div class="podio-name">${esc(dispName(p.nome))}</div>
@@ -3583,26 +3585,32 @@ function deletePlayer(){
 }
 // ═══ RANK ═══
 function setRankSort(k){const s=document.getElementById('rank-sort-sel');if(s)s.value=k;document.querySelectorAll('#rank-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));renderRank();}
+// Punti: 3 a vittoria, 1 a pareggio, 0 a sconfitta, calcolati dallo storico V-P-S (quindi anche per le partite già giocate).
+// A pari punti conta chi ha più game, poi la media.
+function puntiOf(p){const s=normStorico(p.storico).split('-').map(Number);return 3*s[0]+s[1];}
+function rankVal(p,k){return k==='pt'?puntiOf(p):(+p[k]||0);}
+function rankSorted(k){const list=players.filter(p=>!p.archiviato);
+  if(k==='name')return list.sort((a,b)=>bySurname(a,b));
+  return list.sort((a,b)=>rankVal(b,k)-rankVal(a,k)||(k==='pt'?(+b.gv||0)-(+a.gv||0)||(+b.mg||0)-(+a.mg||0):0)||bySurname(a,b));}
 function renderRank(){
   // Righe "da classifica TV": posizione grande, avatar, nome, poi Partite · Esiti · Media · Game.
   // I primi 3 con fascia oro/argento/bronzo; sul telefono resta la colonna dell'ordinamento scelto.
   const sortKey=document.getElementById('rank-sort-sel')?document.getElementById('rank-sort-sel').value:'gv';
   document.querySelectorAll('#rank-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===sortKey));
-  let list=players.filter(p=>!p.archiviato);
-  if(sortKey==='name')list.sort((a,b)=>bySurname(a,b));
-  else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0)||bySurname(a,b));
+  const list=rankSorted(sortKey);
   const medal=['#f0c040','#c8ced8','#cd7c3f'];
   const av=p=>`<div class="mk-av">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`;
   const keyCls=k=>sortKey===k?' k':'';
-  const rows=list.map((p,i)=>{const top=sortKey!=='name'&&i<3&&(+p[sortKey]||0)>0;
+  const rows=list.map((p,i)=>{const top=sortKey!=='name'&&i<3&&rankVal(p,sortKey)>0;
     return `<div class="rk-row${top?' top':''}"${top?` style="--m:${medal[i]}"`:''} onclick="openProfile(${p.id})">
       <span class="rk-p">${sortKey==="name"?"":i+1}${sortKey==="gv"&&(+p.gv||0)>0?deltaHtml(p.id):""}</span>${av(p)}<span class="rk-n"><span class="rk-nm">${esc(dispName(p.nome))}</span>${last5Html(p.id)}</span>
       <div class="rk-c${keyCls('pg')}"><b>${+p.pg||0}</b><span>PARTITE</span></div>
       <div class="rk-c rk-e"><b>${esc(normStorico(p.storico))}</b><span>STORICO</span></div>
+      <div class="rk-c${keyCls('pt')}"><b style="color:#4ade80">${puntiOf(p)}</b><span>PUNTI</span></div>
       <div class="rk-c${keyCls('mg')}"><b style="color:#22b8f0">${(+p.mg||0).toFixed(2)}</b><span>MEDIA</span></div>
       <div class="rk-c${keyCls('gv')}"><b style="color:#e8ff00">${+p.gv||0}</b><span>GAME</span></div>
     </div>`;}).join('');
-  document.getElementById('rank-body').innerHTML=(sortKey==='name'?'':podioHtml(list,sortKey))+`<div class="rk-list rk-by-${sortKey}">${rows?`<div class="rk-leg"><span></span><span></span><span></span><span${keyCls("pg")}>PARTITE</span><span>STORICO</span><span${keyCls("mg")} style="color:#22b8f0">MEDIA</span><span${keyCls("gv")} style="color:#e8ff00">GAME</span></div>`:""}${rows||'<div class="cal-empty">Nessun giocatore</div>'}</div>`;
+  document.getElementById('rank-body').innerHTML=(sortKey==='name'?'':podioHtml(list,sortKey))+`<div class="rk-list rk-by-${sortKey}">${rows?`<div class="rk-leg"><span></span><span></span><span></span><span${keyCls("pg")}>PARTITE</span><span>STORICO</span><span${keyCls("pt")} style="color:#4ade80">PUNTI</span><span${keyCls("mg")} style="color:#22b8f0">MEDIA</span><span${keyCls("gv")} style="color:#e8ff00">GAME</span></div>`:""}${rows||'<div class="cal-empty">Nessun giocatore</div>'}</div>`;
   countUp(document.getElementById('rank-body'));
 }
 // ═══ PDF EXPORT — STILE CONDIVISO (tema scuro/neon dell'app) ═══
@@ -3618,6 +3626,9 @@ function pdfDarkStyle(){
     th{background:#f5f5f5;color:#111111;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;padding:9px 12px;border-bottom:2px solid #b8860b;}
     td{padding:9px 12px;border-bottom:1px solid #e5e5e5;font-size:13px;color:#111111;}
     tr:nth-child(even) td{background:#fafafa;}
+    th,td{text-align:center;vertical-align:middle;}
+    .pl{display:inline-block;white-space:nowrap;vertical-align:middle;}.pl>span{vertical-align:middle;margin-left:.5em;}
+    .pav{display:inline-block;width:2em;height:2em;border-radius:50%;object-fit:cover;vertical-align:middle;}.pav+.pav{margin-left:-1.1em;}
     @media print{@page{size:A4;margin:12mm}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;background:#ffffff;}}`;
 }
 function pdfHeaderHtml(subtitle,extra){
@@ -3632,6 +3643,9 @@ function pdfHeaderHtml(subtitle,extra){
     </div>
   </div>`;
 }
+// avatar e nome di un giocatore (o di una coppia) in una cella del PDF
+function pdfSide(ids,name,weight){const av=ids.map(id=>players.find(x=>x.id===+id)).filter(p=>p&&phUrl(p)).map(p=>`<img class="pav" src="${phUrl(p)}" alt="">`).join('');
+  return `<span class="pl"${weight?` style="font-weight:${weight}"`:''}>${av}<span>${esc(name)}</span></span>`;}
 // tabelle con classe "fit": nomi sempre su una riga; se non ci stanno si stringono prima gli spazi, poi il testo
 function pdfFitScript(){
   return `<script>(function(){function fit(){document.querySelectorAll('table.fit').forEach(function(t){var box=t.parentElement,w=box.clientWidth-parseFloat(getComputedStyle(box).paddingLeft)-parseFloat(getComputedStyle(box).paddingRight),px=12,fs=13;t.style.setProperty('--px',px+'px');t.style.setProperty('--fs',fs+'px');
@@ -3652,6 +3666,22 @@ function pdfLoadLibs(){
   _pdfLibs=Promise.all([load('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')]).catch(e=>{_pdfLibs=null;throw e;});
   return _pdfLibs;
 }
+// html2canvas non ritaglia le foto e su iPhone può sbagliare i disegni SVG: gli avatar diventano immagini tonde già pronte
+async function pdfBakeAvatars(d){
+  await Promise.all([...d.querySelectorAll('img.pav')].map(async im=>{
+    try{
+      if(!im.complete)await new Promise(r=>{im.onload=im.onerror=r;setTimeout(r,2500);});
+      const S=96,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d'),w=im.naturalWidth,h=im.naturalHeight;
+      x.beginPath();x.arc(S/2,S/2,S/2,0,Math.PI*2);x.clip();
+      if(w&&h&&!/^data:image\/svg/.test(im.src)){const m=Math.min(w,h);x.drawImage(im,(w-m)/2,(h-m)/2,m,m,0,0,S,S);}else x.drawImage(im,0,0,S,S);
+      const u=c.toDataURL('image/png'),px=im.getBoundingClientRect().width;await new Promise(r=>{im.onload=im.onerror=r;im.src=u;setTimeout(r,2500);});
+      // giÃ  tonda: niente angoli nÃ© bordo, che html2canvas ritaglierebbe male
+      im.style.cssText=`width:${px}px;height:${px}px;border:0;border-radius:0;object-fit:fill`;
+    }catch(e){im.remove();}
+  }));
+  // html2canvas ignora object-fit: il logo prende le sue proporzioni vere, altrimenti esce deformato
+  [...d.querySelectorAll('img:not(.pav)')].forEach(im=>{const w=im.naturalWidth,h=im.naturalHeight,b=im.getBoundingClientRect();if(!w||!h||!b.height)return;const k=Math.min(b.width/w,b.height/h);im.style.width=w*k+'px';im.style.height=h*k+'px';im.style.objectFit='fill';});
+}
 async function pdfMakeFile(html){
   await pdfLoadLibs();
   // la pagina va disegnata in un iframe nascosto largo come un A4, così i suoi stili non toccano l'app
@@ -3663,6 +3693,7 @@ async function pdfMakeFile(html){
     await new Promise(r=>{if(d.readyState==='complete')r();else fr.onload=r;setTimeout(r,2500);});
     if(d.fonts&&d.fonts.ready)await Promise.race([d.fonts.ready,new Promise(r=>setTimeout(r,2500))]);
     await Promise.all([...d.images].map(im=>im.complete?0:new Promise(r=>{im.onload=im.onerror=r;setTimeout(r,2500);})));
+    await pdfBakeAvatars(d);
     const body=d.body,W=794;
     fr.style.height=body.scrollHeight+'px';
     const canvas=await html2canvas(body,{scale:2,backgroundColor:'#ffffff',width:W,windowWidth:W,useCORS:true,logging:false});
@@ -3722,25 +3753,26 @@ function pdfOpenAndPrint(html,onDone){
 }
 function exportRankPDF(){
   const sortKey=document.getElementById('rank-sort-sel')?document.getElementById('rank-sort-sel').value:'gv';
-  let list=[...players];
-  if(sortKey==='name')list.sort((a,b)=>bySurname(a,b));
-  else list.sort((a,b)=>(+b[sortKey]||0)-(+a[sortKey]||0)||bySurname(a,b));
-  const rows=list.map((p,i)=>`<tr>
-      <td style="font-size:15px;font-weight:800;text-align:center;color:${i===0?'#f0c040':i===1?'#9ca3b0':i===2?'#cd7c3f':'#888888'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
-      <td style="font-size:12px;font-weight:800;text-align:center;color:${{"▲":"#15803d","▼":"#b91c1c"}[deltaText(p.id)[0]]||"#888888"}">${sortKey==="gv"&&(+p.gv||0)>0?deltaText(p.id):""}</td>
-      <td style="font-size:15px;font-weight:700">${esc(pdfName(p.nome))}</td>
-      <td style="font-size:13px;text-align:center">${p.pg||0}</td>
-      <td style="font-size:13px;text-align:center">${storicoHtml(p.storico)}</td>
-      <td style="font-size:13px;text-align:center;color:#b8860b;font-weight:700">${(p.mg||0).toFixed(2)}</td>
-      <td style="font-size:16px;font-weight:900;text-align:center;color:#111111">${p.gv||0}</td>
-    </tr>`).join('');
+  const list=rankSorted(sortKey),isName=sortKey==='name',showD=sortKey==='gv';
+  const hl=k=>sortKey===k?'font-size:16px;font-weight:900;color:#111111':'';
+  const rows=list.map((p,i)=>{const med=!isName&&rankVal(p,sortKey)>0&&i<3;
+    return `<tr>
+      <td style="font-size:15px;font-weight:800;color:${i===0?'#f0c040':i===1?'#9ca3b0':i===2?'#cd7c3f':'#888888'}">${isName?'':med?['🥇','🥈','🥉'][i]:i+1}</td>
+      ${showD?`<td style="font-size:12px;font-weight:800;color:${{"▲":"#15803d","▼":"#b91c1c"}[deltaText(p.id)[0]]||"#888888"}">${(+p.gv||0)>0?deltaText(p.id):""}</td>`:''}
+      <td>${pdfSide([p.id],pdfName(p.nome),700)}</td>
+      <td style="${hl('pg')}">${p.pg||0}</td>
+      <td>${storicoHtml(p.storico)}</td>
+      <td style="color:#15803d;font-weight:700;${hl('pt')}">${puntiOf(p)}</td>
+      <td style="color:#b8860b;font-weight:700;${hl('mg')}">${(p.mg||0).toFixed(2)}</td>
+      <td style="font-weight:700;${hl('gv')}">${p.gv||0}</td>
+    </tr>`;}).join('');
+  const by={gv:'Game',pt:'Punti',mg:'Media',pg:'Partite',name:'A–Z'}[sortKey];
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Classifiche</title>
   ${pdfFontsLink()}
-  <style>${pdfDarkStyle()}
-  th:nth-child(3),td:nth-child(3){text-align:left}th:not(:nth-child(3)),td:not(:nth-child(3)){text-align:center}</style></head><body>
-  ${pdfHeaderHtml('CLASSIFICA GENERALE',list.length+' giocatori')}
-  <div style="padding:0 24px"><table><thead><tr><th>#</th><th>±</th><th>Giocatore</th><th>PG</th><th>V/P/S</th><th>Media</th><th>Game Totali</th></tr></thead><tbody>${rows}</tbody></table></div>
-  ${pdfFooterHtml()}
+  <style>${pdfDarkStyle()}td,th{white-space:nowrap}table.fit td,table.fit th{padding-left:var(--px,12px);padding-right:var(--px,12px)}table.fit td{font-size:var(--fs,13px)}</style></head><body>
+  ${pdfHeaderHtml('CLASSIFICA GENERALE',list.length+' giocatori · ordine: '+by)}
+  <div style="padding:0 24px"><table class="fit"><thead><tr><th>#</th>${showD?'<th>±</th>':''}<th>Giocatore</th><th>Partite</th><th>V/P/S</th><th>Punti</th><th>Media</th><th>Game</th></tr></thead><tbody>${rows}</tbody></table></div>
+  ${pdfFooterHtml()}${pdfFitScript()}
   </body></html>`;
   pdfOpenAndPrint(html);
 }
@@ -4155,20 +4187,24 @@ function exportCalendarPDF(){
   const ris=_expMode==='ris';
   const filtered=sched.filter(m=>m.data>=from&&m.data<=to&&(ris?!!m.risultato:!m.risultato)).sort((a,b)=>a.data.localeCompare(b.data)||(a.ora||'').localeCompare(b.ora||''));
   if(!filtered.length){toast(ris?'ℹ️ Nessun risultato nel periodo':'ℹ️ Nessuna partita da giocare nel periodo');return;}
-  const _gtn=(m,pid)=>{if(!pid)return'—';const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){for(const e of [bm.p1,bm.p2]){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(+pid))return ids.map(id=>{const p=players.find(x=>x.id===id);return p?pdfName(p.nome):'?';}).join(' / ');}}}}const p=players.find(x=>x.id===+pid);if(p)return pdfName(p.nome);if(m.teamName1&&+pid===m.p1Id)return pdfName(m.teamName1);if(m.teamName2&&+pid===m.p2Id)return pdfName(m.teamName2);return'—';};
+  // id dei giocatori di un lato (doppi: anche il compagno) e loro nome
+  const _gids=(m,pid)=>{if(!pid)return[];const t=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;if(t&&t.format==='doppio'&&t.bracket){for(const rnd of t.bracket.rounds){for(const bm of rnd){for(const e of [bm.p1,bm.p2]){if(!e)continue;const ids=Array.isArray(e)?e:[e];if(ids.includes(+pid))return ids;}}}}
+    const mate=+pid===m.p1Id?m.p1Id2:+pid===m.p2Id?m.p2Id2:null;return mate?[+pid,mate]:[+pid];};
+  const _gtn=(m,pid)=>{if(!pid)return'—';const ids=_gids(m,pid);if(ids.length>1)return ids.map(id=>{const p=players.find(x=>x.id===id);return p?pdfName(p.nome):'?';}).join(' / ');const p=players.find(x=>x.id===+pid);if(p)return pdfName(p.nome);if(m.teamName1&&+pid===m.p1Id)return pdfName(m.teamName1);if(m.teamName2&&+pid===m.p2Id)return pdfName(m.teamName2);return'—';};
+  const _side=(m,pid,w)=>pdfSide(_gids(m,pid),_gtn(m,pid),w);
   const fmtD2=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const byDate={};filtered.forEach(m=>{(byDate[m.data]=byDate[m.data]||[]).push(m);});
   const cols=ris?7:4;
   const rows=Object.keys(byDate).sort().map(date=>`<tr class="pdf-day"><td colspan="${cols}">${fmtD2(date)}</td></tr>`+byDate[date].map(m=>{
     const draw=!m.winnerId||m.winnerId==='draw',w1=!draw&&+m.winnerId===m.p1Id,w2=!draw&&+m.winnerId===m.p2Id;
     const b=w=>ris?(w?800:500):700;
-    return `<tr><td class="o">${m.ora||'—'}</td><td style="font-weight:${b(w1)}">${esc(_gtn(m,m.p1Id))}</td><td class="vs">vs</td><td style="font-weight:${b(w2)}">${esc(_gtn(m,m.p2Id))}</td>`
-      +(ris?`<td class="r">${esc(m.risultato)}</td><td class="sp"></td><td class="w">${draw?'<span class="x">✕</span> Pareggio':'🏆 '+esc(_gtn(m,m.winnerId))}</td>`:'')+'</tr>';
+    return `<tr><td class="o">${m.ora||'—'}</td><td>${_side(m,m.p1Id,b(w1))}</td><td class="vs">vs</td><td>${_side(m,m.p2Id,b(w2))}</td>`
+      +(ris?`<td class="r">${esc(m.risultato)}</td><td class="sp"></td><td class="w">${draw?'<span class="x">✕</span> Pareggio':'🏆 '+_side(m,m.winnerId)}</td>`:'')+'</tr>';
   }).join('')).join('');
   const head=ris?'<th>Ora</th><th>Giocatore 1</th><th></th><th>Giocatore 2</th><th class="r">Risultato</th><th class="sp"></th><th>Vincitore</th>':'<th>Ora</th><th>Giocatore 1</th><th></th><th>Giocatore 2</th>';
   const css=`td,th{white-space:nowrap}table.fit td,table.fit th{padding-left:var(--px,12px);padding-right:var(--px,12px)}table.fit td{font-size:var(--fs,13px)}table.fit tr.pdf-day td{font-size:17px}td.o{color:#b8860b;font-weight:600;width:1%}td.vs,th.vs{color:#888888;text-align:center;width:1%;padding-left:4px;padding-right:4px}
     .r{text-align:center!important}td.r{font-weight:700;color:#15803d}td.w{color:#b8860b;font-weight:700}td.sp,th.sp{width:1%;padding:0}.x{display:inline-block;color:#b91c1c;font-weight:900}
-    tr.pdf-day td{background:#ffffff!important;font-family:"Bebas Neue",Arial,sans-serif;font-size:17px;letter-spacing:1px;color:#111111;text-transform:capitalize;border-bottom:2px solid #b8860b;padding:16px 8px 6px}`;
+    tr.pdf-day td{background:#ffffff!important;font-family:"Bebas Neue",Arial,sans-serif;font-size:17px;letter-spacing:1px;color:#111111;text-transform:capitalize;border-bottom:2px solid #b8860b;padding:16px 8px 6px;text-align:center}`;
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${ris?'Risultati':'Calendario'}</title>${pdfFontsLink()}<style>${pdfDarkStyle()}${css}</style></head><body>${pdfHeaderHtml(ris?'RISULTATI':'CALENDARIO PARTITE',filtered.length+(ris?' partite giocate':' partite da giocare'))}<div style="padding:0 24px"><table class="fit"><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table></div>${pdfFooterHtml()}${pdfFitScript()}</body></html>`;
   pdfOpenAndPrint(html,()=>{document.getElementById('modal-exp-cal').classList.remove('open');});
 }
