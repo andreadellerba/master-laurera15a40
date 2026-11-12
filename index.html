@@ -1499,7 +1499,7 @@ body .cards-grid .pcrd.k4c.k4g{display:flex!important;align-items:center;gap:14p
 .profile-stats-row .pk-t{background:none!important;border:none!important;box-shadow:none!important}
 .profile-stats-row .pk-t>span{font:700 10.5px "DM Sans",sans-serif!important;letter-spacing:1px!important;color:#b4b4b4!important;text-transform:uppercase}
 @media(max-width:640px){.ph-band .profile-hero-name small{font-size:10.5px}.profile-stats-row{row-gap:12px!important}}
-.mk-vs{color:#a78bfa!important;text-shadow:0 0 12px rgba(167,139,250,.45)!important}
+.mk-vs{color:#e8ff00!important;text-shadow:0 0 12px rgba(232,255,0,.45)!important}
 body:not(.light) .cmc.mk{background:var(--aur)!important;background-attachment:fixed!important;background-size:100vw 100vh!important}
 @media(max-width:640px){#page-calendario .wrap{padding-top:10px!important}}
 
@@ -1652,8 +1652,8 @@ html{background:#000!important}
   .cmc.mk .mk-pl:not(.rt){justify-content:flex-start}.cmc.mk .mk-pl.rt{justify-content:flex-end}
 }
 /* orario delle partite sempre viola (giocate e da giocare) */
-.cmc.mk .mk-time,.cmc.mk .mk-c{--mc:#a78bfa}
-@media(min-width:641px){.mk-c.played .mk-c-sc{font-size:34px;margin-top:0;gap:6px}.mk-c.played small{color:#a78bfa;margin-top:5px}}
+.cmc.mk .mk-time,.cmc.mk .mk-c{--mc:#e8ff00}
+@media(min-width:641px){.mk-c.played .mk-c-sc{font-size:34px;margin-top:0;gap:6px}.mk-c.played small{color:#e8ff00;margin-top:5px}}
 /* telefono: dietro la pillola in alto il nero della notch sfuma nello sfondo, senza bordo netto */
 @media(max-width:640px){.header{background:linear-gradient(180deg,#000 0,#000 calc(env(safe-area-inset-top) + 12px),rgba(0,0,0,.85) calc(env(safe-area-inset-top) + 40px),rgba(0,0,0,0) 100%)!important}}
 /* giocatore della settimana più compatto (PC e telefono) */
@@ -8091,7 +8091,19 @@ function _sxType(id){
     tt=_SX_FEM[tt]||tt;
     d=d.replace('sei tu quello da battere','sei tu quella da battere').replace('Primo nella classifica','Prima nella classifica').replace('un giocatore completo','una giocatrice completa');
   }
-  return{em:t[2],t:tt,d,tip,tot:f.tot,marg:f.marg,dr:Math.round(f.d/f.n*100)};
+  return{em:t[2],t:tt,d,tip,f,tot:f.tot,marg:f.marg,dr:Math.round(f.d/f.n*100)};
+}
+// i numeri sotto "Che giocatore sei": cose che raccontano come giochi, confrontate con la media del circolo
+function _sxTypeChips(f){
+  if(!f)return'';
+  const all=Object.values(_sxTypesAll()).map(o=>o.f),avg=k=>all.reduce((s,x)=>s+(+x[k]||0),0)/Math.max(1,all.length);
+  const cmp=(v,a,inv)=>{if(!isFinite(v)||!isFinite(a)||Math.abs(v-a)<1e-9)return'';const up=inv?v<a:v>a;return`<i class="${up?'up':'dn'}">${up?'▲':'▼'} media ${a%1?a.toFixed(1):Math.round(a)}</i>`;};
+  const pw=Math.round(f.wr*100),cl=f.close?`${f.closeW}-${f.close-f.closeW}`:'–',fr=Math.round(f.e3);
+  const C=[[pw+'%','VITTORIE','#22c55e',cmp(f.wr*100,avg('wr')*100)],[f.bestS,'SERIE MIGLIORE','#ff8a00',cmp(f.bestS,avg('bestS'))],
+    [cl,'PUNTO A PUNTO','#38bdf8',f.close?'<i>partite decise di 1 game</i>':'<i>ancora nessuna</i>'],[f.bigW,'TOP 5 BATTUTI','#ff4fb8',cmp(f.bigW,avg('bigW'))],
+    [f.w?'+'+f.wm.toFixed(1):'–','SCARTO QUANDO VINCI','#e8ff00',f.w?cmp(f.wm,avg('wm')):'<i>serve una vittoria</i>'],[(fr>0?'▲':fr<0?'▼':'')+Math.abs(fr),'FORMA RECENTE',fr>=0?'#22c55e':'#ef4444','<i>ultime 3 partite</i>']];
+  const gd=[f.bd?`📆 Giorno d'oro: <b>${f.bd}</b>`:'',f.bh?`🕖 Ora d'oro: <b>${f.bh}:00</b>`:'',f.opps?`🤝 <b>${f.opps}</b> avversari diversi`:''].filter(Boolean);
+  return`<div class="sx-chips sx-chips6">${C.map(([v,l,c,s])=>`<div class="sx-chip"><b style="color:${c}">${v}</b><span>${l}</span>${s?`<small>${s}</small>`:''}</div>`).join('')}</div>${gd.length?`<div class="sx-gold">${gd.map(x=>`<span>${x}</span>`).join('')}</div>`:''}`;
 }
 const _sxF=id=>{const p=_sxP(id);return!!(p&&typeof isDonna==='function'&&isDonna(p));};
 const _SX_FEM={'IL CAMPIONE IN CARICA':'LA CAMPIONESSA IN CARICA','IL RE DEL CIRCOLO':'LA REGINA DEL CIRCOLO','IL PREDATORE':'LA PREDATRICE','IL CANNIBALE':'LA CANNIBALE',
@@ -8111,7 +8123,7 @@ function _sxHtml(id){
   h+=`<div class="sx-card sx-hero">${_sxAv(id)}<div class="sx-hero-t"><small>${adm?'COSÌ LE VEDE':'LE TUE STATISTICHE'}</small><b>${_sxNm(id)}</b><span class="sx-rk">${posG?posG+'° IN CLASSIFICA GAME':'NON ANCORA IN CLASSIFICA'}</span></div></div>`;
   // 15 · che giocatore sei
   if(T)h+=_sxSec(_sxF(id)?'🎭 CHE GIOCATRICE SEI':'🎭 CHE GIOCATORE SEI',`<div class="sx-card"><div class="sx-type"><span class="em">${T.em}</span><div style="min-width:0"><small>SEI…</small><b>${T.t}</b><p>${T.d}</p></div></div>${T.tip?`<div class="sx-tip">💡 <b>Consiglio:</b> ${T.tip}</div>`:""}
-    <div class="sx-chips"><div class="sx-chip"><b>${T.tot.toFixed(1)}</b><span>GAME A PARTITA</span></div><div class="sx-chip"><b>${T.marg.toFixed(1)}</b><span>SCARTO MEDIO</span></div><div class="sx-chip"><b>${T.dr}%</b><span>PAREGGI</span></div></div></div>`);
+    ${_sxTypeChips(T.f)}</div>`);
   // 3 · riepilogo (come nel profilo) e posizione in ogni classifica
   const tile=(l,v,c)=>`<div class="pk-t" style="--tc:${c}"><span>${l}</span><b>${v}</b></div>`;
   h+=_sxSec('📋 RIEPILOGO',`<div class="profile-stats-row">${tile('Partite',+p.pg||0,'#e8ff00')+tile('Vittorie',st[0]||0,'#22c55e')+tile('Pareggi',st[1]||0,'#f59e0b')+tile('Sconfitte',st[2]||0,'#ef4444')+tile('Game',+p.gv||0,'#ff4fb8')+tile('Media game',(+p.mg||0).toFixed(2),'#22b8f0')}</div>`);
@@ -8306,16 +8318,29 @@ function obDecline(){
 html body:not(.light){--bg:#13308a;--bg2:#0d2366;--bg3:#0f2770;--bg4:#18379a;--border:rgba(126,224,255,.16);--border2:rgba(126,224,255,.26);--text2:#a9c4ee;--header-bg:#13308a;
   --aur:linear-gradient(#0f2770,#0f2770);--neon:#7ee0ff;--elec-y:#ffd23f}
 html:has(body:not(.light)),html body:not(.light),html body:not(.light) .header,html body:not(.light) .profile-modal,html body:not(.light) .profile-header{
-  background:linear-gradient(180deg,#1b3fa0 0%,#13308a 45%,#0d2366 100%) fixed!important}
+  background:#13308a!important;background-image:none!important}
+/* zona del notch e sotto il menù: stesso blu della pagina anche su Safari */
+html{background-color:#13308a!important}
 html body:not(.light) #boot{background:#13308a!important}
 /* titoli delle pagine: azzurro elettrico */
 html body:not(.light) :is(.hf-list-title,.pg-title.pg-big,.cal-big),html body:not(.light) :is(.hf-list-title,.pg-title.pg-big,.cal-big) span{color:#fff!important}
 /* schede piene: niente trasparenza, un blu più scuro dello sfondo e un bordo sottile */
 html body:not(.light) :is(.hdr,.tabs-mobile2 .tbar,.hl,.cmc.mk,.rs,.rk-row,.pcrd.pk .pk-bd,.tor-bd,.albo-card,.rk-seg,.cal-day,.profile-stats-row .pk-t,.mk-time,.cards-grid .pcrd.k4c,.pr-rv,.sx-card,.rc-btn,.dy-c,.dy-i,.card,.rcard,.torneo-card,.pr-chart,.st-row,.vs-rows,.vs-pm){
-  background:#0f2770!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-color:rgba(126,224,255,.16)!important}
+  background:#0f2770!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border:1.5px solid rgba(126,224,255,.7)!important;box-shadow:0 0 12px rgba(126,224,255,.35),inset 0 0 12px rgba(126,224,255,.08)!important}
 html body:not(.light) .profile-stats-row{background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
-html body:not(.light) :is(.hdr,.tabs-mobile2 .tbar){background:#0d2366!important;border-color:rgba(126,224,255,.2)!important}
+html body:not(.light) :is(.hdr,.tabs-mobile2 .tbar){background:#0d2366!important;border:1.5px solid rgba(126,224,255,.75)!important;box-shadow:0 0 14px rgba(126,224,255,.4),inset 0 0 12px rgba(126,224,255,.1)!important}
 html body:not(.light) .rk-row.top:is(.z.z.z,*){background:linear-gradient(90deg,color-mix(in srgb,var(--m) 30%,#0f2770),#0f2770 62%)!important}
+/* neon ovunque: tessere interne con un contorno più leggero, così non si accumulano gli aloni */html body:not(.light) :is(.profile-stats-row .pk-t,.mk-time,.sx-chip,.dy-i,.vs-pm,.st-row,.rb):is(.z.z.z,*){border:1px solid rgba(126,224,255,.45)!important;box-shadow:none!important}html body:not(.light) .cal-day:is(.z.z.z,*){border:1.5px solid rgba(126,224,255,.6)!important;box-shadow:0 0 10px rgba(126,224,255,.25)!important}html body:not(.light) .cal-day.sel:is(.z.z.z.z,*){border-color:#fff!important;box-shadow:0 0 16px color-mix(in srgb,var(--page) 70%,transparent)!important}html body:not(.light) :is(.mv,.vs,.st,.ob-card,.sx-adm,.rk-seg):is(.z.z.z,*){border:1.5px solid rgba(126,224,255,.75)!important;box-shadow:0 0 18px rgba(126,224,255,.4),0 20px 60px rgba(0,0,0,.6)!important}html body:not(.light) .cards-grid .pcrd.k4c:is(.z.z.z,*){border:1.5px solid color-mix(in srgb,var(--cc) 75%,#7ee0ff)!important;box-shadow:0 0 14px color-mix(in srgb,var(--cc) 45%,transparent)!important}/* spazio tra le schede in alto e il titolo LISTA GIOCATORI */#hf-tog{margin-top:22px!important}
+/* ticker: stesso colore del menù, senza riquadri né sfocature dietro lo scorrimento (telefono e PC) */
+html body:not(.light) :is(.ticker-tape,.ticker-tape *:not(i),#hdr-next){background:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
+html body:not(.light) .ticker-tape{border:0!important}
+.sx-chips6{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.sx-chips6 .sx-chip{padding:9px 4px 8px}
+.sx-chips6 .sx-chip span{white-space:normal;line-height:1.15;min-height:21px;display:flex;align-items:center;justify-content:center}
+.sx-chips6 .sx-chip small{display:block;margin-top:3px;font:700 9px "DM Sans",sans-serif;line-height:1.2}
+.sx-chips6 .sx-chip small i{font-style:normal;color:rgba(255,255,255,.55)}.sx-chips6 .sx-chip small i.up{color:#22c55e}.sx-chips6 .sx-chip small i.dn{color:#ef4444}
+.sx-gold{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-top:10px;font:600 12.5px "DM Sans",sans-serif;color:rgba(255,255,255,.8)}
+.sx-gold b{color:var(--accent)}
 /* neon per le cose in evidenza: giocatore della settimana, recap, la tua pagina, partita della settimana, coppa */
 html body:not(.light) :is(.hl,.rc-btn,.sx-hero,.rs.motw,.tr3d):is(.z.z.z,*){border:1.5px solid #7ee0ff!important;box-shadow:0 0 16px rgba(126,224,255,.45),inset 0 0 18px rgba(126,224,255,.12)!important}
 html body:not(.light) .rs.motw:is(.z.z.z.z,*){border-color:#ffd23f!important;box-shadow:0 0 16px rgba(255,210,63,.45),inset 0 0 18px rgba(255,210,63,.12)!important}
