@@ -3568,8 +3568,8 @@ function placeTicker(){
   const tk=document.querySelector('.ticker-tape');if(!tk)return;
   const pc=window.matchMedia('(min-width:641px)').matches;
   const slot=document.getElementById('hdr-next');
-  if(pc&&slot&&tk.parentElement!==slot){slot.appendChild(tk);}
-  else if(!pc){const h=document.querySelector('header.header .hdr');if(h&&tk.parentElement!==h)h.appendChild(tk);}
+  // il ticker sta sempre dentro la barra, come seconda riga (telefono e PC)
+  const h=document.querySelector('header.header .hdr');if(h&&tk.parentElement!==h)h.appendChild(tk);
 }
 window.matchMedia('(min-width:641px)').addEventListener('change',placeTicker);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',placeTicker);else placeTicker();
@@ -8342,6 +8342,28 @@ html body:not(.light) .ticker-tape{border:0!important}
 #ris-list .cmc.ris-c .rea-bar{grid-column:2 / -1;grid-row:3;justify-content:flex-start;margin-top:4px;padding-top:0;border-top:0}
 #ris-list .cmc.ris-c .mk-st .cmc-edit{display:none}
 html body:not(.light) #ris-list .cmc.ris-c.motw:is(.z.z.z.z,*){border-color:#ffd23f!important;box-shadow:0 0 16px rgba(255,210,63,.45),inset 0 0 18px rgba(255,210,63,.12)!important}
+/* PC: logo intero in orizzontale, menu al centro con tutto lo spazio, ticker come seconda riga della stessa barra */
+@media(min-width:641px){
+  html body .header .hdr{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;grid-template-rows:auto auto;column-gap:18px!important;row-gap:0!important;padding:8px 14px 0 18px!important;border-radius:20px!important;align-items:center}
+  html body .header .hdr .logo-stack{display:none!important}
+  html body .header .hdr .logo-img{display:block!important;grid-column:1;grid-row:1;height:42px!important;width:auto;max-width:230px!important;margin:0!important}
+  html body .header .hdr .tabs{grid-column:2!important;grid-row:1;justify-self:center;min-width:0}
+  html body .header .hdr .hdr-info{grid-column:3!important;grid-row:1}
+  html body .header .hdr #hdr-next{display:none!important}
+  html body .header .hdr .ticker-tape{grid-column:1 / -1!important;grid-row:2;position:static!important;margin:8px -14px 0 -18px!important;width:auto!important;min-height:40px;
+    border-top:1px solid rgba(126,224,255,.28)!important;border-radius:0 0 20px 20px!important;-webkit-mask:none!important;mask:none!important;transform:none!important}
+  html body .header .hdr .ticker-tape .tk{font-size:16px}
+  html body .header .hdr .ticker-tape .tk-label{box-shadow:none!important;background:none!important}
+  html body .header .hdr .ticker-tape .tk-label::before,html body .header .hdr .ticker-tape .tk-label::after{display:none!important}
+}
+@media(min-width:641px) and (max-width:920px){
+  html body .header .hdr{column-gap:10px!important;padding-left:14px!important}
+  html body .header .hdr .logo-img{height:30px!important;max-width:150px!important}
+  html body .header .hdr .ticker-tape{margin-left:-14px!important}
+  html body .header .hdr .tabs-inner{gap:2px!important}
+  html body .header .hdr .tabs-inner .tab{font-size:14px!important;padding-left:6px!important;padding-right:6px!important}
+  html body .header .hdr .tabs-inner .tab span{font-size:14px!important}
+}
 .sx-chips6{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 .sx-chips6 .sx-chip{padding:9px 4px 8px}
 .sx-chips6 .sx-chip span{white-space:normal;line-height:1.15;min-height:21px;display:flex;align-items:center;justify-content:center}
