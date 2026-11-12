@@ -1681,13 +1681,13 @@ html{background:#000!important}
 /* ═══ TEMA BLU CEMENTO (proposta 81): pagina nel blu del circolo, card e barre blu notte ═══
    Solo tema scuro: il tema chiaro resta com'è. L'aurora diventa un blu notte pieno, così header, menu,
    barra risultati, righe classifica e card prendono tutti lo stesso colore. */
-body:not(.light){--aur:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.035));--bg:#24507f;--bg2:#0b1830;--bg3:#0e1c33;--bg4:#172a4b;--border:#24385c;--border2:#2f4670;--text2:#9fb0c8;--header-bg:#24507f}
+body:not(.light){--aur:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.035));--bg:#0e1c33;--bg2:#0b1830;--bg3:#0e1c33;--bg4:#172a4b;--border:#24385c;--border2:#2f4670;--text2:#9fb0c8;--header-bg:#0e1c33}
 /* stile "vetro": riquadri trasparenti con una leggera sfocatura dietro, così il testo resta leggibile */
 body:not(.light) :is(.hdr,.tabs-mobile2 .tbar,.ticker-tape,.hl,.cmc.mk,.rs,.rk-row,.pcrd.pk .pk-bd,.tor-bd,.albo-card.albo-trophy,.rk-seg,.cal-day,.profile-stats-row .pk-t,.mk-time,.cards-grid .pcrd.k4c,.pr-rv,.sx-card,.rc-btn,.dy-c,.dy-i){-webkit-backdrop-filter:blur(10px) saturate(1.15);backdrop-filter:blur(10px) saturate(1.15)}
 body:not(.light) .cards-grid .pcrd.k4c,body:not(.light) .cards-grid .pcrd.k4c.k4g{background:var(--aur)!important;background-attachment:fixed!important;background-size:100vw 100vh!important}
 body:not(.light) .profile-stats-row{background:var(--aur)!important;background-attachment:fixed!important;background-size:100vw 100vh!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}body:not(.light) .hdr,body:not(.light) .tabs-mobile2 .tbar{background:linear-gradient(rgba(11,24,48,.58),rgba(11,24,48,.58))!important}
 html:has(body:not(.light)),body:not(.light),
-body:not(.light) .header,body:not(.light) .profile-modal,body:not(.light) .profile-header{background:#24507f!important;background-image:none!important}
+body:not(.light) .header,body:not(.light) .profile-modal,body:not(.light) .profile-header{background:#0e1c33!important;background-image:none!important}
 /* le pagine sono trasparenti, così si vede il campo disegnato dietro */
 body:not(.light) .page,body:not(.light) #page-players,body:not(.light) .wrap{background:transparent!important;background-image:none!important}
 html body:not(.light) .pcrd.k4c,html body:not(.light) .pcrd.pk{background:#0e1c33!important}
@@ -1697,10 +1697,10 @@ html body:not(.light) .pcrd.k4c,html body:not(.light) .pcrd.pk{background:#0e1c3
   transform:perspective(800px) rotateX(52deg);transform-origin:50% 0}
 body.light #court-bg{display:none}
 /* titoli delle pagine (LISTA GIOCATORI, CALENDARIO…): tutti blu notte come le card, pieni */
-html body:not(.light) :is(.hf-list-title,.pg-title.pg-big,.cal-big),html body:not(.light) :is(.hf-list-title,.pg-title.pg-big,.cal-big) span{color:#0e1c33!important;-webkit-text-stroke:0!important}
+html body:not(.light) :is(.hf-list-title,.pg-title.pg-big,.cal-big),html body:not(.light) :is(.hf-list-title,.pg-title.pg-big,.cal-big) span{color:#3d7cc4!important;-webkit-text-stroke:0!important}
 /* riquadri "vetro" (impostazioni, albo, tornei…): sul blu sembravano slavati, diventano blu notte come le card */
-html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:#0e1c33!important}
-#boot{background:#24507f}
+html body:not(.light) :is(.card,.rcard,.torneo-card,.albo-card){background:var(--aur)!important;background-attachment:fixed!important;background-size:100vw 100vh!important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#boot{background:#0e1c33}
 /* ═══ AVATAR PERSONALIZZATI (admin): menu al tocco dell'avatar ed editor ═══ */
 .avs-bg{position:fixed!important;inset:0;z-index:6000!important;background:rgba(0,0,0,.6);display:none;align-items:flex-end;justify-content:center;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
 .avs-bg.open{display:flex}
