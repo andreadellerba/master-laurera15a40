@@ -4285,6 +4285,8 @@ function renderRisultati(){
   const nm=(n,lbl)=>{const dbl=String(n).includes(' / ');const sn=dispName(n),fn='';   /* N. COGNOME su una riga */
     return `<div class="rs-nm">${fn&&fn!==sn?`<small class="fn">${esc(fn)}</small>`:''}<b>${esc(sn)}</b></div>`;};
   const row=m=>{
+    // telefono: stessa scheda del Calendario (nome 1 sopra, nome 2 sotto, risultato a destra, reazioni sotto)
+    if(window.matchMedia('(max-width:640px)').matches)return cmcHtml(m).replace('class="cmc mk ','class="cmc mk ris-c '+(m.id===motw?'motw ':''));
     const draw=m.winnerId==='draw'||!m.winnerId;
     const g1=+m.gv1,g2=+m.gv2,hasG=Number.isFinite(g1)&&Number.isFinite(g2)&&(g1||g2);
     const parts=String(m.risultato).match(/(\d+)\s*[-–]\s*(\d+)/);
@@ -8334,6 +8336,12 @@ html body:not(.light) .rk-row.top:is(.z.z.z,*){background:linear-gradient(90deg,
 /* ticker: stesso colore del menù, senza riquadri né sfocature dietro lo scorrimento (telefono e PC) */
 html body:not(.light) :is(.ticker-tape,.ticker-tape *:not(i),#hdr-next){background:transparent!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
 html body:not(.light) .ticker-tape{border:0!important}
+/* RISULTATI su telefono come il Calendario: niente barra verde, reazioni sotto il secondo nome */
+#ris-list .cmc.ris-c{margin-bottom:10px}
+#ris-list .cmc.ris-c::before{display:none!important}
+#ris-list .cmc.ris-c .rea-bar{grid-column:2 / -1;grid-row:3;justify-content:flex-start;margin-top:4px;padding-top:0;border-top:0}
+#ris-list .cmc.ris-c .mk-st .cmc-edit{display:none}
+html body:not(.light) #ris-list .cmc.ris-c.motw:is(.z.z.z.z,*){border-color:#ffd23f!important;box-shadow:0 0 16px rgba(255,210,63,.45),inset 0 0 18px rgba(255,210,63,.12)!important}
 .sx-chips6{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 .sx-chips6 .sx-chip{padding:9px 4px 8px}
 .sx-chips6 .sx-chip span{white-space:normal;line-height:1.15;min-height:21px;display:flex;align-items:center;justify-content:center}
@@ -8386,6 +8394,7 @@ html body .toast.show::before{animation:tRoll .7s cubic-bezier(.3,1.1,.4,1) both
 @keyframes tRoll{0%{transform:translateX(-90px) rotate(-360deg)}45%{transform:none}}
 @media (prefers-reduced-motion:reduce){html body .toast.show,html body .toast.show::before,#cal-list>.cmc.live::after{animation:none}}
 </style>
-<script>function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>
+<script>window.matchMedia("(max-width:640px)").addEventListener("change",()=>{if(typeof currentTab!=="undefined"&&currentTab==="risultati")renderRisultati();});
+function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>
 </body>
 </html>
