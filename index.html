@@ -673,7 +673,7 @@ body:not([data-tab]),body[data-tab="players"]{--gk:20%;--gk2:12%}
 body[data-tab="tornei"]{--page:#fb923c}
 body[data-tab="calendario"]{--page:#38bdf8}
 body[data-tab="risultati"]{--page:#22c55e}
-body[data-tab="statistiche"]{--page:#ff4fb8}
+body[data-tab="statistiche"]{--page:#2dd4bf}
 body[data-tab="classifiche"],body[data-tab="classifiche-torneo"]{--page:#a78bfa}
 body[data-tab="albo"]{--page:#fbbf24}
 body[data-tab="fanta"]{--page:#f472b6}
@@ -921,7 +921,7 @@ body.viewer .pk-lv,body.viewer .pk-edit{display:none}
   .hdr .tabs-inner .tab svg{width:21px!important;height:21px!important}
   .hdr .tabs-inner .tab:hover{background:rgba(255,255,255,.06)!important}
   .hdr .tab[data-tab="players"] svg{color:#e8ff00}.hdr .tab[data-tab="tornei"] svg{color:#fb923c}.hdr .tab[data-tab="calendario"] svg{color:#38bdf8}.hdr .tab[data-tab="risultati"] svg{color:#22c55e}
-  .hdr .tab[data-tab="statistiche"] svg{color:#ff4fb8}.hdr .tab[data-tab="classifiche"] svg,.hdr .tab[data-tab="classifiche-torneo"] svg{color:#a78bfa}.hdr .tab[data-tab="albo"] svg{color:#fbbf24}.hdr .tab[data-tab="fanta"] svg{color:#f472b6}.hdr .tab[data-tab="settings"] svg{color:#94a3b8}
+  .hdr .tab[data-tab="statistiche"] svg{color:#2dd4bf}.hdr .tab[data-tab="classifiche"] svg,.hdr .tab[data-tab="classifiche-torneo"] svg{color:#a78bfa}.hdr .tab[data-tab="albo"] svg{color:#fbbf24}.hdr .tab[data-tab="fanta"] svg{color:#f472b6}.hdr .tab[data-tab="settings"] svg{color:#94a3b8}
   .hdr .tabs-inner .tab.active{color:#fff!important}
   .hdr .tabs-inner .tab.active::after{content:"";position:absolute;left:24%;right:24%;bottom:2px;height:3px;border-radius:3px;background:var(--page);box-shadow:0 0 12px var(--page)}
 }
@@ -984,7 +984,7 @@ body.viewer .pcrd.pk{--lv:var(--gc)!important}
   .tabs-mobile2 .tbtn{border-radius:999px!important;padding:12px 0!important;transition:flex .25s ease!important;gap:6px}
   .tabs-mobile2 .tbtn::before{display:none!important}
   .tabs-mobile2 .tbtn .tl{display:none;font-family:"DM Sans",sans-serif;font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;white-space:nowrap}
-  .tabs-mobile2 .tbtn[data-tab="players"]{--tc:#e8ff00}.tabs-mobile2 .tbtn[data-tab="tornei"]{--tc:#fb923c}.tabs-mobile2 .tbtn[data-tab="calendario"]{--tc:#38bdf8}.tabs-mobile2 .tbtn[data-tab="risultati"]{--tc:#22c55e}.tabs-mobile2 .tbtn[data-tab="classifiche"]{--tc:#a78bfa}.tabs-mobile2 .tbtn[data-tab="albo"]{--tc:#fbbf24}.tabs-mobile2 .tbtn[data-tab="statistiche"]{--tc:#ff4fb8}
+  .tabs-mobile2 .tbtn[data-tab="players"]{--tc:#e8ff00}.tabs-mobile2 .tbtn[data-tab="tornei"]{--tc:#fb923c}.tabs-mobile2 .tbtn[data-tab="calendario"]{--tc:#38bdf8}.tabs-mobile2 .tbtn[data-tab="risultati"]{--tc:#22c55e}.tabs-mobile2 .tbtn[data-tab="classifiche"]{--tc:#a78bfa}.tabs-mobile2 .tbtn[data-tab="albo"]{--tc:#fbbf24}.tabs-mobile2 .tbtn[data-tab="statistiche"]{--tc:#2dd4bf}
   .tabs-mobile2 .tbtn{color:var(--tc)!important}
   .tabs-mobile2 .tbtn svg{width:22px!important;height:22px!important}
   .tabs-mobile2 .tbtn.active{flex:0 0 auto!important;padding:12px 16px!important;max-width:none!important;background:var(--tc)!important;color:#111!important;box-shadow:0 0 18px color-mix(in srgb,var(--tc) 55%,transparent)}
@@ -1954,8 +1954,8 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
 <div id="page-players" class="page active">
   <!-- Home: giocatore della settimana + locandina prossima partita, Top 5, poi tutti i giocatori -->
   <div id="home-feat"></div>
-  <div class="hf-list-title">LISTA <span>GIOCATORI</span></div>
-  <div class="cards-grid" id="cards-grid"></div>
+  <button type="button" class="hf-list-title hf-tog" id="hf-tog" aria-expanded="false" aria-controls="cards-grid" onclick="toggleList()">LISTA <span>GIOCATORI</span><i class="hf-chev" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></i></button>
+  <div class="cards-grid lst-closed" id="cards-grid"></div>
 </div>
 
 <div id="page-statistiche" class="page">
@@ -2757,9 +2757,13 @@ function countUp(root){
     const txt=el.textContent.trim();if(!/^\d+([.,]\d+)?$/.test(txt))return;
     const end=parseFloat(txt.replace(',','.'));if(!end)return;
     const dec=(txt.split(/[.,]/)[1]||'').length,sep=txt.includes(',')?',':'.';
-    const t0=performance.now(),dur=900;
-    const step=now=>{const k=Math.max(0,Math.min(1,(now-t0)/dur)),e=1-Math.pow(1-k,3);el.textContent=(end*e).toFixed(dec).replace('.',sep);if(k<1)requestAnimationFrame(step);else el.textContent=txt;};
-    el.textContent=(0).toFixed(dec).replace('.',sep);requestAnimationFrame(step);
+    // numeri "a palette": girano mostrando cifre a caso e si fermano sul valore vero
+    const t0=performance.now(),dur=900,n=10;
+    if(getComputedStyle(el).display==='inline')el.style.display='inline-block';
+    const fmt=v=>v.toFixed(dec).replace('.',sep);
+    for(let i=1;i<=n;i++)setTimeout(()=>{el.textContent=i<n?fmt(Math.random()*Math.max(end,9)*(dec?1:1)):txt;if(dec===0&&i<n)el.textContent=String(Math.floor(Math.random()*Math.max(10,end*1.3)));
+      if(el.animate)el.animate([{transform:'rotateX(0)'},{transform:'rotateX(88deg)',offset:.5},{transform:'rotateX(0)'}],{duration:i<n?80:220,easing:'ease-in-out'});},i*(dur/n));
+    el.textContent=fmt(0);
     setTimeout(()=>{el.textContent=txt;},dur+300); // sicurezza: il valore giusto arriva sempre
   });
 }
@@ -3657,7 +3661,7 @@ function renderRank(){
   const av=p=>`<div class="mk-av">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`;
   const keyCls=k=>sortKey===k?' k':'';
   const rows=list.map((p,i)=>{const top=sortKey!=='name'&&i<3&&rankVal(p,sortKey)>0;
-    return `<div class="rk-row${top?' top':''}" data-pid="${p.id}"${top?` style="--m:${medal[i]}"`:''} onclick="openProfile(${p.id})">
+    return `<div class="rk-row${top?' top':''}${typeof sxMe==='function'&&sxMe()===p.id?' me':''}" data-pid="${p.id}"${top?` style="--m:${medal[i]}"`:''} onclick="openProfile(${p.id})">
       <span class="rk-p">${sortKey==="name"?"":i+1}${sortKey==="gv"&&(+p.gv||0)>0?deltaHtml(p.id):""}</span>${av(p)}<span class="rk-n"><span class="rk-nm">${esc(dispName(p.nome))}</span>${last5Html(p.id)}</span>
       <div class="rk-c${keyCls('pg')}"><b>${+p.pg||0}</b><span>PARTITE</span></div>
       <div class="rk-c rk-e"><b>${esc(normStorico(p.storico))}</b><span>STORICO</span></div>
@@ -4007,7 +4011,7 @@ function cmcHtml(m){
   if(m.risultato){col='#22c55e';stat=hasG?`${g1}-${g2}`:esc(m.risultato);tag=m.data?new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short'}).toUpperCase():'';}
   else if(live){col='#ff2d3d';stat='IN CORSO';tag='ORA';}
   else if(m.data===today){col='#22b8f0';stat='DA GIOCARE';tag='OGGI';}
-  else{col='#8b5cf6';stat='DA GIOCARE';tag='';}
+  else{col='#e8ff00';stat='DA GIOCARE';tag='';}
   if(!tag&&m.data)tag=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'short',day:'numeric'}).toUpperCase();
   const av=p=>p?`<div class="mk-av">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`:'';
   const nm=(n,w,l)=>{const dbl=String(n).includes(' / ');const sn=dispName(n),fn='';   /* N. COGNOME su una riga */
@@ -4550,7 +4554,7 @@ function buildPlayerCardHTML(p,opts){
   // Card compatta (proposta G): avatar a sinistra; accanto nome e #, sotto i numeri in riga con la descrizione in maiuscolo
   const stt=(v,l,ls,c)=>`<div class="k4g-t"><b style="color:${c}">${v}</b><span><i class="lg">${l}</i><i class="sh">${ls}</i></span></div>`;
   return`<div class="pcrd k4c k4g ${d.isFoil?'foil':''}" style="--lv:${lvColor};--gc:${gc}">
-    <div class="k4-av${typeof avMood==='function'&&avMood(p.id)?' mood md-'+avMood(p.id):''}"${ringClick}>${photoHtml}${typeof avMood==='function'?moodDeco(avMood(p.id)):''}</div>
+    <div class="k4-av"${ringClick}>${photoHtml}</div>
     <div class="k4g-b">
       <div class="k4g-h"><div class="k4-sn">${esc(sn)}</div><div class="k4g-l5">${last5Html(p.id)}</div><div class="k4-rk">${ri>=0?'#'+(ri+1):'#–'}</div></div>
       <div class="k4g-st">${stt(+p.pg||0,'Match','Match','#e8ff00')}${stt(+p.gv||0,'Game','Game','#ff4fb8')}${stt((+p.mg||0).toFixed(2),'Media','Media','#22b8f0')}${stt(storicoHtml(p.storico),'','','#fff')}</div>
@@ -7199,7 +7203,7 @@ body.light .cmc:has(.rea-bar){flex-wrap:wrap}body.light .cmc .rea-bar{flex-basis
 .rc-tx small em{font-style:normal;color:var(--accent)}
 .rc-tx b{display:block;font-family:"Anton",sans-serif;font-weight:400;font-size:21px;line-height:1.1;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rc-go{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#111;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.rc-go svg{width:18px;height:18px;margin-left:-1px}
+.rc-go svg{width:18px;height:18px;margin-left:-1px;display:block}
 /* recap della settimana: storie */
 .st-bg{position:fixed;inset:0;z-index:5300;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .st-bg.open{display:flex}
@@ -7568,7 +7572,7 @@ function renderRecapBtn(){
   const isNew=seen!==R.key,p=R.star&&R.star.p,dm=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'}).toUpperCase().replace('.','');
   el.innerHTML=`<button type="button" class="rc-btn${isNew?' new':''}" onclick="openRecap()"><div class="rc-ring${isNew?'':' seen'}"><div>${p?avHtmlBig(p):'★'}</div></div>
     <div class="rc-tx"><small>${isNew?'<em>NUOVO</em> · ':''}${dm(R.mon)} – ${dm(R.sun)} · ${R.n} ${R.n===1?'PARTITA':'PARTITE'}</small><b>Recap della settimana</b></div>
-    <span class="rc-go"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.5 5.2v13.6a1 1 0 0 0 1.52.85l10.6-6.8a1 1 0 0 0 0-1.7l-10.6-6.8A1 1 0 0 0 8.5 5.2z"/></svg></span></button>`;
+    <span class="rc-go"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.2 5.6v12.8a.9.9 0 0 0 1.37.77l10.1-6.4a.9.9 0 0 0 0-1.54l-10.1-6.4a.9.9 0 0 0-1.37.77z"/></svg></span></button>`;
 }
 {const _rhf=renderHomeFeat;renderHomeFeat=function(){_rhf.apply(this,arguments);try{renderRecapBtn();}catch(e){}};}
 // si apre da solo una volta a settimana, in Home, quando non ci sono altre finestre aperte
@@ -8297,5 +8301,66 @@ function obDecline(){
   },4000);
 })();
 </script>
+<style>
+/* ═══════════ RESTYLING (nov 2026): palette "Cemento elettrico", schede piene, neon in evidenza, angoli morbidi ═══════════ */
+html body:not(.light){--bg:#13308a;--bg2:#0d2366;--bg3:#0f2770;--bg4:#18379a;--border:rgba(126,224,255,.16);--border2:rgba(126,224,255,.26);--text2:#a9c4ee;--header-bg:#13308a;
+  --aur:linear-gradient(#0f2770,#0f2770);--neon:#7ee0ff;--elec-y:#ffd23f}
+html:has(body:not(.light)),html body:not(.light),html body:not(.light) .header,html body:not(.light) .profile-modal,html body:not(.light) .profile-header{
+  background:linear-gradient(180deg,#1b3fa0 0%,#13308a 45%,#0d2366 100%) fixed!important}
+html body:not(.light) #boot{background:#13308a!important}
+/* titoli delle pagine: azzurro elettrico */
+html body:not(.light) :is(.hf-list-title,.pg-title.pg-big,.cal-big),html body:not(.light) :is(.hf-list-title,.pg-title.pg-big,.cal-big) span{color:#fff!important}
+/* schede piene: niente trasparenza, un blu più scuro dello sfondo e un bordo sottile */
+html body:not(.light) :is(.hdr,.tabs-mobile2 .tbar,.hl,.cmc.mk,.rs,.rk-row,.pcrd.pk .pk-bd,.tor-bd,.albo-card,.rk-seg,.cal-day,.profile-stats-row .pk-t,.mk-time,.cards-grid .pcrd.k4c,.pr-rv,.sx-card,.rc-btn,.dy-c,.dy-i,.card,.rcard,.torneo-card,.pr-chart,.st-row,.vs-rows,.vs-pm){
+  background:#0f2770!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border-color:rgba(126,224,255,.16)!important}
+html body:not(.light) .profile-stats-row{background:transparent!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html body:not(.light) :is(.hdr,.tabs-mobile2 .tbar){background:#0d2366!important;border-color:rgba(126,224,255,.2)!important}
+html body:not(.light) .rk-row.top:is(.z.z.z,*){background:linear-gradient(90deg,color-mix(in srgb,var(--m) 30%,#0f2770),#0f2770 62%)!important}
+/* neon per le cose in evidenza: giocatore della settimana, recap, la tua pagina, partita della settimana, coppa */
+html body:not(.light) :is(.hl,.rc-btn,.sx-hero,.rs.motw,.tr3d):is(.z.z.z,*){border:1.5px solid #7ee0ff!important;box-shadow:0 0 16px rgba(126,224,255,.45),inset 0 0 18px rgba(126,224,255,.12)!important}
+html body:not(.light) .rs.motw:is(.z.z.z.z,*){border-color:#ffd23f!important;box-shadow:0 0 16px rgba(255,210,63,.45),inset 0 0 18px rgba(255,210,63,.12)!important}
+/* angoli morbidi, uguali ovunque */
+html body:not(.light) :is(.hl,.cmc.mk,.rs,.rk-row,.cards-grid .pcrd.k4c,.pr-rv,.sx-card,.rc-btn,.dy-c,.albo-card,.tor-bd,.mv,.vs-arena,.vs-rows,.tr3d,.ob-card,.st-row,.pr-chart,.card,.rcard,.torneo-card){border-radius:14px!important}
+html body:not(.light) :is(.dy-i,.vs-pm,.profile-stats-row .pk-t,.mk-time,.cal-day,.sx-chip,.sx-pl,.ob-list span){border-radius:12px!important}
+html body:not(.light) :is(.hdr,.tabs-mobile2 .tbar){border-radius:18px!important}
+html body:not(.light) .tabs-mobile2 .tbtn.active,html body:not(.light) .rk-seg button{border-radius:12px!important}
+html body:not(.light) .rk-seg{border-radius:14px!important}
+/* calendario come agenda: una linea verticale con un pallino per partita (verde giocata, viola da giocare, rosso in corso) */
+#cal-list{position:relative;padding-left:22px}
+#cal-list::before{content:"";position:absolute;left:7px;top:10px;bottom:10px;width:2px;border-radius:2px;background:rgba(126,224,255,.22)}
+#cal-list>.cmc{overflow:visible!important}
+#cal-list>.cmc::after{content:"";position:absolute;left:-21px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:#e8ff00;box-shadow:0 0 10px #e8ff00;border:2px solid #13308a}
+#cal-list>.cmc.cd::after{background:#22c55e;box-shadow:0 0 10px #22c55e}
+#cal-list>.cmc.live::after{background:#ff2d3d;box-shadow:0 0 12px #ff2d3d;animation:agLive 1s ease-in-out infinite}
+@keyframes agLive{50%{transform:scale(1.35)}}
+#cal-list>:not(.cmc){margin-left:-22px}
+/* la tua riga in classifica resta attaccata in basso mentre scorri */
+html body:not(.light) .rk-row.me:is(.z.z.z.z,*){position:sticky!important;bottom:calc(118px + env(safe-area-inset-bottom));z-index:6;border:2px solid var(--accent)!important;
+  background:linear-gradient(90deg,#4a5a12,#0f2770 70%)!important;box-shadow:0 0 18px rgba(232,255,0,.5),0 -6px 18px rgba(0,0,0,.45)!important}
+html body:not(.light) .rk-row.me .rk-nm::before{content:"TU · ";color:var(--accent)}
+@media(min-width:641px){html body:not(.light) .rk-row.me:is(.z.z.z.z.z,*){bottom:16px}}
+html body:not(.light) .cal-day.sel:is(.z.z.z,*){background:var(--page)!important;border-color:transparent!important}
+/* pulsanti che si schiacciano */
+:is(.btn-p,.ob-go,.ob-nx,.mv-share,.mv-vsb,.mv-edit,.st-go button,.tr3d-ed,.add-res-btn,.inst-go,.btn.btn-g){box-shadow:0 5px 0 rgba(0,0,0,.45)!important;transition:transform .06s,box-shadow .06s!important}
+:is(.btn-p,.ob-go,.ob-nx,.st-go .y,.inst-go){box-shadow:0 5px 0 #8a9900!important}
+.mv-share{box-shadow:0 5px 0 #14632f!important}
+:is(.btn-p,.ob-go,.ob-nx,.mv-share,.mv-vsb,.mv-edit,.st-go button,.tr3d-ed,.add-res-btn,.inst-go,.btn.btn-g):active{transform:translateY(4px)!important;box-shadow:0 1px 0 rgba(0,0,0,.45)!important}
+/* X della scheda partita: sempre sopra il resto e con un'area da toccare più grande */
+.mv-x{z-index:20!important;width:42px!important;height:42px!important;top:8px!important;right:8px!important;display:grid;place-items:center;padding:0}
+.vs-x,.st-x{z-index:20!important}
+/* LISTA GIOCATORI apribile: chiusa di default, si apre toccando il titolo */.hf-tog{display:flex!important;align-items:center;justify-content:center;gap:10px;width:100%;background:none!important;border:0!important;cursor:pointer;padding:6px 0!important;-webkit-tap-highlight-color:transparent}.hf-chev{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#111;transition:transform .3s;flex-shrink:0}.hf-chev svg{width:18px;height:18px}.hf-tog[aria-expanded="true"] .hf-chev{transform:rotate(180deg)}#cards-grid.lst-closed{display:none!important}.home-filters.searching~#cards-grid.lst-closed{display:grid!important}
+/* avvisi a forma di pallina: entrano rotolando e si aprono in una pillola */
+html body .toast{left:50%!important;right:auto!important;bottom:calc(118px + env(safe-area-inset-bottom))!important;transform:translate(-50%,16px)!important;
+  border:1.5px solid var(--accent)!important;border-radius:999px!important;background:#0d2366!important;color:var(--accent)!important;font:800 13px "DM Sans",sans-serif!important;
+  padding:9px 18px 9px 42px!important;white-space:nowrap;box-shadow:0 8px 22px rgba(0,0,0,.45)!important;z-index:6500!important}
+html body .toast::before{content:"";position:absolute;left:5px;top:50%;width:28px;height:28px;margin-top:-14px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#f7ff8a,#d4ec00 60%,#9aaa00);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+html body .toast.show{transform:translate(-50%,0)!important;opacity:1!important;animation:tOpen .7s cubic-bezier(.3,1.1,.4,1) both}
+html body .toast.show::before{animation:tRoll .7s cubic-bezier(.3,1.1,.4,1) both}
+@keyframes tOpen{0%{clip-path:inset(0 calc(100% - 38px) 0 0 round 999px)}45%{clip-path:inset(0 calc(100% - 38px) 0 0 round 999px)}100%{clip-path:inset(0 0 0 0 round 999px)}}
+@keyframes tRoll{0%{transform:translateX(-90px) rotate(-360deg)}45%{transform:none}}
+@media (prefers-reduced-motion:reduce){html body .toast.show,html body .toast.show::before,#cal-list>.cmc.live::after{animation:none}}
+</style>
+<script>function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>
 </body>
 </html>
