@@ -8358,15 +8358,6 @@ html body:not(.light) :is(.dy-i,.vs-pm,.profile-stats-row .pk-t,.mk-time,.cal-da
 html body:not(.light) :is(.hdr,.tabs-mobile2 .tbar){border-radius:18px!important}
 html body:not(.light) .tabs-mobile2 .tbtn.active,html body:not(.light) .rk-seg button{border-radius:12px!important}
 html body:not(.light) .rk-seg{border-radius:14px!important}
-/* calendario come agenda: una linea verticale con un pallino per partita (verde giocata, viola da giocare, rosso in corso) */
-#cal-list{position:relative;padding-left:22px}
-#cal-list::before{content:"";position:absolute;left:7px;top:10px;bottom:10px;width:2px;border-radius:2px;background:rgba(126,224,255,.22)}
-#cal-list>.cmc{overflow:visible!important}
-#cal-list>.cmc::after{content:"";position:absolute;left:-21px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:#e8ff00;box-shadow:0 0 10px #e8ff00;border:2px solid #13308a}
-#cal-list>.cmc.cd::after{background:#22c55e;box-shadow:0 0 10px #22c55e}
-#cal-list>.cmc.live::after{background:#ff2d3d;box-shadow:0 0 12px #ff2d3d;animation:agLive 1s ease-in-out infinite}
-@keyframes agLive{50%{transform:scale(1.35)}}
-#cal-list>:not(.cmc){margin-left:-22px}
 /* la tua riga in classifica resta attaccata in basso mentre scorri */
 html body:not(.light) .rk-row.me:is(.z.z.z.z,*){position:sticky!important;bottom:calc(118px + env(safe-area-inset-bottom));z-index:6;border:2px solid var(--accent)!important;
   background:linear-gradient(90deg,#4a5a12,#0f2770 70%)!important;box-shadow:0 0 18px rgba(232,255,0,.5),0 -6px 18px rgba(0,0,0,.45)!important}
@@ -8392,7 +8383,7 @@ html body .toast.show{transform:translate(-50%,0)!important;opacity:1!important;
 html body .toast.show::before{animation:tRoll .7s cubic-bezier(.3,1.1,.4,1) both}
 @keyframes tOpen{0%{clip-path:inset(0 calc(100% - 38px) 0 0 round 999px)}45%{clip-path:inset(0 calc(100% - 38px) 0 0 round 999px)}100%{clip-path:inset(0 0 0 0 round 999px)}}
 @keyframes tRoll{0%{transform:translateX(-90px) rotate(-360deg)}45%{transform:none}}
-@media (prefers-reduced-motion:reduce){html body .toast.show,html body .toast.show::before,#cal-list>.cmc.live::after{animation:none}}
+@media (prefers-reduced-motion:reduce){html body .toast.show,html body .toast.show::before}
 </style>
 <script>window.matchMedia("(max-width:640px)").addEventListener("change",()=>{if(typeof currentTab!=="undefined"&&currentTab==="risultati")renderRisultati();});
 function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>
