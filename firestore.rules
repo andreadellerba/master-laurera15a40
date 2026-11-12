@@ -46,9 +46,17 @@ service cloud.firestore {
 
       // admin: può solo dire di chi è il dispositivo (giocatore e/o nome)
       allow update: if request.auth != null
-                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nome', 'pid'])
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nome', 'pid', 'auto'])
                     && request.resource.data.get('nome', '') is string && request.resource.data.get('nome', '').size() <= 40
                     && (request.resource.data.get('pid', 0) is int || request.resource.data.get('pid', 0) is float);
+
+      // "Chi sei?": il socio sceglie il proprio nome una sola volta (se il dispositivo non ha già un giocatore)
+      allow update: if request.auth == null
+                    && !('pid' in resource.data)
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pid', 'nome', 'auto'])
+                    && (request.resource.data.pid is int || request.resource.data.pid is float)
+                    && request.resource.data.nome is string && request.resource.data.nome.size() <= 40
+                    && request.resource.data.auto == true;
     }
 
     // Reazioni ai risultati (🔥 👏 😍 💪 🤯 😂 🎾 🏆): chiunque può leggerle; senza login si può solo
@@ -66,10 +74,13 @@ service cloud.firestore {
       // reazioni successive: cambia un solo contatore, di +1 o -1
       allow update: if request.resource.data.keys().hasOnly(['f', 'c', 'h', 'p', 'w', 'l', 't', 'k'])
                     && request.resource.data.diff(resource.data).affectedKeys().size() == 1
-                    && reazioneUnPasso(request.resource.data.diff(resource.data).affectedKeys().toList()[0]);
+                    && (reazioneUnPasso('f') || reazioneUnPasso('c') || reazioneUnPasso('h') || reazioneUnPasso('p')
+                        || reazioneUnPasso('w') || reazioneUnPasso('l') || reazioneUnPasso('t') || reazioneUnPasso('k'));
     }
+    // vero se la modifica riguarda solo il contatore k e lo sposta di +1 o -1 (mai sotto zero)
     function reazioneUnPasso(k) {
-      return request.resource.data[k] is int
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([k])
+          && request.resource.data[k] is int
           && request.resource.data[k] >= 0
           && (request.resource.data[k] == resource.data.get(k, 0) + 1
               || request.resource.data[k] == resource.data.get(k, 0) - 1);
