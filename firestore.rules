@@ -51,7 +51,7 @@ service cloud.firestore {
                     && (request.resource.data.get('pid', 0) is int || request.resource.data.get('pid', 0) is float);
     }
 
-    // Reazioni ai risultati (🔥 👏 😱 😂): chiunque può leggerle; senza login si può solo
+    // Reazioni ai risultati (🔥 👏 😍 💪 🤯 😂 🎾 🏆): chiunque può leggerle; senza login si può solo
     // aggiungere o togliere UNA reazione alla volta (+1 o -1 su un solo contatore, mai sotto zero).
     match /clubs/{clubId}/reazioni/{mid} {
       allow read: if true;
@@ -59,12 +59,12 @@ service cloud.firestore {
 
       // prima reazione su una partita: un solo contatore, a 1
       allow create: if mid.size() <= 20
-                    && request.resource.data.keys().hasOnly(['f', 'c', 'w', 'l'])
+                    && request.resource.data.keys().hasOnly(['f', 'c', 'h', 'p', 'w', 'l', 't', 'k'])
                     && request.resource.data.keys().size() == 1
                     && request.resource.data.values()[0] == 1;
 
       // reazioni successive: cambia un solo contatore, di +1 o -1
-      allow update: if request.resource.data.keys().hasOnly(['f', 'c', 'w', 'l'])
+      allow update: if request.resource.data.keys().hasOnly(['f', 'c', 'h', 'p', 'w', 'l', 't', 'k'])
                     && request.resource.data.diff(resource.data).affectedKeys().size() == 1
                     && reazioneUnPasso(request.resource.data.diff(resource.data).affectedKeys().toList()[0]);
     }

@@ -3640,7 +3640,7 @@ function renderRank(){
   document.querySelectorAll('#rank-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===sortKey));
   const list=rankSorted(sortKey);
   const medal=['#f0c040','#c8ced8','#cd7c3f'];
-  const av=p=>{const md=typeof avMood==='function'?avMood(p.id):'';return`<div class="mk-av${md?' mood md-'+md:''}">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}${md?moodDeco(md):''}</div>`;};
+  const av=p=>`<div class="mk-av">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`;
   const keyCls=k=>sortKey===k?' k':'';
   const rows=list.map((p,i)=>{const top=sortKey!=='name'&&i<3&&rankVal(p,sortKey)>0;
     return `<div class="rk-row${top?' top':''}" data-pid="${p.id}"${top?` style="--m:${medal[i]}"`:''} onclick="openProfile(${p.id})">
@@ -4007,6 +4007,7 @@ function cmcHtml(m){
     ${m.risultato?`<span class="mk-score${!win1&&!win2?' draw':''}"><b class="${win1?'w':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</b><b class="${win2?'w':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</b></span>`:'<span class="mk-vs">VS</span>'}
     <div class="mk-pl rt">${nm(n2,win2,win1)}${av(p2)}</div>
     <div class="mk-st">${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
+    ${m.risultato&&typeof reaHtml==='function'?reaHtml(m.id):''}
   </div>`;
 }
 // ═══ CAL MODAL ═══
@@ -4673,9 +4674,7 @@ function openProfile(playerId){
   // Played
   const played=sched.filter(m=>(m.p1Id===playerId||m.p2Id===playerId)&&m.risultato).sort((a,b)=>b.data.localeCompare(a.data)||b.ora.localeCompare(a.ora));
   const pEl=document.getElementById('profile-played');
-  pEl.innerHTML=typeof diarioHtml==='function'?diarioHtml(playerId):(played.length?`<div style="display:flex;flex-direction:column;gap:7px">${played.map(m=>cmcHtml(m)).join('')}</div>`:'<div class="cal-empty">Nessuna partita giocata ancora.</div>');
-  { const _ring=document.querySelector('#profile-modal .ph-ring');if(_ring&&typeof avMood==='function'){const _m=avMood(p.id);_ring.className='ph-ring'+(_m?' mood md-'+_m:'');_ring.querySelectorAll('.md-x').forEach(x=>x.remove());if(_m)_ring.insertAdjacentHTML('beforeend',moodDeco(_m));} }   // avatar che reagisce all'ultimo risultato
-  profileExtra(p);
+  pEl.innerHTML=typeof diarioHtml==='function'?diarioHtml(playerId):(played.length?`<div style="display:flex;flex-direction:column;gap:7px">${played.map(m=>cmcHtml(m)).join('')}</div>`:'<div class="cal-empty">Nessuna partita giocata ancora.</div>');  profileExtra(p);
   // Show with slide-up animation
   const pm=document.getElementById('profile-modal');
   pm.style.display='flex';
@@ -7153,15 +7152,24 @@ document.addEventListener('click',function(e){
 .mv-btns button{white-space:nowrap}
 .mv-vsb{background:rgba(139,92,246,.32);color:#fff;border-color:rgba(167,139,250,.65)!important}
 /* reazioni */
-.mv-rea{display:flex;justify-content:center;gap:8px;margin:14px 0 0}
-.mv-rea button{display:flex;align-items:center;gap:6px;height:38px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.35);color:#fff;font:800 13px "DM Sans",sans-serif;cursor:pointer;font-variant-numeric:tabular-nums;transition:transform .12s}
-.mv-rea button em{font-style:normal;font-size:18px;line-height:1}
-.mv-rea button.on{border-color:var(--accent);background:rgba(232,255,0,.14);color:var(--accent)}
-.mv-rea button:active{transform:scale(.9)}
-.rea-fly{position:fixed;font-size:28px;line-height:1;pointer-events:none;z-index:5600}
-.rs.has-rea{padding-bottom:28px!important}
-.rs-rea{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);display:flex;gap:10px;font:800 11px "DM Sans",sans-serif;color:#d6d6d6;white-space:nowrap;font-variant-numeric:tabular-nums}
-.rs-rea span{display:flex;align-items:center;gap:3px}
+.rea-bar{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px}
+.rs .rea-bar,.cmc .rea-bar{grid-column:1/-1;margin-top:6px;padding-top:8px;border-top:1px dashed rgba(255,255,255,.12)}
+body.light .cmc:has(.rea-bar){flex-wrap:wrap}body.light .cmc .rea-bar{flex-basis:100%}
+.mv .rea-bar{margin-top:14px}
+.rb{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 11px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.32);color:#fff;font:800 12px "DM Sans",sans-serif;cursor:pointer;font-variant-numeric:tabular-nums;white-space:nowrap;transition:transform .12s}
+.rb em{font-style:normal;font-size:17px;line-height:1}
+.rb.on{border-color:var(--accent);background:rgba(232,255,0,.14);color:var(--accent)}
+.rb:active{transform:scale(.9)}
+.rb-add{color:rgba(255,255,255,.78);border-style:dashed}
+.rb-add svg{width:17px;height:17px}
+.mv .rb{height:36px;padding:0 13px;font-size:13px}.mv .rb em{font-size:19px}
+#rea-pk{position:fixed;z-index:6100;display:flex;gap:2px;padding:5px;border-radius:999px;background:#1c1d22;border:1px solid rgba(255,255,255,.18);box-shadow:0 14px 34px rgba(0,0,0,.65);animation:pkIn .18s ease-out}
+@keyframes pkIn{from{opacity:0;transform:translateY(6px) scale(.92)}}
+#rea-pk button{width:40px;height:40px;border-radius:50%;border:0;background:transparent;font-size:25px;line-height:1;cursor:pointer;transition:transform .12s;animation:pkE .3s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes pkE{from{transform:scale(0)}}
+#rea-pk button:hover{transform:scale(1.22) translateY(-3px)}
+#rea-pk button.on{background:rgba(232,255,0,.2)}
+.rea-fly{position:fixed;font-size:28px;line-height:1;pointer-events:none;z-index:6200}
 /* recap della settimana: pulsante in Home */
 #home-recap{margin:0}
 .rc-btn{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px 10px 10px;border-radius:20px;color:#fff;cursor:pointer;text-align:left;font-family:inherit;
@@ -7177,7 +7185,7 @@ document.addEventListener('click',function(e){
 .rc-tx small em{font-style:normal;color:var(--accent)}
 .rc-tx b{display:block;font-family:"Anton",sans-serif;font-weight:400;font-size:21px;line-height:1.1;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rc-go{width:38px;height:38px;border-radius:50%;background:var(--accent);color:#111;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.rc-go svg{width:16px;height:16px;margin-left:2px}
+.rc-go svg{width:18px;height:18px;margin-left:-1px}
 /* recap della settimana: storie */
 .st-bg{position:fixed;inset:0;z-index:5300;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .st-bg.open{display:flex}
@@ -7328,35 +7336,53 @@ function rankAnim(prev,sortKey){
 }
 
 // ═══ 2. REAZIONI AI RISULTATI (condivise tra tutti, una per tipo per dispositivo) ═══
-const REA=[['f','🔥'],['c','👏'],['w','😱'],['l','😂']];
+// Barra delle reazioni sotto ogni risultato (Risultati, Calendario, scheda partita): le faccine già usate
+// con il conteggio, toccandole aggiungi o togli la tua; il pulsante "+" apre tutte le faccine.
+const REA=[['f','🔥'],['c','👏'],['h','😍'],['p','💪'],['w','🤯'],['l','😂'],['t','🎾'],['k','🏆']];
 let _rea={};
 const _reaCol=()=>_db.collection('clubs').doc('laurera15a40').collection('reazioni');
 function _reaMine(){try{return JSON.parse(localStorage.getItem('laurera_rea')||'{}')||{};}catch(e){return{};}}
 function _reaSetMine(o){try{localStorage.setItem('laurera_rea',JSON.stringify(o));}catch(e){}}
+const _reaAddSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5a8.5 8.5 0 1 1-8-8.48"/><path d="M8.5 14.5s1.3 1.8 3.5 1.8 3.5-1.8 3.5-1.8"/><path d="M9 9.5h.01M15 9.5h.01"/><path d="M19 2.5v5M16.5 5h5"/></svg>';
 function reaHtml(mid){const c=_rea[mid]||{},mine=_reaMine()[mid]||[];
-  return`<div class="mv-rea" data-mid="${mid}">${REA.map(([k,e])=>`<button type="button" class="${mine.includes(k)?'on':''}" onclick="reaTap(${mid},'${k}',this)" aria-label="Reagisci con ${e}"><em>${e}</em><span>${+c[k]||0}</span></button>`).join('')}</div>`;}
-function reaChip(mid){const c=_rea[mid];if(!c)return'';const it=REA.filter(([k])=>(+c[k]||0)>0);if(!it.length)return'';
-  return`<div class="rs-rea">${it.map(([k,e])=>`<span>${e} ${+c[k]}</span>`).join('')}</div>`;}
+  const used=REA.filter(([k])=>(+c[k]||0)>0).sort((a,b)=>(+c[b[0]]||0)-(+c[a[0]]||0));
+  return`<div class="rea-bar" data-mid="${mid}" onclick="event.stopPropagation()">${used.map(([k,e])=>`<button type="button" class="rb${mine.includes(k)?' on':''}" onclick="reaTap(${mid},'${k}',this)" aria-label="Reagisci con ${e}"><em>${e}</em>${+c[k]}</button>`).join('')}<button type="button" class="rb rb-add" onclick="reaPick(${mid},this)" aria-label="Aggiungi una reazione">${_reaAddSvg}${used.length?'':'Reagisci'}</button></div>`;}
+const reaChip=reaHtml;
 function _reaToggleMine(mid,k,add){const o=_reaMine(),a=(o[mid]||[]).filter(x=>x!==k);if(add)a.push(k);if(a.length)o[mid]=a;else delete o[mid];_reaSetMine(o);}
 function reaTap(mid,k,btn){
+  const r=btn?btn.getBoundingClientRect():null;
+  reaPickClose();
   const on=(_reaMine()[mid]||[]).includes(k),d=on?-1:1;
   _reaToggleMine(mid,k,!on);
   _rea[mid]=Object.assign({},_rea[mid]);_rea[mid][k]=Math.max(0,(+_rea[mid][k]||0)+d);
-  btn.classList.toggle('on',!on);btn.querySelector('span').textContent=_rea[mid][k];
-  if(!on)reaFly(btn,REA.find(x=>x[0]===k)[1]);
+  reaRefresh();
+  if(!on&&r)reaFly(r,REA.find(x=>x[0]===k)[1]);
   try{if(navigator.vibrate)navigator.vibrate(12);}catch(e){}
   _reaCol().doc(String(mid)).set({[k]:firebase.firestore.FieldValue.increment(d)},{merge:true}).catch(()=>{
     _reaToggleMine(mid,k,on);_rea[mid][k]=Math.max(0,(+_rea[mid][k]||0)-d);reaRefresh();
     toast('Reazione non salvata, riprova più tardi');});
 }
-function reaFly(btn,e){if(_reduceMotion())return;const r=btn.getBoundingClientRect();
+function reaPickClose(){const p=document.getElementById('rea-pk');if(p)p.remove();}
+function reaPick(mid,btn){
+  const was=document.getElementById('rea-pk');reaPickClose();if(was&&was.dataset.mid==String(mid))return;
+  const mine=_reaMine()[mid]||[],p=document.createElement('div');p.id='rea-pk';p.dataset.mid=mid;p.setAttribute('role','dialog');p.setAttribute('aria-label','Scegli una reazione');
+  p.innerHTML=REA.map(([k,e],i)=>`<button type="button" class="${mine.includes(k)?'on':''}" style="animation-delay:${i*25}ms" aria-label="${e}">${e}</button>`).join('');
+  document.body.appendChild(p);
+  p.querySelectorAll('button').forEach((b,i)=>b.onclick=ev=>{ev.stopPropagation();reaTap(mid,REA[i][0],b);});
+  const r=btn.getBoundingClientRect(),pw=p.offsetWidth,ph=p.offsetHeight;
+  let x=r.left+r.width/2-pw/2;x=Math.max(8,Math.min(innerWidth-pw-8,x));
+  let y=r.top-ph-8;if(y<10)y=r.bottom+8;
+  p.style.left=x+'px';p.style.top=y+'px';
+}
+document.addEventListener('pointerdown',e=>{const p=document.getElementById('rea-pk');if(p&&!p.contains(e.target)&&!e.target.closest('.rb-add'))reaPickClose();},true);
+addEventListener('scroll',reaPickClose,{passive:true,capture:true});
+function reaFly(r,e){if(_reduceMotion())return;
   for(let j=0;j<6;j++){const f=document.createElement('span');f.className='rea-fly';f.textContent=e;f.style.left=(r.left+r.width/2-14)+'px';f.style.top=(r.top-4)+'px';document.body.appendChild(f);
     const dx=(Math.random()-.5)*150;
     f.animate([{transform:'translate(0,0) scale(.5)',opacity:1},{transform:`translate(${dx}px,-${180+Math.random()*100}px) scale(${1+Math.random()*.7}) rotate(${dx/3}deg)`,opacity:0}],
       {duration:950+Math.random()*500,delay:j*60,easing:'cubic-bezier(.2,.6,.3,1)',fill:'both'}).onfinish=()=>f.remove();}}
 function reaRefresh(){
-  document.querySelectorAll('.mv-rea[data-mid]').forEach(el=>{const n=document.createElement('div');n.innerHTML=reaHtml(+el.dataset.mid);el.replaceWith(n.firstChild);});
-  if(typeof currentTab!=='undefined'&&currentTab==='risultati')renderRisultati();
+  document.querySelectorAll('.rea-bar[data-mid]').forEach(el=>{const n=document.createElement('div');n.innerHTML=reaHtml(+el.dataset.mid);el.replaceWith(n.firstChild);});
 }
 try{_reaCol().onSnapshot(s=>{const o={};s.forEach(d=>{o[d.id]=d.data();});_rea=o;reaRefresh();},()=>{});}catch(e){}
 
@@ -7528,7 +7554,7 @@ function renderRecapBtn(){
   const isNew=seen!==R.key,p=R.star&&R.star.p,dm=d=>d.toLocaleDateString('it-IT',{day:'numeric',month:'short'}).toUpperCase().replace('.','');
   el.innerHTML=`<button type="button" class="rc-btn${isNew?' new':''}" onclick="openRecap()"><div class="rc-ring${isNew?'':' seen'}"><div>${p?avHtmlBig(p):'★'}</div></div>
     <div class="rc-tx"><small>${isNew?'<em>NUOVO</em> · ':''}${dm(R.mon)} – ${dm(R.sun)} · ${R.n} ${R.n===1?'PARTITA':'PARTITE'}</small><b>Recap della settimana</b></div>
-    <span class="rc-go"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg></span></button>`;
+    <span class="rc-go"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.5 5.2v13.6a1 1 0 0 0 1.52.85l10.6-6.8a1 1 0 0 0 0-1.7l-10.6-6.8A1 1 0 0 0 8.5 5.2z"/></svg></span></button>`;
 }
 {const _rhf=renderHomeFeat;renderHomeFeat=function(){_rhf.apply(this,arguments);try{renderRecapBtn();}catch(e){}};}
 // si apre da solo una volta a settimana, in Home, quando non ci sono altre finestre aperte
@@ -7542,33 +7568,38 @@ function renderRecapBtn(){
 },3000);})();
 </script>
 <style>
-/* ═══ AVATAR CHE REAGISCONO: corona (ha appena vinto), fiamme (3+ vittorie di fila), pioggia (ha appena perso), zzz (fermo da 3 settimane) ═══ */
-.k4-av{--ms:22px}.mk-av{--ms:15px}.ph-ring{--ms:26px}
+/* ═══ AVATAR CHE REAGISCONO (solo Home): un bollino disegnato sull'angolo dell'avatar dice com'è andata l'ultima partita ═══ */
+.k4-av{--ms:27px}
 .mood{position:relative;overflow:visible!important}
 .mood>img,.mood>span{border-radius:50%}
-.md-x{position:absolute;font-style:normal;line-height:1;pointer-events:none;z-index:2}
-.md-cr{left:50%;top:calc(var(--ms)*-.62);font-size:var(--ms);transform:translateX(-50%) rotate(-12deg);filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));animation:mdCr 1.8s ease-in-out infinite}
-@keyframes mdCr{0%,100%{transform:translateX(-50%) rotate(-12deg)}50%{transform:translateX(-50%) translateY(-3px) rotate(-3deg)}}
-.md-win{animation:mdHop 2.6s ease-in-out infinite}
-@keyframes mdHop{0%,70%,100%{translate:0 0}80%{translate:0 -5px}88%{translate:0 0}93%{translate:0 -2px}}
-.md-hot{border-color:#ff7a00!important;box-shadow:0 0 16px rgba(255,122,0,.75)!important}
-.md-fl{left:0;right:0;top:calc(var(--ms)*-.78);height:var(--ms);display:flex;justify-content:center;align-items:flex-end;gap:calc(var(--ms)*.06)}
-.md-fl b{display:block;width:calc(var(--ms)*.34);height:calc(var(--ms)*.66);border-radius:50% 50% 40% 40%;background:radial-gradient(ellipse at 50% 80%,#ffdd55,#ff7a00 60%,#ff2a00);transform-origin:50% 100%;animation:mdFl .5s ease-in-out infinite alternate}
-.md-fl b:nth-child(2){height:calc(var(--ms)*.92);animation-delay:-.25s}
-@keyframes mdFl{to{transform:scale(.82,1.14) skewX(6deg)}}
-.md-lose>img,.md-lose>span{filter:saturate(.45) brightness(.85)}
-.md-cl{left:50%;top:calc(var(--ms)*-.72);font-size:var(--ms);transform:translateX(-50%);animation:mdCl 2.6s ease-in-out infinite}
-@keyframes mdCl{50%{transform:translateX(-50%) translateY(3px)}}
-.md-zz>img,.md-zz>span{filter:grayscale(.55)}
-.md-z{right:calc(var(--ms)*-.15);top:calc(var(--ms)*-.25);font:800 calc(var(--ms)*.62) "DM Sans",sans-serif;color:#a5b4fc;opacity:0;animation:mdZ 2.6s ease-out infinite}
-.md-z2{animation-delay:1.3s}
-/* nelle liste (schede Home e classifica) i segni stanno sull'angolo dell'avatar, così non escono dalla scheda */
-.k4-av .md-cr,.mk-av .md-cr{left:auto;right:calc(var(--ms)*-.28);top:calc(var(--ms)*-.3);transform:rotate(18deg);animation-name:mdCr2}
-@keyframes mdCr2{0%,100%{transform:rotate(18deg)}50%{transform:translateY(-2px) rotate(26deg)}}
-.k4-av .md-cl,.mk-av .md-cl{left:auto;right:calc(var(--ms)*-.32);top:calc(var(--ms)*-.25);transform:none;animation-name:mdCl2}
-@keyframes mdCl2{50%{transform:translateY(2px)}}
-.k4-av .md-fl,.mk-av .md-fl{top:auto;bottom:calc(var(--ms)*-.12);left:auto;right:calc(var(--ms)*-.35);width:calc(var(--ms)*1.2)}
-@keyframes mdZ{0%{opacity:0;transform:translate(0,6px) scale(.6)}40%{opacity:1}100%{opacity:0;transform:translate(10px,-16px) scale(1.2)}}
+.md-b{position:absolute;right:-7px;bottom:-5px;width:var(--ms);height:var(--ms);border-radius:50%;display:grid;place-items:center;z-index:2;pointer-events:auto;
+  background:var(--mb);color:var(--mi,#fff);border:2.5px solid #0e1c33;box-shadow:0 4px 10px rgba(0,0,0,.5);animation:mdPop .55s cubic-bezier(.3,1.6,.5,1) both}
+.md-b svg{width:64%;height:64%;display:block;overflow:visible}
+@keyframes mdPop{from{transform:scale(0)}}
+.md-win{--mb:linear-gradient(135deg,#fff3b0,#f0c040 55%,#b8860b);--mi:#5a3a00;box-shadow:0 0 16px rgba(240,192,64,.55)!important}
+.md-big{--mb:linear-gradient(135deg,#f4ff9a,#e8ff00 50%,#84cc16);--mi:#1a2e05;box-shadow:0 0 16px rgba(232,255,0,.5)!important}
+.md-hot{--mb:linear-gradient(135deg,#ffd166,#ff7a00 55%,#ff2a00);box-shadow:0 0 18px rgba(255,122,0,.75)!important}
+.md-cold{--mb:linear-gradient(135deg,#e0f7ff,#7dd3fc 55%,#0ea5e9);--mi:#06364d;box-shadow:0 0 16px rgba(125,211,252,.6)!important}
+.md-draw{--mb:linear-gradient(135deg,#7dd3fc,#2563eb)}
+.md-lose{--mb:linear-gradient(135deg,#a3b1c6,#475569)}
+.md-lose>img,.md-lose>span{filter:saturate(.55) brightness(.9)}
+.md-new{--mb:linear-gradient(135deg,#ffb3e2,#ff4fb8 55%,#a855f7)}
+.md-zz{--mb:linear-gradient(135deg,#c7d2fe,#6366f1 60%,#3730a3)}
+.md-zz>img,.md-zz>span{filter:grayscale(.5)}
+.md-win .md-b svg{animation:mdWob 2s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes mdWob{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg) translateY(-1px)}}
+.md-big .md-b svg{animation:mdBolt 1.6s ease-in-out infinite}
+@keyframes mdBolt{0%,80%,100%{transform:none}85%{transform:scale(1.25)}90%{transform:scale(.95)}}
+.md-hot .md-b svg{animation:mdFlk .45s ease-in-out infinite alternate;transform-origin:50% 100%}
+@keyframes mdFlk{to{transform:scale(.88,1.12) skewX(5deg)}}
+.md-cold .md-b svg{animation:mdSpin 6s linear infinite}
+@keyframes mdSpin{to{transform:rotate(360deg)}}
+.md-lose .md-b .dr{animation:mdRain 1s linear infinite}
+@keyframes mdRain{from{transform:translateY(-2px);opacity:1}to{transform:translateY(4px);opacity:0}}
+.md-new .md-b svg{animation:mdTw 1.8s ease-in-out infinite}
+@keyframes mdTw{50%{transform:scale(1.18) rotate(15deg)}}
+.md-zz .md-b .z{animation:mdZz 2.4s ease-out infinite}
+@keyframes mdZz{0%{opacity:0;transform:translate(-2px,3px)}40%{opacity:1}100%{opacity:0;transform:translate(3px,-4px)}}
 /* ═══ DIARIO DELLA STAGIONE (scheda giocatore) ═══ */
 .dy-c{position:relative;padding:12px 14px 14px;margin-bottom:12px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12)}
 .dy-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
@@ -7595,7 +7626,7 @@ function renderRecapBtn(){
 .dy-i .mk-av{width:32px;height:32px;font-size:12px;border-width:2px}
 .dy-o{font-family:"Anton",sans-serif;font-weight:400;font-size:17px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .dy-s{font-family:"Anton",sans-serif;font-size:20px;color:var(--c);white-space:nowrap;font-variant-numeric:tabular-nums}
-@media (prefers-reduced-motion:reduce){.md-x,.md-win,.dy-l,.dy-a,.dy-g i,.dy-i{animation:none!important}.dy-l{stroke-dashoffset:0}.dy-a{opacity:1}.md-z{opacity:1}}
+@media (prefers-reduced-motion:reduce){.md-b,.md-b *,.dy-l,.dy-a,.dy-g i,.dy-i{animation:none!important}.dy-l{stroke-dashoffset:0}.dy-a{opacity:1}}
 </style>
 <script>
 // ═══ AVATAR CHE REAGISCONO ═══
@@ -7604,13 +7635,28 @@ function avMood(pid){
   if(avMood._k!==k){avMood._k=k;avMood._c={};}
   if(pid in avMood._c)return avMood._c[pid];
   const ps=playedOf(pid);let r='';
-  if(ps.length){const last=ps[0],days=Math.floor((Date.now()-new Date(last.data+'T12:00:00').getTime())/864e5);
-    let s=0;for(const m of ps){if(_resFor(m,pid)==='w')s++;else break;}
-    const lr=_resFor(last,pid);
-    if(s>=3&&days<=14)r='hot';else if(days<=3&&lr==='w')r='win';else if(days<=3&&lr==='l')r='lose';else if(days>=21)r='zz';}
+  if(ps.length){const last=ps[0],days=Math.floor((Date.now()-new Date(last.data+'T12:00:00').getTime())/864e5),lr=_resFor(last,pid);
+    let sw=0,sl=0;for(const m of ps){if(_resFor(m,pid)==='w')sw++;else break;}for(const m of ps){if(_resFor(m,pid)==='l')sl++;else break;}
+    const g=_games(last),marg=Math.abs(g[0]-g[1]),firstD=Math.floor((Date.now()-new Date(ps[ps.length-1].data+'T12:00:00').getTime())/864e5);
+    if(sw>=3&&days<=14)r='hot';
+    else if(sl>=3&&days<=14)r='cold';
+    else if(ps.length<=2&&firstD<=7)r='new';
+    else if(days<=3&&lr==='w')r=marg>=6?'big':'win';
+    else if(days<=3&&lr==='d')r='draw';
+    else if(days<=3&&lr==='l')r='lose';
+    else if(days>=21)r='zz';}
   return avMood._c[pid]=r;
 }
-function moodDeco(m){return m==='win'?'<i class="md-x md-cr">👑</i>':m==='hot'?'<i class="md-x md-fl"><b></b><b></b><b></b></i>':m==='lose'?'<i class="md-x md-cl">🌧️</i>':m==='zz'?'<i class="md-x md-z">z</i><i class="md-x md-z md-z2">z</i>':'';}
+const MOOD_I={
+  win:['Ha appena vinto','<path fill="currentColor" d="M2.5 8.5l5 4L12 5.2l4.5 7.3 5-4-2 11H4.5z"/><circle cx="12" cy="4" r="1.7" fill="currentColor"/>'],
+  big:['Ha appena stravinto','<path fill="currentColor" d="M13.5 2 4.5 13.5h6l-1 8.5 9-11.5h-6z"/>'],
+  hot:['In serie: 3 o più vittorie di fila','<path fill="#fff" d="M12 2c.9 3.4-1.7 4.9-1.7 7.4 0 1.3.9 2.4 2.2 2.4 1.5 0 2.3-1.3 2-3 2.3 1.6 3.8 4.2 3.8 6.8 0 3.8-2.8 6.4-6.3 6.4s-6.3-2.6-6.3-6.3C5.7 10.5 10 7.6 12 2z"/>'],
+  cold:['3 sconfitte di fila: serve una vittoria','<g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 2.5v19M3.8 7.2l16.4 9.6M3.8 16.8l16.4-9.6"/><path d="M9.4 4.4 12 6.6l2.6-2.2M9.4 19.6 12 17.4l2.6 2.2"/></g>'],
+  draw:['Ha appena pareggiato','<path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 9.2h12M6 14.8h12"/>'],
+  lose:['Ha appena perso','<path fill="currentColor" d="M7.2 13.5a3.7 3.7 0 0 1-.4-7.4 5.1 5.1 0 0 1 9.8-1.2 3.4 3.4 0 0 1 .6 8.6z"/><path class="dr" fill="none" stroke="#dbeafe" stroke-width="2" stroke-linecap="round" d="M8.5 16.5l-1 3M12.5 16.5l-1 3M16.5 16.5l-1 3"/>'],
+  new:['Debutto al circolo','<path fill="currentColor" d="M12 2.5l2.1 6.3 6.4 2.2-6.4 2.2-2.1 6.3-2.1-6.3L3.5 11l6.4-2.2z"/><circle cx="19.2" cy="4.6" r="1.5" fill="currentColor"/><circle cx="5" cy="19" r="1.2" fill="currentColor"/>'],
+  zz:['Non gioca da 3 settimane','<path fill="currentColor" d="M17.5 15.5A7.2 7.2 0 0 1 8 6a7.2 7.2 0 1 0 9.5 9.5z"/><path class="z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M15 3h4.5L15 7.5h4.5"/>']};
+function moodDeco(m){const d=MOOD_I[m];return d?`<i class="md-x md-b" title="${d[0]}" aria-label="${d[0]}"><svg viewBox="0 0 24 24" aria-hidden="true">${d[1]}</svg></i>`:'';}
 
 // ═══ DIARIO DELLA STAGIONE: curva della forma (rating calcolato dai risultati) e partite come tappe ═══
 function eloData(){
@@ -7652,9 +7698,12 @@ function diarioHtml(pid){
 .tr3d-pl .w .mk-av{width:40px;height:40px;font-size:15px;border-color:#fbbf24;box-shadow:0 0 14px rgba(251,191,36,.5)}
 .tr3d-pl .w b{font-family:"Anton",sans-serif;font-weight:400;font-size:26px;line-height:1.05;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .tr3d-pl small{font:800 11px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.65);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tr3d-pl small.nt{color:rgba(255,255,255,.5);letter-spacing:.8px}
+.tr3d-ed{margin-top:6px;height:32px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.35);color:#fff;font:800 12px "DM Sans",sans-serif;cursor:pointer}
 .tr3d-pl.sw{animation:trSw .45s ease-out}
 @keyframes trSw{from{opacity:0;transform:translateY(8px)}}
 .albo-card[data-aid]{cursor:pointer}
+.albo-card.tr-hide,.albo-year.tr-hide,.albo-grid.tr-hide{display:none!important}
 /* ═══ ULTIM'ORA ═══ */
 .uk{position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top,0px));z-index:6000;max-width:460px;margin:0 auto;border-radius:18px;overflow:hidden;cursor:pointer;
   box-shadow:0 16px 44px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.14);transform:translateY(calc(-100% - 40px));transition:transform .55s cubic-bezier(.2,1.3,.4,1)}
@@ -7672,8 +7721,6 @@ function diarioHtml(pid){
 .uk-mid b i{font-style:normal;color:rgba(255,255,255,.4)}.uk-mid b .w{color:var(--accent)}.uk-mid b .d{color:#38bdf8}
 .uk-mid small{display:block;margin-top:4px;font:800 10.5px "DM Sans",sans-serif;letter-spacing:1px;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .uk-fl{position:fixed;inset:0;z-index:5999;background:#fff;pointer-events:none}
-/* ═══ PAGINE A CERCHIO ═══ */
-.ci-ov{position:fixed;width:20px;height:20px;border-radius:50%;z-index:850;pointer-events:none}
 .albo-card.tr-on{box-shadow:0 0 0 2px #fbbf24,0 0 22px rgba(251,191,36,.35)!important}
 </style>
 <script>
@@ -7682,7 +7729,8 @@ let _trSel=null,_trAng=0,_trVel=.012,_trDrag=null,_trSpin=0,_trRaf=0;
 function _trEntry(){const list=alboData.slice().sort((a,b)=>(+b.anno||0)-(+a.anno||0)||(+b.id||0)-(+a.id||0));return list.find(a=>a.id===_trSel)||list[0];}
 function _trWinner(a){const n=String(a.vincitore||'').split('/')[0].trim().toUpperCase();return players.find(p=>p.nome.trim().toUpperCase()===n)||null;}
 function trPlate(a){const p=_trWinner(a),names=String(a.vincitore||'').split('/').map(s=>dispName(s.trim())).join(' / ');
-  return`<div class="k">${esc(String(a.torneo||'Torneo').toUpperCase())}${a.anno?' · '+esc(String(a.anno)):''}</div><div class="w">${p?`<div class="mk-av">${avHtmlBig(p)}</div>`:''}<b>${esc(names)}</b></div>${a.titolo?`<small>${esc(a.titolo)}</small>`:''}`;}
+  const n=String(a.note||'');
+  return`<div class="k">${esc(String(a.torneo||'Torneo').toUpperCase())}${a.anno?' · '+esc(String(a.anno)):''}</div><div class="w">${p?`<div class="mk-av">${avHtmlBig(p)}</div>`:''}<b>${esc(names)}</b></div>${a.titolo?`<small>${esc(a.titolo)}</small>`:''}${n?`<small class="nt">${esc(n)}</small>`:''}${_checkViewer()?'':`<button type="button" class="tr3d-ed" onclick="openAlboEdit(${a.id})" aria-label="Modifica il titolo">✏️ Modifica</button>`}`;}
 function renderTrophy3D(){
   const list=document.getElementById('albo-list');if(!list||!alboData.length)return;
   let box=document.getElementById('tr3d');const a=_trEntry();if(!a)return;
@@ -7693,7 +7741,9 @@ function renderTrophy3D(){
     ['pointerup','pointercancel','pointerleave'].forEach(t=>cv.addEventListener(t,()=>{_trDrag=null;}));}
   if(list.firstChild!==box)list.insertBefore(box,list.firstChild);
   const pl=box.querySelector('.tr3d-pl');pl.innerHTML=trPlate(a);pl.classList.remove('sw');void pl.offsetWidth;pl.classList.add('sw');
-  list.querySelectorAll('.albo-card[data-aid]').forEach(c=>c.classList.toggle('tr-on',+c.dataset.aid===a.id));
+  // niente doppioni: il titolo mostrato con la coppa grande sparisce dalla lista sotto (e così l'anno, se resta vuoto)
+  list.querySelectorAll('.albo-card[data-aid]').forEach(c=>c.classList.toggle('tr-hide',+c.dataset.aid===a.id));
+  list.querySelectorAll('.albo-year').forEach(y=>{const g=y.nextElementSibling,isG=g&&g.classList.contains('albo-grid'),empty=!!(isG&&![...g.children].some(c=>!c.classList.contains('tr-hide')));y.classList.toggle('tr-hide',empty);if(isG)g.classList.toggle('tr-hide',empty);});
   if(!_trRaf)_trRaf=requestAnimationFrame(_trDraw);
 }
 function _trDraw(t){
@@ -7749,19 +7799,6 @@ function ukShow(m,more){
 }
 {const _rt=renderTickerTape;renderTickerTape=function(){_rt.apply(this,arguments);try{ukCheck();}catch(e){}};}
 
-// ═══ PAGINE CHE SI APRONO A CERCHIO: toccando la barra in basso la nuova pagina si apre dal dito, col colore della sezione ═══
-let _ciTap=null;
-document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('.tabs-mobile2 .tab');if(b)_ciTap={x:e.clientX,y:e.clientY,t:performance.now()};},true);
-function ciReveal(t,tap){
-  const pg=document.getElementById('page-'+t);if(!pg)return;
-  const btn=document.querySelector('.tabs-mobile2 .tab.active'),col=btn?getComputedStyle(btn).backgroundColor:'rgba(232,255,0,.6)';
-  const R=Math.hypot(Math.max(tap.x,innerWidth-tap.x),Math.max(tap.y,innerHeight-tap.y));
-  const o=document.createElement('div');o.className='ci-ov';o.style.background=col;o.style.left=tap.x+'px';o.style.top=tap.y+'px';document.body.appendChild(o);
-  o.animate([{transform:'translate(-50%,-50%) scale(0)',opacity:.5},{transform:`translate(-50%,-50%) scale(${R/10})`,opacity:.3,offset:.6},{transform:`translate(-50%,-50%) scale(${R/10})`,opacity:0}],{duration:640,easing:'cubic-bezier(.4,0,.2,1)'}).onfinish=()=>o.remove();
-  const r=pg.getBoundingClientRect(),cx=tap.x-r.left,cy=tap.y-r.top;
-  pg.animate([{clipPath:`circle(0px at ${cx}px ${cy}px)`},{clipPath:`circle(${Math.round(R+40)}px at ${cx}px ${cy}px)`}],{duration:540,easing:'cubic-bezier(.4,0,.2,1)'});
-}
-{const _sw=switchTab;switchTab=function(t){const prev=currentTab;_sw.apply(this,arguments);try{if(t!==prev&&_ciTap&&performance.now()-_ciTap.t<800&&!_reduceMotion())ciReveal(t,_ciTap);}catch(e){}_ciTap=null;};}
 document.addEventListener('click',e=>{const card=e.target.closest&&e.target.closest('#albo-list .albo-card[data-aid]');if(!card||e.target.closest('button,a,input,select'))return;
   _trSel=+card.dataset.aid;_trSpin=.35;renderTrophy3D();const b=document.getElementById('tr3d');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});});
 </script>
