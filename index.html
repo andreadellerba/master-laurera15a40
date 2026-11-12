@@ -6188,7 +6188,7 @@ function renderAlbo(){
     var entries=byYear[year];
     for(var ei=0;ei<entries.length;ei++){
       var a=entries[ei];
-      html+='<div class="albo-card albo-trophy" style="animation-delay:'+(ei*0.08)+'s">'+ALBO_CUP
+      html+='<div class="albo-card albo-trophy" data-aid="'+a.id+'" style="animation-delay:'+(ei*0.08)+'s">'+ALBO_CUP
         +(function(){
   var _vn=(a.vincitore||'').split('/')[0].trim();
   var _vp=null; for(var _pi=0;_pi<players.length;_pi++){if(players[_pi].nome.trim().toUpperCase()===_vn.toUpperCase()){_vp=players[_pi];break;}}
@@ -7603,6 +7603,72 @@ function diarioHtml(pid){
     return`<div class="dy-i ${r}" onclick="openMatchView(${m.id})" style="animation-delay:${(Math.min(i,12)*.05).toFixed(2)}s"><span class="dy-n"></span><span class="dy-d">${esc(d)}${m.ora?'<br>'+esc(m.ora):''}</span><div class="mk-av">${o?avHtmlBig(o):''}</div><b class="dy-o">${esc(name)}</b><span class="dy-s">${s===1?g[0]:g[1]}-${s===1?g[1]:g[0]}</span></div>`;});
   return curve+`<div class="dy-t">${items.join('')}</div>`;
 }
+</script>
+<style>
+/* ═══ TROFEO IN 3D (Albo d'oro) ═══ */
+.tr3d{position:relative;margin:0 0 22px;border-radius:24px;overflow:hidden;border:1px solid rgba(240,192,64,.45);
+  background:radial-gradient(70% 60% at 50% 35%,rgba(251,191,36,.28),transparent 70%),radial-gradient(60% 50% at 0% 100%,rgba(139,92,246,.3),transparent 70%),#141519;box-shadow:0 12px 34px rgba(0,0,0,.45)}
+.tr3d canvas{display:block;width:100%;height:250px;touch-action:pan-y;cursor:grab}
+.tr3d-hint{position:absolute;left:0;right:0;top:12px;text-align:center;font:800 10px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.5);pointer-events:none}
+.tr3d-pl{display:flex;flex-direction:column;align-items:center;gap:5px;padding:0 16px 18px;text-align:center}
+.tr3d-pl .k{font-family:"Bebas Neue",sans-serif;font-size:18px;letter-spacing:1.6px;color:#fbbf24;line-height:1.1;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tr3d-pl .w{display:flex;align-items:center;gap:10px;max-width:100%}
+.tr3d-pl .w .mk-av{width:40px;height:40px;font-size:15px;border-color:#fbbf24;box-shadow:0 0 14px rgba(251,191,36,.5)}
+.tr3d-pl .w b{font-family:"Anton",sans-serif;font-weight:400;font-size:26px;line-height:1.05;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tr3d-pl small{font:800 11px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.65);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tr3d-pl.sw{animation:trSw .45s ease-out}
+@keyframes trSw{from{opacity:0;transform:translateY(8px)}}
+.albo-card[data-aid]{cursor:pointer}
+.albo-card.tr-on{box-shadow:0 0 0 2px #fbbf24,0 0 22px rgba(251,191,36,.35)!important}
+</style>
+<script>
+// ═══ TROFEO IN 3D: la coppa del titolo scelto gira in 3D (trascinando si fa ruotare); tocca un titolo per vederne la coppa ═══
+let _trSel=null,_trAng=0,_trVel=.012,_trDrag=null,_trSpin=0,_trRaf=0;
+function _trEntry(){const list=alboData.slice().sort((a,b)=>(+b.anno||0)-(+a.anno||0)||(+b.id||0)-(+a.id||0));return list.find(a=>a.id===_trSel)||list[0];}
+function _trWinner(a){const n=String(a.vincitore||'').split('/')[0].trim().toUpperCase();return players.find(p=>p.nome.trim().toUpperCase()===n)||null;}
+function trPlate(a){const p=_trWinner(a),names=String(a.vincitore||'').split('/').map(s=>dispName(s.trim())).join(' / ');
+  return`<div class="k">${esc(String(a.torneo||'Torneo').toUpperCase())}${a.anno?' · '+esc(String(a.anno)):''}</div><div class="w">${p?`<div class="mk-av">${avHtmlBig(p)}</div>`:''}<b>${esc(names)}</b></div>${a.titolo?`<small>${esc(a.titolo)}</small>`:''}`;}
+function renderTrophy3D(){
+  const list=document.getElementById('albo-list');if(!list||!alboData.length)return;
+  let box=document.getElementById('tr3d');const a=_trEntry();if(!a)return;
+  if(!box){box=document.createElement('div');box.id='tr3d';box.className='tr3d';box.innerHTML='<canvas aria-label="Coppa che gira in 3D"></canvas><div class="tr3d-hint">TRASCINA PER GIRARE LA COPPA</div><div class="tr3d-pl"></div>';
+    const cv=box.querySelector('canvas');
+    cv.addEventListener('pointerdown',e=>{_trDrag={x:e.clientX,a:_trAng};});
+    cv.addEventListener('pointermove',e=>{if(!_trDrag)return;const na=_trDrag.a+(e.clientX-_trDrag.x)*.013;_trVel=(na-_trAng)*.5;_trAng=na;});
+    ['pointerup','pointercancel','pointerleave'].forEach(t=>cv.addEventListener(t,()=>{_trDrag=null;}));}
+  if(list.firstChild!==box)list.insertBefore(box,list.firstChild);
+  const pl=box.querySelector('.tr3d-pl');pl.innerHTML=trPlate(a);pl.classList.remove('sw');void pl.offsetWidth;pl.classList.add('sw');
+  list.querySelectorAll('.albo-card[data-aid]').forEach(c=>c.classList.toggle('tr-on',+c.dataset.aid===a.id));
+  if(!_trRaf)_trRaf=requestAnimationFrame(_trDraw);
+}
+function _trDraw(t){
+  _trRaf=0;const box=document.getElementById('tr3d'),pg=document.getElementById('page-albo');
+  if(!box||!box.isConnected||!pg||!pg.classList.contains('active')){setTimeout(()=>{if(!_trRaf&&document.getElementById('tr3d'))_trRaf=requestAnimationFrame(_trDraw);},600);return;}
+  const cv=box.querySelector('canvas'),r=cv.getBoundingClientRect(),dpr=Math.min(2,devicePixelRatio||1);
+  if(cv.width!==Math.round(r.width*dpr)){cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);}
+  const c=cv.getContext('2d'),w=r.width,h=r.height;c.setTransform(dpr,0,0,dpr,0,0);c.clearRect(0,0,w,h);
+  if(!_trDrag){if(_trSpin>0){_trAng+=_trSpin;_trSpin*=.94;if(_trSpin<.01)_trSpin=0;}_trAng+=_reduceMotion()?0:_trVel;_trVel+=(.012-_trVel)*.03;}
+  const cx=w/2,base=h-24,sc=Math.min(1.15,(h-40)/170),A=_trAng;
+  const P=[[0,0],[36,0],[36,7],[14,11],[11,22],[8,40],[9,52],[22,58],[40,70],[52,92],[56,120],[58,150],[60,156],[52,156],[48,128],[42,100],[30,80],[14,66],[0,64]];
+  c.save();c.translate(cx,base);c.scale(sc,sc);
+  c.fillStyle='rgba(0,0,0,.45)';c.beginPath();c.ellipse(0,4,50,9,0,0,7);c.fill();
+  const handle=(phi,front)=>{const s=Math.sin(A+phi),z=Math.cos(A+phi);if((z>0)!==front)return;const x=s*66,hw=5+13*Math.abs(Math.cos(A+phi+Math.PI/2));
+    c.save();c.globalAlpha=front?1:.55;c.strokeStyle=front?'#f3c63f':'#8a6410';c.lineWidth=7;c.beginPath();c.ellipse(x,-114,Math.max(3,hw*Math.abs(s)),24,0,0,7);c.stroke();c.restore();};
+  handle(Math.PI/2,false);handle(-Math.PI/2,false);
+  const hl=Math.sin(A)*.5+.5;
+  for(let i=P.length-1;i>0;i--){const[r1,y1]=P[i],[r0,y0]=P[i-1],m=Math.max(r0,r1)||1;
+    const g=c.createLinearGradient(-m,0,m,0);g.addColorStop(0,'#5a3d04');g.addColorStop(Math.max(0,hl-.28),'#b8860b');g.addColorStop(hl,'#fff6c8');g.addColorStop(Math.min(1,hl+.18),'#e2ac22');g.addColorStop(1,'#4a3203');
+    c.fillStyle=g;c.beginPath();c.moveTo(-r0,-y0);c.lineTo(-r1,-y1);c.ellipse(0,-y1,r1||.01,(r1||.01)*.18,0,Math.PI,0,true);c.lineTo(r0,-y0);c.ellipse(0,-y0,r0||.01,(r0||.01)*.18,0,0,Math.PI,false);c.fill();}
+  c.fillStyle='#3a2803';c.beginPath();c.ellipse(0,-156,58,10,0,0,7);c.fill();c.fillStyle='#6f4f0a';c.beginPath();c.ellipse(0,-155,52,8,0,0,7);c.fill();
+  handle(Math.PI/2,true);handle(-Math.PI/2,true);
+  const a=_trEntry();c.fillStyle='#1b1205';c.fillRect(-27,-31,54,17);c.fillStyle='#fbbf24';c.font='800 8px "DM Sans",sans-serif';c.textAlign='center';c.fillText(String(a&&a.anno||''),0,-19.5);
+  if(!_reduceMotion())for(let k=0;k<6;k++){const q=t/700+k*1.05,rx=Math.cos(q)*76,ry=-72-Math.sin(q*1.7)*70;c.globalAlpha=.45+.45*Math.sin(t/220+k);c.fillStyle='#fff6c8';c.beginPath();c.arc(rx,ry,1.7,0,7);c.fill();}
+  c.restore();c.globalAlpha=1;
+  _trRaf=requestAnimationFrame(_trDraw);
+}
+{const _ra=renderAlbo;renderAlbo=function(){_ra.apply(this,arguments);try{renderTrophy3D();}catch(e){}};}
+document.addEventListener('click',e=>{const card=e.target.closest&&e.target.closest('#albo-list .albo-card[data-aid]');if(!card||e.target.closest('button,a,input,select'))return;
+  _trSel=+card.dataset.aid;_trSpin=.35;renderTrophy3D();const b=document.getElementById('tr3d');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});});
 </script>
 <script>
 // Avviso della nuova classifica a Punti: una sola volta per dispositivo, quando non ci sono altre finestre aperte
