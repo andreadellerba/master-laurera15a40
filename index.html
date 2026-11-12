@@ -2222,7 +2222,7 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
     <div id="h2h-panel" style="display:none;margin-bottom:14px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span style="font-size:14px;font-weight:600;color:var(--accent2)">⚔️ Testa a Testa</span><select id="h2h-select" onchange="renderH2H()" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none"><option value="">— Scegli avversario —</option></select><button onclick="closeH2H()" style="background:none;border:none;color:var(--text2);cursor:pointer;font-size:18px;line-height:1">✕</button></div><div id="h2h-content"></div></div>
     <div class="profile-section">📅 Partite in programma</div>
     <div id="profile-upcoming"></div>
-    <div class="profile-section">🏆 Partite giocate</div>
+    <div class="profile-section">📖 Diario della stagione</div>
     <div id="profile-played"></div>
   </div>
 </div>
@@ -3604,7 +3604,7 @@ function renderRank(){
   document.querySelectorAll('#rank-seg button').forEach(b=>b.classList.toggle('on',b.dataset.k===sortKey));
   const list=rankSorted(sortKey);
   const medal=['#f0c040','#c8ced8','#cd7c3f'];
-  const av=p=>`<div class="mk-av">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}</div>`;
+  const av=p=>{const md=typeof avMood==='function'?avMood(p.id):'';return`<div class="mk-av${md?' mood md-'+md:''}">${phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${esc(ini(p.nome))}</span>`}${md?moodDeco(md):''}</div>`;};
   const keyCls=k=>sortKey===k?' k':'';
   const rows=list.map((p,i)=>{const top=sortKey!=='name'&&i<3&&rankVal(p,sortKey)>0;
     return `<div class="rk-row${top?' top':''}" data-pid="${p.id}"${top?` style="--m:${medal[i]}"`:''} onclick="openProfile(${p.id})">
@@ -4499,7 +4499,7 @@ function buildPlayerCardHTML(p,opts){
   // Card compatta (proposta G): avatar a sinistra; accanto nome e #, sotto i numeri in riga con la descrizione in maiuscolo
   const stt=(v,l,ls,c)=>`<div class="k4g-t"><b style="color:${c}">${v}</b><span><i class="lg">${l}</i><i class="sh">${ls}</i></span></div>`;
   return`<div class="pcrd k4c k4g ${d.isFoil?'foil':''}" style="--lv:${lvColor};--gc:${gc}">
-    <div class="k4-av"${ringClick}>${photoHtml}</div>
+    <div class="k4-av${typeof avMood==='function'&&avMood(p.id)?' mood md-'+avMood(p.id):''}"${ringClick}>${photoHtml}${typeof avMood==='function'?moodDeco(avMood(p.id)):''}</div>
     <div class="k4g-b">
       <div class="k4g-h"><div class="k4-sn">${esc(sn)}</div><div class="k4g-l5">${last5Html(p.id)}</div><div class="k4-rk">${ri>=0?'#'+(ri+1):'#–'}</div></div>
       <div class="k4g-st">${stt(+p.pg||0,'Match','Match','#e8ff00')}${stt(+p.gv||0,'Game','Game','#ff4fb8')}${stt((+p.mg||0).toFixed(2),'Media','Media','#22b8f0')}${stt(storicoHtml(p.storico),'','','#fff')}</div>
@@ -4637,7 +4637,8 @@ function openProfile(playerId){
   // Played
   const played=sched.filter(m=>(m.p1Id===playerId||m.p2Id===playerId)&&m.risultato).sort((a,b)=>b.data.localeCompare(a.data)||b.ora.localeCompare(a.ora));
   const pEl=document.getElementById('profile-played');
-  pEl.innerHTML=played.length?`<div style="display:flex;flex-direction:column;gap:7px">${played.map(m=>cmcHtml(m)).join('')}</div>`:'<div class="cal-empty">Nessuna partita giocata ancora.</div>';
+  pEl.innerHTML=typeof diarioHtml==='function'?diarioHtml(playerId):(played.length?`<div style="display:flex;flex-direction:column;gap:7px">${played.map(m=>cmcHtml(m)).join('')}</div>`:'<div class="cal-empty">Nessuna partita giocata ancora.</div>');
+  { const _ring=document.querySelector('#profile-modal .ph-ring');if(_ring&&typeof avMood==='function'){const _m=avMood(p.id);_ring.className='ph-ring'+(_m?' mood md-'+_m:'');_ring.querySelectorAll('.md-x').forEach(x=>x.remove());if(_m)_ring.insertAdjacentHTML('beforeend',moodDeco(_m));} }   // avatar che reagisce all'ultimo risultato
   profileExtra(p);
   // Show with slide-up animation
   const pm=document.getElementById('profile-modal');
@@ -7503,6 +7504,105 @@ function renderRecapBtn(){
   let seen='';try{seen=localStorage.getItem('laurera_story_seen')||'';}catch(e){}
   if(seen!==R.key)openRecap();
 },3000);})();
+</script>
+<style>
+/* ═══ AVATAR CHE REAGISCONO: corona (ha appena vinto), fiamme (3+ vittorie di fila), pioggia (ha appena perso), zzz (fermo da 3 settimane) ═══ */
+.k4-av{--ms:22px}.mk-av{--ms:15px}.ph-ring{--ms:26px}
+.mood{position:relative;overflow:visible!important}
+.mood>img,.mood>span{border-radius:50%}
+.md-x{position:absolute;font-style:normal;line-height:1;pointer-events:none;z-index:2}
+.md-cr{left:50%;top:calc(var(--ms)*-.62);font-size:var(--ms);transform:translateX(-50%) rotate(-12deg);filter:drop-shadow(0 2px 3px rgba(0,0,0,.55));animation:mdCr 1.8s ease-in-out infinite}
+@keyframes mdCr{0%,100%{transform:translateX(-50%) rotate(-12deg)}50%{transform:translateX(-50%) translateY(-3px) rotate(-3deg)}}
+.md-win{animation:mdHop 2.6s ease-in-out infinite}
+@keyframes mdHop{0%,70%,100%{translate:0 0}80%{translate:0 -5px}88%{translate:0 0}93%{translate:0 -2px}}
+.md-hot{border-color:#ff7a00!important;box-shadow:0 0 16px rgba(255,122,0,.75)!important}
+.md-fl{left:0;right:0;top:calc(var(--ms)*-.78);height:var(--ms);display:flex;justify-content:center;align-items:flex-end;gap:calc(var(--ms)*.06)}
+.md-fl b{display:block;width:calc(var(--ms)*.34);height:calc(var(--ms)*.66);border-radius:50% 50% 40% 40%;background:radial-gradient(ellipse at 50% 80%,#ffdd55,#ff7a00 60%,#ff2a00);transform-origin:50% 100%;animation:mdFl .5s ease-in-out infinite alternate}
+.md-fl b:nth-child(2){height:calc(var(--ms)*.92);animation-delay:-.25s}
+@keyframes mdFl{to{transform:scale(.82,1.14) skewX(6deg)}}
+.md-lose>img,.md-lose>span{filter:saturate(.45) brightness(.85)}
+.md-cl{left:50%;top:calc(var(--ms)*-.72);font-size:var(--ms);transform:translateX(-50%);animation:mdCl 2.6s ease-in-out infinite}
+@keyframes mdCl{50%{transform:translateX(-50%) translateY(3px)}}
+.md-zz>img,.md-zz>span{filter:grayscale(.55)}
+.md-z{right:calc(var(--ms)*-.15);top:calc(var(--ms)*-.25);font:800 calc(var(--ms)*.62) "DM Sans",sans-serif;color:#a5b4fc;opacity:0;animation:mdZ 2.6s ease-out infinite}
+.md-z2{animation-delay:1.3s}
+/* nelle liste (schede Home e classifica) i segni stanno sull'angolo dell'avatar, così non escono dalla scheda */
+.k4-av .md-cr,.mk-av .md-cr{left:auto;right:calc(var(--ms)*-.28);top:calc(var(--ms)*-.3);transform:rotate(18deg);animation-name:mdCr2}
+@keyframes mdCr2{0%,100%{transform:rotate(18deg)}50%{transform:translateY(-2px) rotate(26deg)}}
+.k4-av .md-cl,.mk-av .md-cl{left:auto;right:calc(var(--ms)*-.32);top:calc(var(--ms)*-.25);transform:none;animation-name:mdCl2}
+@keyframes mdCl2{50%{transform:translateY(2px)}}
+.k4-av .md-fl,.mk-av .md-fl{top:auto;bottom:calc(var(--ms)*-.12);left:auto;right:calc(var(--ms)*-.35);width:calc(var(--ms)*1.2)}
+@keyframes mdZ{0%{opacity:0;transform:translate(0,6px) scale(.6)}40%{opacity:1}100%{opacity:0;transform:translate(10px,-16px) scale(1.2)}}
+/* ═══ DIARIO DELLA STAGIONE (scheda giocatore) ═══ */
+.dy-c{position:relative;padding:12px 14px 14px;margin-bottom:12px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12)}
+.dy-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.dy-h b{display:block;font-family:"Bebas Neue",sans-serif;font-weight:400;font-size:19px;letter-spacing:1.5px;color:var(--accent);line-height:1}
+.dy-h small{display:block;font:600 11px "DM Sans",sans-serif;color:rgba(255,255,255,.62);margin-top:3px}
+.dy-h em{font-style:normal;font-family:"Anton",sans-serif;font-size:26px;line-height:1;white-space:nowrap;display:flex;align-items:baseline;gap:6px}
+.dy-h em i{font:800 11px "DM Sans",sans-serif;font-style:normal}.dy-h em.up i{color:#22c55e}.dy-h em.dn i{color:#ef4444}
+.dy-g{position:relative;height:64px;margin-top:10px}
+.dy-g svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.dy-l{stroke-dasharray:1600;stroke-dashoffset:1600;animation:dyLine 1.4s .1s forwards}
+@keyframes dyLine{to{stroke-dashoffset:0}}
+.dy-a{opacity:0;animation:dyFade .6s 1s forwards}
+@keyframes dyFade{to{opacity:1}}
+.dy-g i{position:absolute;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;border:1.5px solid #141519;animation:dyDot .35s both}
+@keyframes dyDot{from{transform:scale(0)}}
+.dy-t{position:relative;display:flex;flex-direction:column;gap:7px;padding-left:22px}
+.dy-t::before{content:"";position:absolute;left:7px;top:12px;bottom:12px;width:2px;border-radius:2px;background:rgba(255,255,255,.14)}
+.dy-i{--c:#38bdf8;position:relative;display:grid;grid-template-columns:50px auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px 12px;border-radius:14px;cursor:pointer;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.1);animation:dyIn .4s both}
+.dy-i.w{--c:#22c55e}.dy-i.l{--c:#ef4444}
+@keyframes dyIn{from{opacity:0;transform:translateY(10px)}}
+.dy-n{position:absolute;left:-20px;top:50%;width:12px;height:12px;margin-top:-6px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}
+.dy-d{font:800 10.5px "DM Sans",sans-serif;letter-spacing:.8px;color:rgba(255,255,255,.6);white-space:nowrap;line-height:1.25}
+.dy-i .mk-av{width:32px;height:32px;font-size:12px;border-width:2px}
+.dy-o{font-family:"Anton",sans-serif;font-weight:400;font-size:17px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.dy-s{font-family:"Anton",sans-serif;font-size:20px;color:var(--c);white-space:nowrap;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.md-x,.md-win,.dy-l,.dy-a,.dy-g i,.dy-i{animation:none!important}.dy-l{stroke-dashoffset:0}.dy-a{opacity:1}.md-z{opacity:1}}
+</style>
+<script>
+// ═══ AVATAR CHE REAGISCONO ═══
+function avMood(pid){
+  const k=sched.length+'|'+sched.filter(m=>m.risultato).length+'|'+fmtD(new Date());
+  if(avMood._k!==k){avMood._k=k;avMood._c={};}
+  if(pid in avMood._c)return avMood._c[pid];
+  const ps=playedOf(pid);let r='';
+  if(ps.length){const last=ps[0],days=Math.floor((Date.now()-new Date(last.data+'T12:00:00').getTime())/864e5);
+    let s=0;for(const m of ps){if(_resFor(m,pid)==='w')s++;else break;}
+    const lr=_resFor(last,pid);
+    if(s>=3&&days<=14)r='hot';else if(days<=3&&lr==='w')r='win';else if(days<=3&&lr==='l')r='lose';else if(days>=21)r='zz';}
+  return avMood._c[pid]=r;
+}
+function moodDeco(m){return m==='win'?'<i class="md-x md-cr">👑</i>':m==='hot'?'<i class="md-x md-fl"><b></b><b></b><b></b></i>':m==='lose'?'<i class="md-x md-cl">🌧️</i>':m==='zz'?'<i class="md-x md-z">z</i><i class="md-x md-z md-z2">z</i>':'';}
+
+// ═══ DIARIO DELLA STAGIONE: curva della forma (rating calcolato dai risultati) e partite come tappe ═══
+function eloData(){
+  const k=sched.length+'|'+sched.filter(m=>m.risultato).length+'|'+players.length;if(eloData._k===k)return eloData._v;
+  const E={},H={},g=id=>E[id]??1500;
+  sched.filter(m=>m.risultato&&m.data&&m.p1Id&&m.p2Id).sort((a,b)=>(a.data+(a.ora||'')).localeCompare(b.data+(b.ora||''))).forEach(m=>{
+    const A=[m.p1Id,m.p1Id2].filter(x=>x!=null),B=[m.p2Id,m.p2Id2].filter(x=>x!=null);
+    const ra=A.reduce((s,x)=>s+g(x),0)/A.length,rb=B.reduce((s,x)=>s+g(x),0)/B.length,ea=1/(1+Math.pow(10,(rb-ra)/400));
+    const r=_resFor(m,m.p1Id),sa=r==='d'?.5:r==='w'?1:0,[g1,g2]=_games(m),d=36*(1+Math.log(1+Math.abs(g1-g2))/2)*(sa-ea);
+    A.forEach(x=>{E[x]=g(x)+d;(H[x]=H[x]||[]).push({m,e:E[x]});});B.forEach(x=>{E[x]=g(x)-d;(H[x]=H[x]||[]).push({m,e:E[x]});});});
+  eloData._k=k;return eloData._v={E,H};
+}
+function diarioHtml(pid){
+  const h=eloData().H[pid]||[];if(!h.length)return'<div class="cal-empty">Nessuna partita giocata ancora.</div>';
+  const pts=[1500,...h.map(x=>x.e)],mn=Math.min(...pts),mx=Math.max(...pts),rg=(mx-mn)||1,W=300,HH=64,col={w:'#22c55e',l:'#ef4444',d:'#38bdf8'};
+  const xy=pts.map((v,i)=>[+(i/(pts.length-1)*W).toFixed(1),+(HH-5-(v-mn)/rg*(HH-12)).toFixed(1)]);
+  const last=Math.round(pts[pts.length-1]),delta=last-1500;
+  const curve=`<div class="dy-c"><div class="dy-h"><div><b>LA FORMA</b><small>Sale vincendo, di più contro i più forti</small></div><em class="${delta>=0?'up':'dn'}">${last}<i>${delta>=0?'▲':'▼'}${Math.abs(delta)}</i></em></div>
+    <div class="dy-g"><svg viewBox="0 0 ${W} ${HH}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="dyg-${pid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8ff00" stop-opacity=".32"/><stop offset="1" stop-color="#e8ff00" stop-opacity="0"/></linearGradient></defs>
+      <path class="dy-a" d="M0,${HH} ${xy.map(p=>'L'+p.join(',')).join(' ')} L${W},${HH}Z" fill="url(#dyg-${pid})"/>
+      <polyline class="dy-l" points="${xy.map(p=>p.join(',')).join(' ')}" fill="none" stroke="#e8ff00" stroke-width="2.5" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/></svg>
+      ${h.map((x,i)=>`<i style="left:${(xy[i+1][0]/W*100).toFixed(1)}%;top:${(xy[i+1][1]/HH*100).toFixed(1)}%;background:${col[_resFor(x.m,pid)]||col.d};animation-delay:${(.25+i*1.1/h.length).toFixed(2)}s"></i>`).join('')}</div></div>`;
+  const items=playedOf(pid).map((m,i)=>{const r=_resFor(m,pid)||'d',s=_side(m,pid),os=s===1?2:1,oid=s===1?m.p2Id:m.p1Id,o=players.find(x=>x.id===oid),g=_games(m);
+    const name=teamLabel(m,os).split(' / ').map(n=>dispName(n)).join(' / ');
+    const d=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short'}).toUpperCase().replace('.','');
+    return`<div class="dy-i ${r}" onclick="openMatchView(${m.id})" style="animation-delay:${(Math.min(i,12)*.05).toFixed(2)}s"><span class="dy-n"></span><span class="dy-d">${esc(d)}${m.ora?'<br>'+esc(m.ora):''}</span><div class="mk-av">${o?avHtmlBig(o):''}</div><b class="dy-o">${esc(name)}</b><span class="dy-s">${s===1?g[0]:g[1]}-${s===1?g[1]:g[0]}</span></div>`;});
+  return curve+`<div class="dy-t">${items.join('')}</div>`;
+}
 </script>
 <script>
 // Avviso della nuova classifica a Punti: una sola volta per dispositivo, quando non ci sono altre finestre aperte
