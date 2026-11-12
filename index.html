@@ -1848,6 +1848,42 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
 <div id="court-bg" aria-hidden="true"></div>
 <!-- schermata di caricamento: logo e pallina che rimbalza, sparisce quando arrivano i giocatori -->
 <div id="boot" aria-hidden="true"><img src="https://www.laurera15a40.com/uploads/1/5/0/6/150685976/editor/logo-tipo-long-def.png?1725893045" alt=""><div class="boot-by">by Andrea Dellerba</div><div class="boot-court"><div class="boot-ball"></div><div class="boot-shadow"></div></div></div>
+<style>
+/* ═══ INTRO ALL'APERTURA (una volta al giorno): la pallina rimbalza e a ogni rimbalzo compare un pezzo del logo ═══ */
+#boot.intro .boot-court{display:none}
+.it-st{position:relative;display:flex;flex-direction:column;align-items:center}
+#boot .it-st img{clip-path:inset(-10% 100% -10% 0);transition:clip-path .3s cubic-bezier(.3,1.2,.5,1),transform .3s cubic-bezier(.3,1.6,.5,1)}
+.it-fl{position:relative;width:100%;min-width:220px;height:110px;margin-top:4px}
+.it-fl::after{content:"";position:absolute;left:4%;right:4%;bottom:10px;height:2px;border-radius:2px;background:rgba(255,255,255,.14)}
+.it-ball{position:absolute;left:0;top:0;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#f7ff8a,#d4ec00 60%,#9aaa00);box-shadow:0 0 16px rgba(232,255,0,.7);opacity:0}
+.it-ball::before{content:"";position:absolute;inset:3px;border-radius:50%;border:2px solid rgba(255,255,255,.75);border-color:rgba(255,255,255,.75) transparent rgba(255,255,255,.75) transparent;transform:rotate(30deg)}
+.it-rip{position:absolute;bottom:10px;width:20px;height:6px;margin:0 0 -3px -10px;border-radius:50%;border:2px solid #e8ff00;opacity:0}
+.it-wel{margin-top:-14px;font:800 12px "DM Sans",sans-serif;letter-spacing:2.4px;color:#e8ff00;opacity:0;transform:translateY(6px);transition:opacity .45s,transform .45s;white-space:nowrap}
+.it-wel.on{opacity:1;transform:none}
+</style>
+<script>
+(function(){try{
+  var b=document.getElementById('boot');if(!b)return;
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  var d=new Date(),today=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+  if(localStorage.getItem('laurera_intro_day')===today)return;localStorage.setItem('laurera_intro_day',today);
+  var img=b.querySelector('img');if(!img)return;b.classList.add('intro');
+  var st=document.createElement('div');st.className='it-st';b.insertBefore(st,img);st.appendChild(img);
+  var fl=document.createElement('div');fl.className='it-fl';fl.innerHTML='<i class="it-ball"></i><i class="it-rip"></i><i class="it-rip"></i><i class="it-rip"></i>';st.appendChild(fl);
+  var wel=document.createElement('div');wel.className='it-wel';wel.textContent='BENVENUTO AL CIRCOLO';b.insertBefore(wel,b.querySelector('.boot-by'));
+  requestAnimationFrame(function(){
+    var W=fl.offsetWidth||260,H=fl.offsetHeight,fy=H-22,ball=fl.querySelector('.it-ball'),rips=fl.querySelectorAll('.it-rip');
+    var bx=[.02,.3,.6,.9].map(function(k){return k*W;}),bt=[0,.55,1.0,1.38],T=1.75,kf=[];
+    for(var i=0;i<3;i++)for(var s=(i?1:0);s<=12;s++){var k=s/12,x=bx[i]+(bx[i+1]-bx[i])*k,y=fy-Math.sin(k*Math.PI)*(H-34-i*14);
+      kf.push({transform:'translate('+x+'px,'+y+'px) rotate('+(i*200+k*200)+'deg)',opacity:1,offset:(bt[i]+(bt[i+1]-bt[i])*k)/T});}
+    kf.push({transform:'translate('+(W*1.06)+'px,'+(fy-40)+'px) rotate(720deg)',opacity:0,offset:1});
+    if(ball.animate)ball.animate(kf,{duration:T*1000,easing:'linear',fill:'forwards'});
+    [66,33,0].forEach(function(cut,i){setTimeout(function(){img.style.clipPath='inset(-10% '+cut+'% -10% 0)';img.style.transform='scale(1.07)';setTimeout(function(){img.style.transform='';},170);
+      var r=rips[i];r.style.left=bx[i+1]+'px';if(r.animate)r.animate([{transform:'scale(.6)',opacity:1},{transform:'scale(3.2)',opacity:0}],{duration:520,easing:'ease-out'});},bt[i+1]*1000);});
+    setTimeout(function(){wel.classList.add('on');},1700);
+  });
+}catch(e){}})();
+</script>
 <!-- sfumatura dello sfondo che si muove piano -->
 <div id="bg-glow" aria-hidden="true"></div>
 <header class="header">
@@ -7619,6 +7655,25 @@ function diarioHtml(pid){
 .tr3d-pl.sw{animation:trSw .45s ease-out}
 @keyframes trSw{from{opacity:0;transform:translateY(8px)}}
 .albo-card[data-aid]{cursor:pointer}
+/* ═══ ULTIM'ORA ═══ */
+.uk{position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top,0px));z-index:6000;max-width:460px;margin:0 auto;border-radius:18px;overflow:hidden;cursor:pointer;
+  box-shadow:0 16px 44px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.14);transform:translateY(calc(-100% - 40px));transition:transform .55s cubic-bezier(.2,1.3,.4,1)}
+.uk.on{transform:none}
+.uk-tp{display:flex;align-items:center;gap:8px;background:#ff2d3d;padding:4px 6px 4px 12px;font-family:"Bebas Neue",sans-serif;font-size:16px;letter-spacing:1.5px;color:#fff;white-space:nowrap}
+.uk-tp i{width:8px;height:8px;border-radius:50%;background:#fff;animation:ukB .8s infinite;flex-shrink:0}
+@keyframes ukB{50%{opacity:.2}}
+.uk-tp span{font-size:13px;opacity:.85;margin-left:4px}
+.uk-x{margin-left:auto;width:28px;height:28px;border:0;background:none;color:#fff;font-size:14px;cursor:pointer}
+.uk-bd{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#141519}
+.uk-bd .mk-av{width:44px;height:44px;font-size:16px;border-color:rgba(255,255,255,.3)}
+.uk-bd .mk-av.w{border-color:var(--accent);box-shadow:0 0 14px rgba(232,255,0,.45)}
+.uk-mid{flex:1;min-width:0;text-align:center}
+.uk-mid b{display:flex;justify-content:center;align-items:center;gap:8px;font-family:"Anton",sans-serif;font-weight:400;font-size:32px;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+.uk-mid b i{font-style:normal;color:rgba(255,255,255,.4)}.uk-mid b .w{color:var(--accent)}.uk-mid b .d{color:#38bdf8}
+.uk-mid small{display:block;margin-top:4px;font:800 10.5px "DM Sans",sans-serif;letter-spacing:1px;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.uk-fl{position:fixed;inset:0;z-index:5999;background:#fff;pointer-events:none}
+/* ═══ PAGINE A CERCHIO ═══ */
+.ci-ov{position:fixed;width:20px;height:20px;border-radius:50%;z-index:850;pointer-events:none}
 .albo-card.tr-on{box-shadow:0 0 0 2px #fbbf24,0 0 22px rgba(251,191,36,.35)!important}
 </style>
 <script>
@@ -7667,6 +7722,46 @@ function _trDraw(t){
   _trRaf=requestAnimationFrame(_trDraw);
 }
 {const _ra=renderAlbo;renderAlbo=function(){_ra.apply(this,arguments);try{renderTrophy3D();}catch(e){}};}
+
+// ═══ ULTIM'ORA: quando arriva un risultato nuovo (anche dall'ultima visita) scende un banner da telegiornale sportivo ═══
+const _UK='laurera_seen_res';
+function ukCheck(){
+  const played=sched.filter(m=>m.risultato&&m.p1Id&&m.p2Id);if(!players.length||!played.length)return;
+  let seen=null;try{seen=JSON.parse(localStorage.getItem(_UK)||'null');}catch(e){}
+  const save=()=>{try{localStorage.setItem(_UK,JSON.stringify(played.map(m=>m.id)));}catch(e){}};
+  if(!Array.isArray(seen)){save();return;}   // primo avvio su questo telefono: nessun banner
+  const S=new Set(seen),fresh=played.filter(m=>!S.has(m.id)).sort((a,b)=>(b.data+(b.ora||'')).localeCompare(a.data+(a.ora||'')));
+  save();if(fresh.length)ukShow(fresh[0],fresh.length-1);
+}
+function ukHide(){const el=document.getElementById('uk');if(el)el.classList.remove('on');}
+function ukShow(m,more){
+  const boot=document.getElementById('boot');if(boot&&!boot.classList.contains('out')){setTimeout(()=>ukShow(m,more),700);return;}
+  let el=document.getElementById('uk');if(!el){el=document.createElement('div');el.id='uk';el.className='uk';el.setAttribute('role','status');document.body.appendChild(el);}
+  const p1=players.find(x=>x.id===m.p1Id),p2=players.find(x=>x.id===m.p2Id),[g1,g2]=_games(m),r=_resFor(m,m.p1Id);
+  const W=r==='w'?1:r==='l'?2:0,wn=W?teamLabel(m,W).split(' / ').map(n=>dispName(n)).join(' / '):'';
+  el.innerHTML=`<div class="uk-tp"><i></i>ULTIM'ORA · RISULTATO${more?`<span>+${more} ${more===1?'ALTRO':'ALTRI'}</span>`:''}<button type="button" class="uk-x" aria-label="Chiudi">✕</button></div>
+    <div class="uk-bd"><div class="mk-av${W===1?' w':''}">${p1?avHtmlBig(p1):''}</div><div class="uk-mid"><b><span class="${W===1?'w':W?'':'d'}">${g1}</span><i>-</i><span class="${W===2?'w':W?'':'d'}">${g2}</span></b><small>${W?'VINCE '+esc(wn):'PAREGGIO'}</small></div><div class="mk-av${W===2?' w':''}">${p2?avHtmlBig(p2):''}</div></div>`;
+  el.onclick=e=>{ukHide();if(e.target.closest('.uk-x'))return;if(more)switchTab('risultati');else openMatchView(m.id);};
+  el.classList.remove('on');void el.offsetWidth;el.classList.add('on');
+  if(!_reduceMotion()){const f=document.createElement('div');f.className='uk-fl';document.body.appendChild(f);f.animate([{opacity:.5},{opacity:0}],{duration:450}).onfinish=()=>f.remove();}
+  try{if(navigator.vibrate)navigator.vibrate([20,40,20]);}catch(e){}
+  clearTimeout(ukShow._t);ukShow._t=setTimeout(ukHide,7000);
+}
+{const _rt=renderTickerTape;renderTickerTape=function(){_rt.apply(this,arguments);try{ukCheck();}catch(e){}};}
+
+// ═══ PAGINE CHE SI APRONO A CERCHIO: toccando la barra in basso la nuova pagina si apre dal dito, col colore della sezione ═══
+let _ciTap=null;
+document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('.tabs-mobile2 .tab');if(b)_ciTap={x:e.clientX,y:e.clientY,t:performance.now()};},true);
+function ciReveal(t,tap){
+  const pg=document.getElementById('page-'+t);if(!pg)return;
+  const btn=document.querySelector('.tabs-mobile2 .tab.active'),col=btn?getComputedStyle(btn).backgroundColor:'rgba(232,255,0,.6)';
+  const R=Math.hypot(Math.max(tap.x,innerWidth-tap.x),Math.max(tap.y,innerHeight-tap.y));
+  const o=document.createElement('div');o.className='ci-ov';o.style.background=col;o.style.left=tap.x+'px';o.style.top=tap.y+'px';document.body.appendChild(o);
+  o.animate([{transform:'translate(-50%,-50%) scale(0)',opacity:.5},{transform:`translate(-50%,-50%) scale(${R/10})`,opacity:.3,offset:.6},{transform:`translate(-50%,-50%) scale(${R/10})`,opacity:0}],{duration:640,easing:'cubic-bezier(.4,0,.2,1)'}).onfinish=()=>o.remove();
+  const r=pg.getBoundingClientRect(),cx=tap.x-r.left,cy=tap.y-r.top;
+  pg.animate([{clipPath:`circle(0px at ${cx}px ${cy}px)`},{clipPath:`circle(${Math.round(R+40)}px at ${cx}px ${cy}px)`}],{duration:540,easing:'cubic-bezier(.4,0,.2,1)'});
+}
+{const _sw=switchTab;switchTab=function(t){const prev=currentTab;_sw.apply(this,arguments);try{if(t!==prev&&_ciTap&&performance.now()-_ciTap.t<800&&!_reduceMotion())ciReveal(t,_ciTap);}catch(e){}_ciTap=null;};}
 document.addEventListener('click',e=>{const card=e.target.closest&&e.target.closest('#albo-list .albo-card[data-aid]');if(!card||e.target.closest('button,a,input,select'))return;
   _trSel=+card.dataset.aid;_trSpin=.35;renderTrophy3D();const b=document.getElementById('tr3d');if(b)b.scrollIntoView({behavior:'smooth',block:'start'});});
 </script>
