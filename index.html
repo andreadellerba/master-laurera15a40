@@ -1550,7 +1550,7 @@ body:not(.light) .cmc.mk{background:var(--aur)!important;background-attachment:f
 .pr-chart{padding:10px 8px 8px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);margin-bottom:18px;overflow:hidden}   /* sta tutto nello schermo, niente scorrimento */
 .pr-chart svg{width:100%;min-width:0;height:auto;display:block}
 .pr-chart .b-w{fill:#22c55e}.pr-chart .b-l{fill:#ef4444}.pr-chart .b-d{fill:#38bdf8}.pr-chart .b-o{fill:rgba(255,255,255,.22)}
-.pr-chart text{font-family:"DM Sans",sans-serif;text-anchor:middle}.pr-chart .t-v{font-size:12px;font-weight:800;fill:#fff}.pr-chart .t-d{font-size:9.5px;font-weight:700;fill:#8d8d8d}
+.pr-chart text{font-family:"DM Sans",sans-serif;text-anchor:middle}.pr-chart .t-v{font-size:12px;font-weight:800;fill:#fff}.pr-chart .t-d{font-size:9.5px;font-weight:700;fill:#8d8d8d}.pr-chart .t-o{font-size:10px;font-weight:800;fill:#9fb0c8}
 .ptr{position:relative;height:140px;margin-bottom:18px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);overflow:hidden}
 .ptr svg{position:absolute;inset:12px 8px 6px;width:calc(100% - 16px);height:calc(100% - 18px)}
 .ptr-pts{position:absolute;inset:12px 8px 6px}
@@ -1890,7 +1890,7 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
 }catch(e){}})();
 </script>
 <!-- sfumatura dello sfondo che si muove piano -->
-<div id="bg-glow" aria-hidden="true"></div>
+<div id="bg-glow" aria-hidden="true" hidden></div>
 <header class="header">
   <div class="hdr">
     <div class="hdr-players-mobile" title="Giocatori registrati"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px;flex-shrink:0;color:var(--accent2)"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span id="hdr-players2">—</span></div>
@@ -3352,7 +3352,7 @@ function profileExtra(p,target){
       const d=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short'}).toUpperCase();
       const dl=`style="animation-delay:${200+i*60}ms"`;   // le barre crescono una dopo l'altra
       return`<rect class="b-${r} grow" ${dl} x="${x}" y="${H-24-h1}" width="${bw}" height="${h1}" rx="4"/><rect class="b-o grow" ${dl} x="${x+bw+3}" y="${H-24-h2}" width="${bw-4}" height="${h2}" rx="3"/>
-        <text class="t-v grow-t" ${dl} x="${x+bw/2}" y="${H-28-h1}">${me}</text><text class="t-d" x="${x+bw}" y="${H-8}">${d}</text>`;}).join('');
+        <text class="t-v grow-t" ${dl} x="${x+bw/2}" y="${H-28-h1}">${me}</text><text class="t-o grow-t" ${dl} x="${x+bw+3+(bw-4)/2}" y="${H-28-h2}">${ot}</text><text class="t-d" x="${x+bw}" y="${H-8}">${d}</text>`;}).join('');
     chart=`<div class="pr-sec">📈 ANDAMENTO GAME</div><div class="pr-chart"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" preserveAspectRatio="xMidYMid meet">${bars}</svg>
       <div class="pr-leg"><span><i class="w"></i>vinta</span><span><i class="l"></i>persa</span><span><i class="d"></i>pareggio</span><span><i class="o"></i>game avversario</span></div></div>`;
   }
@@ -8063,7 +8063,7 @@ function _sxType(id){
   if(f.rkE<=5&&f.rkG>8)d+=` Per forma sei ${f.rkE}° nel circolo: con qualche partita in più la classifica ti darà ragione.`;
   // terza frase: una curiosità tutta tua
   const T=[];if(f.bestS>=3&&t[0]!=='rimonta')T.push(`La tua serie migliore è di ${f.bestS} vittorie di fila.`);
-  if(f.vic&&f.vicW>=2)T.push(`Il tuo avversario preferito è ${esc(dispName(_sxP(f.vic).nome))}: l'hai battuto ${f.vicW} volte.`);
+  if(f.vic&&f.vicW>=2)T.push(`${_sxF(f.vic)?'La tua avversaria preferita':'Il tuo avversario preferito'} è ${esc(dispName(_sxP(f.vic).nome))}: l'hai ${_sxF(f.vic)?'battuta':'battuto'} ${f.vicW} volte.`);
   if(f.maxG>=9&&t[0]!=='sognatore')T.push(`Il tuo record è ${f.maxG} game in una sola partita.`);
   if(f.bd&&f.w>=2)T.push(`Il tuo giorno d'oro è il ${f.bd}.`);
   if(f.close>=2&&t[0]!=='cuore')T.push(`Nelle partite punto a punto il tuo bilancio è ${f.closeW}-${f.close-f.closeW}.`);
@@ -8077,13 +8077,22 @@ function _sxType(id){
     if(f.bh&&f.w>=1)P.push(`le tue vittorie arrivano alle ${f.bh}: prova a fissare lì le prossime partite.`);
     if(f.bd&&f.w>=1)P.push(`il ${f.bd} è il tuo giorno: prova a giocare lì più spesso.`);
     if(f.n<4)P.push('gioca con regolarità: chi gioca di più sale più in fretta in classifica.');
-    if(f.above)P.push(`sfida ${an}, che ti sta appena sopra: batterlo vale doppio.`);
+    if(f.above)P.push(`sfida ${an}, che ti sta appena sopra: ${f.above&&_sxF(f.above.id)?'batterla':'batterlo'} vale doppio.`);
     if(f.w===0)P.push('punta a chi ha numeri simili ai tuoi: la prima vittoria è la più bella e sblocca tutto.');
     if(f.wr>0&&f.wr<.4&&f.n>=3)P.push(`hai già vinto ${f.w} ${f.w===1?'volta':'volte'}: sai come si fa, adesso serve la continuità.`);
     if(!P.length)P.push('ogni game conta, anche quando perdi: in classifica si sommano tutti.');
     tip=pick(P,6);tip=tip.charAt(0).toUpperCase()+tip.slice(1);}
-  return{em:t[2],t:t[3],d,tip,tot:f.tot,marg:f.marg,dr:Math.round(f.d/f.n*100)};
+  let tt=t[3];
+  if(_sxF(id)){   // giocatrice: titolo e frasi al femminile
+    tt=_SX_FEM[tt]||tt;
+    d=d.replace('sei tu quello da battere','sei tu quella da battere').replace('Primo nella classifica','Prima nella classifica').replace('un giocatore completo','una giocatrice completa');
+  }
+  return{em:t[2],t:tt,d,tip,tot:f.tot,marg:f.marg,dr:Math.round(f.d/f.n*100)};
 }
+const _sxF=id=>{const p=_sxP(id);return!!(p&&typeof isDonna==='function'&&isDonna(p));};
+const _SX_FEM={'IL CAMPIONE IN CARICA':'LA CAMPIONESSA IN CARICA','IL RE DEL CIRCOLO':'LA REGINA DEL CIRCOLO','IL PREDATORE':'LA PREDATRICE','IL CANNIBALE':'LA CANNIBALE',
+  'IL CECCHINO':'LA TIRATRICE SCELTA','IL SOGNATORE':'LA SOGNATRICE','IL LOTTATORE':'LA LOTTATRICE','IL MARATONETA':'LA MARATONETA','IL NOTTAMBULO':'LA NOTTAMBULA',
+  'IL MATTINIERO':'LA MATTINIERA','IL GIRAMONDO':'LA GIRAMONDO','IL GUERRIERO':'LA GUERRIERA','IL TUTTOCAMPISTA':'LA TUTTOCAMPISTA'};
 
 function _sxBars(ps,id,labels,keyF,note){const G={};labels.forEach(l=>G[l]={n:0,w:0,g:0});ps.forEach(m=>{const k=keyF(m);if(G[k]){G[k].n++;if(_resFor(m,id)==='w')G[k].w++;G[k].g+=_sxGF(m,id);}});
   const best=labels.filter(l=>G[l].n).sort((a,b)=>_sxPct(G[b].w,G[b].n)-_sxPct(G[a].w,G[a].n)||G[b].n-G[a].n)[0];
@@ -8097,7 +8106,7 @@ function _sxHtml(id){
   let h=adm?`<div class="sx-adm"><span>👁 GUARDA COME</span><select id="sx-as" aria-label="Guarda le statistiche come" onchange="_sxLS('laurera_me_admin',this.value);renderStats()">${players.filter(x=>!x.archiviato).sort(bySurname).map(x=>`<option value="${x.id}"${x.id===id?' selected':''}>${esc(dispName(x.nome))}</option>`).join('')}</select></div>`:'';
   h+=`<div class="sx-card sx-hero">${_sxAv(id)}<div class="sx-hero-t"><small>${adm?'COSÌ LE VEDE':'LE TUE STATISTICHE'}</small><b>${_sxNm(id)}</b><span class="sx-rk">${posG?posG+'° IN CLASSIFICA GAME':'NON ANCORA IN CLASSIFICA'}</span></div></div>`;
   // 15 · che giocatore sei
-  if(T)h+=_sxSec('🎭 CHE GIOCATORE SEI',`<div class="sx-card"><div class="sx-type"><span class="em">${T.em}</span><div style="min-width:0"><small>SEI…</small><b>${T.t}</b><p>${T.d}</p></div></div>${T.tip?`<div class="sx-tip">💡 <b>Consiglio:</b> ${T.tip}</div>`:""}
+  if(T)h+=_sxSec(_sxF(id)?'🎭 CHE GIOCATRICE SEI':'🎭 CHE GIOCATORE SEI',`<div class="sx-card"><div class="sx-type"><span class="em">${T.em}</span><div style="min-width:0"><small>SEI…</small><b>${T.t}</b><p>${T.d}</p></div></div>${T.tip?`<div class="sx-tip">💡 <b>Consiglio:</b> ${T.tip}</div>`:""}
     <div class="sx-chips"><div class="sx-chip"><b>${T.tot.toFixed(1)}</b><span>GAME A PARTITA</span></div><div class="sx-chip"><b>${T.marg.toFixed(1)}</b><span>SCARTO MEDIO</span></div><div class="sx-chip"><b>${T.dr}%</b><span>PAREGGI</span></div></div></div>`);
   // 3 · riepilogo (come nel profilo) e posizione in ogni classifica
   const tile=(l,v,c)=>`<div class="pk-t" style="--tc:${c}"><span>${l}</span><b>${v}</b></div>`;
@@ -8121,7 +8130,7 @@ function _sxHtml(id){
     // 8 · vittima, bestia nera, sfida più equilibrata
     const vit=ks.filter(x=>V[x].w).sort((a,b)=>V[b].w-V[a].w||(V[b].gf-V[b].ga)-(V[a].gf-V[a].ga))[0],bn=ks.filter(x=>V[x].l).sort((a,b)=>V[b].l-V[a].l||(V[a].gf-V[a].ga)-(V[b].gf-V[b].ga))[0],eq=ks.slice().sort((a,b)=>Math.abs(V[a].gf-V[a].ga)/V[a].n-Math.abs(V[b].gf-V[b].ga)/V[b].n||V[b].n-V[a].n)[0];
     const c3=(k,em,x,txt,c)=>`<div class="sx-row"><span class="em">${em}</span>${x?_sxAv(x):''}<div class="t"><small style="color:${c}">${k}</small><b>${x?_sxNm(x):'Nessuno, per ora'}</b><em>${txt}</em></div></div>`;
-    h+=_sxSec('😈 VITTIMA, BESTIA NERA E SFIDA PIÙ EQUILIBRATA',`<div class="sx-card">${c3('LA TUA VITTIMA PREFERITA','😈',vit,vit?`l'hai battuto ${V[vit].w} ${V[vit].w===1?'volta':'volte'} · game ${V[vit].gf}-${V[vit].ga}`:'non hai ancora vinto una partita','#22c55e')}${c3('LA TUA BESTIA NERA','👻',bn,bn?`ti ha battuto ${V[bn].l} ${V[bn].l===1?'volta':'volte'} · game ${V[bn].gf}-${V[bn].ga}`:'nessuno ti ha mai battuto','#ef4444')}${c3('LA SFIDA PIÙ EQUILIBRATA','⚖️',eq,`${V[eq].n} ${V[eq].n===1?'partita':'partite'} · game ${V[eq].gf}-${V[eq].ga}`,'#38bdf8')}</div>`);}
+    h+=_sxSec('😈 VITTIMA, BESTIA NERA E SFIDA PIÙ EQUILIBRATA',`<div class="sx-card">${c3('LA TUA VITTIMA PREFERITA','😈',vit,vit?`l'hai ${_sxF(vit)?'battuta':'battuto'} ${V[vit].w} ${V[vit].w===1?'volta':'volte'} · game ${V[vit].gf}-${V[vit].ga}`:'non hai ancora vinto una partita','#22c55e')}${c3('LA TUA BESTIA NERA','👻',bn,bn?`ti ha battuto ${V[bn].l} ${V[bn].l===1?'volta':'volte'} · game ${V[bn].gf}-${V[bn].ga}`:'nessuno ti ha mai battuto','#ef4444')}${c3('LA SFIDA PIÙ EQUILIBRATA','⚖️',eq,`${V[eq].n} ${V[eq].n===1?'partita':'partite'} · game ${V[eq].gf}-${V[eq].ga}`,'#38bdf8')}</div>`);}
   // 14 · record personali
   const mx=(f,flt)=>ps.filter(flt||(()=>true)).sort((a,b)=>f(b)-f(a))[0];let s=0,best=0,bEnd=null;ps.forEach(m=>{s=_resFor(m,id)==='w'?s+1:0;if(s>best){best=s;bEnd=m;}});
   const tg=m=>{const g=_games(m);return g[0]+g[1];};
@@ -8223,7 +8232,7 @@ function obAfterTab(){if(obNeeded())obShow(3);else obTour(0);}
 function _obSec(txt){const h=[...document.querySelectorAll('#sx-body .pr-sec')].find(e=>e.textContent.includes(txt));if(!h)return null;let n=h.nextElementSibling;return n&&n.id==='sx-px'?n:n;}
 const _OB_TOUR=[
   [()=>document.querySelector('#sx-body .sx-adm')||document.querySelector('#sx-body .sx-hero'),'La tua pagina',()=>_checkViewer()?'Qui ci sei tu, con la tua posizione nella classifica game.':'Da admin scegli qui di chi guardare le statistiche: vedi la pagina esattamente come la vede quel socio.'],
-  [()=>_obSec('CHE GIOCATORE SEI'),'Che giocatore sei','Un soprannome dato dai tuoi numeri veri: il Muro, il Cecchino, il Maratoneta…'],
+  [()=>(_obSec('CHE GIOCATORE SEI')||_obSec('CHE GIOCATRICE SEI')),'Che giocatore sei','Un soprannome dato dai tuoi numeri veri: il Muro, il Cecchino, il Maratoneta…'],
   [()=>_obSec('DOVE SEI IN OGNI CLASSIFICA'),'Le tue classifiche','La tua posizione per game, punti, media e forza, e quanti soci hai dietro.'],
   [()=>_obSec('MAPPA DELLE RIVALITÀ'),'Le tue rivalità','Tutti i soci che hai affrontato: verde se sei avanti, rosso se sei sotto. Tocca un avatar per il vostro bilancio.'],
   [()=>_obSec('I TUOI RECORD'),'I tuoi record','La serie più lunga, la vittoria più larga, la partita più lunga.'],
