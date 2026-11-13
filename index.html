@@ -3821,7 +3821,7 @@ function pdfOpenAndPrint(html,onDone){
   setTimeout(()=>{if(!w.closed)doPrint();},1800);
 }
 function exportRankPDF(){
-  const sortKey=document.getElementById('rank-sort-sel')?document.getElementById('rank-sort-sel').value:'gv';
+  const sortKey='elo';   // il PDF è sempre in ordine di Elo, il dato più affidabile
   const list=rankSorted(sortKey),isName=sortKey==='name',showD=sortKey==='gv';
   const rows=list.map((p,i)=>{const med=!isName&&rankVal(p,sortKey)>0&&i<3,dt=showD&&(+p.gv||0)>0?deltaText(p.id):'';
     return `<tr>
@@ -7254,6 +7254,13 @@ body.light .cmc:has(.rea-bar){flex-wrap:wrap}body.light .cmc .rea-bar{flex-basis
 .st-who{display:flex;align-items:center;gap:10px;max-width:100%}
 .st-who .mk-av{width:44px;height:44px;font-size:16px}
 .st-who b{font-family:"Anton",sans-serif;font-weight:400;font-size:24px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-pag{width:100%;display:flex;flex-direction:column;gap:7px}
+.st-pr{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:14px;background:rgba(0,0,0,.38);border:1px solid rgba(255,255,255,.14)}
+.st-pr .mk-av{width:38px;height:38px;font-size:14px}
+.st-pr .t{flex:1;min-width:0;text-align:left}
+.st-pr .t b{display:block;font-family:"Anton",sans-serif;font-weight:400;font-size:18px;line-height:1.1;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-pr .t em{display:block;font:700 11px "DM Sans",sans-serif;font-style:normal;color:rgba(255,255,255,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-pr>span{min-width:52px;text-align:center;font-family:"Anton",sans-serif;font-size:26px;line-height:1;padding:6px 8px;border-radius:12px;background:var(--c);color:#111;box-shadow:0 0 14px color-mix(in srgb,var(--c) 50%,transparent)}
 .st-go{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;margin-top:6px}
 .st-go button{height:48px;border-radius:14px;border:0;font:800 15px "DM Sans",sans-serif;cursor:pointer;white-space:nowrap}
 .st-go .y{background:var(--accent);color:#111}
@@ -7523,7 +7530,7 @@ function recapData(){
   let games=0,draws=0;const ppl=new Set(),st={};
   wk.forEach(m=>{const[g1,g2]=_games(m);games+=g1+g2;if(!m.winnerId||m.winnerId==='draw')draws++;
     [[m.p1Id,m.p1Id2,g1,g2],[m.p2Id,m.p2Id2,g2,g1]].forEach(([x,y,g,o])=>[x,y].forEach(id=>{if(id==null)return;ppl.add(id);
-      const s=st[id]=st[id]||{w:0,n:0,g:0,o:0};s.n++;s.g+=g;s.o+=o;if(_resFor(m,id)==='w')s.w++;}));});
+      const s=st[id]=st[id]||{w:0,n:0,g:0,o:0};s.n++;s.g+=g;s.o+=o;const rr=_resFor(m,id);if(rr==='w')s.w++;else if(rr==='l')s.l=(s.l||0)+1;}));});
   const starId=Object.keys(st).map(Number).filter(id=>P(id)).sort((a,b)=>st[b].w-st[a].w||(st[b].g-st[b].o)-(st[a].g-st[a].o)||st[b].g-st[a].g)[0];
   const sg=wk.filter(single);
   const close=[...sg].sort((a,b)=>{const x=_games(a),y=_games(b);return Math.abs(x[0]-x[1])-Math.abs(y[0]-y[1])||(y[0]+y[1])-(x[0]+x[1]);})[0]||null;
@@ -7536,7 +7543,7 @@ function recapData(){
   const nx=sched.filter(m=>!m.risultato&&m.data&&m.data>=fmtD(today)&&m.data<=fmtD(tSun)&&m.p1Id&&m.p2Id);
   const pA=id=>{const i=after.indexOf(id);return i<0?99:i;};
   const hot=nx.filter(single).sort((a,b)=>(pA(a.p1Id)+pA(a.p2Id))-(pA(b.p1Id)+pA(b.p2Id))||(a.data+(a.ora||'')).localeCompare(b.data+(b.ora||'')))[0]||null;
-  return{key:f,mon,sun,n:wk.length,games,draws,ppl:ppl.size,star:starId!=null?{p:P(starId),s:st[starId]}:null,close,upset,big,climb,rec,nx:nx.length,hot,pA};
+  return{st,key:f,mon,sun,n:wk.length,games,draws,ppl:ppl.size,star:starId!=null?{p:P(starId),s:st[starId]}:null,close,upset,big,climb,rec,nx:nx.length,hot,pA};
 }
 function recapSlides(R){
   const S=[],nm=p=>esc(dispName(p.nome)),mk=p=>`<div class="mk-av">${avHtmlBig(p)}</div>`;
@@ -7564,6 +7571,30 @@ function recapSlides(R){
       <div class="st-md p3">${nm(c.p)}</div><div class="st-sm p4">Dal ${c.from}° al ${c.to}° posto nella classifica game.</div>`});}
   if(R.rec){S.push({a:'rgba(255,79,184,.5)',b:'rgba(139,92,246,.45)',h:`<div class="st-k p1">IL RECORD DELLA SETTIMANA</div><div class="st-big st-n p2">${R.rec.v}</div><div class="st-md p2">GAME IN UNA PARTITA</div>
       <div class="st-who p3">${mk(R.rec.p)}<b>${nm(R.rec.p)}</b></div>`});}
+  // ── il pagellone: un voto da 4 a 10 per chi ha giocato in settimana (vittorie, sconfitte e saldo game) ──
+  { const ids=Object.keys(R.st||{}).map(Number).filter(id=>players.some(x=>x.id===id));
+    const vote=s=>{const l=s.l||0,v=6+(s.w-l)*0.8+((s.g-s.o)/Math.max(1,s.n))*0.12;return Math.max(4,Math.min(10,Math.round(v*2)/2));};
+    const cm=v=>v>=9.5?'Leggendario':v>=8.5?'Implacabile':v>=7.5?'Settimana d\'oro':v>=6.5?'Solido':v>=6?'Sufficiente':v>=5?'Si può fare di più':'Rivincita in arrivo';
+    const col=v=>v>=8?'#22c55e':v>=6?'#e8ff00':'#ef4444';
+    const L=ids.map(id=>({id,v:vote(R.st[id]),s:R.st[id]})).sort((a,b)=>b.v-a.v||b.s.g-a.s.g);
+    for(let i=0;i<L.length;i+=6){const pg=L.slice(i,i+6),tot=Math.ceil(L.length/6);
+      S.push({a:'rgba(232,255,0,.3)',b:'rgba(56,189,248,.35)',h:`<div class="st-k p1">IL PAGELLONE${tot>1?` · ${i/6+1}/${tot}`:''}</div>
+        <div class="st-pag p2">${pg.map(x=>{const p=players.find(q=>q.id===x.id);return`<div class="st-pr">${mk(p)}<div class="t"><b>${nm(p)}</b><em>${cm(x.v)} · ${x.s.w}V su ${x.s.n}</em></div><span style="--c:${col(x.v)}">${String(x.v).replace('.',',')}</span></div>`;}).join('')}</div>
+        ${i===0?'<div class="st-sm p3">Voti dati dall\'app in base a vittorie, sconfitte e game della settimana.</div>':''}`});}
+    // il più presente
+    const pres=L.slice().sort((a,b)=>b.s.n-a.s.n)[0];
+    if(pres&&pres.s.n>=2){const p=players.find(q=>q.id===pres.id);S.push({a:'rgba(167,139,250,.55)',b:'rgba(34,197,94,.3)',h:`<div class="st-k p1">IL PIÙ PRESENTE</div><div class="p2"><div class="st-av" style="border-color:#a78bfa;box-shadow:0 0 44px rgba(167,139,250,.5)">${avHtmlBig(p)}</div></div><div class="st-md p3">${nm(p)}</div><div class="st-sm p3">${pres.s.n} partite in una settimana: il circolo è casa sua.</div>`});}
+    // il muro: meno game concessi a partita
+    const wall=L.filter(x=>x.s.n>=2).sort((a,b)=>a.s.o/a.s.n-b.s.o/b.s.n)[0];
+    if(wall){const p=players.find(q=>q.id===wall.id);S.push({a:'rgba(56,189,248,.55)',b:'rgba(0,0,0,.4)',h:`<div class="st-k p1">IL MURO DELLA SETTIMANA</div><div class="p2"><div class="st-av" style="border-color:#38bdf8;box-shadow:0 0 44px rgba(56,189,248,.5)">${avHtmlBig(p)}</div></div><div class="st-md p3">${nm(p)}</div><div class="st-sm p3">Ha concesso solo ${(wall.s.o/wall.s.n).toFixed(1).replace('.',',')} game a partita.</div>`});}
+    // numeri curiosi della settimana
+    const f=fmtD(R.mon),t=fmtD(R.sun),wk=sched.filter(m=>m.risultato&&m.data>=f&&m.data<=t&&m.p1Id&&m.p2Id);
+    if(wk.length>=3){const sc={},hr={};wk.forEach(m=>{const g=_games(m),k=Math.max(...g)+'-'+Math.min(...g);sc[k]=(sc[k]||0)+1;const h=(m.ora||'').slice(0,2);if(h)hr[h]=(hr[h]||0)+1;});
+      const ts=Object.keys(sc).sort((a,b)=>sc[b]-sc[a])[0],th=Object.keys(hr).sort((a,b)=>hr[b]-hr[a])[0],avgG=(R.games/wk.length).toFixed(1).replace('.',',');
+      S.push({a:'rgba(255,79,184,.45)',b:'rgba(232,255,0,.25)',h:`<div class="st-k p1">NUMERI CURIOSI</div>
+        <div class="st-chips p2" style="flex-wrap:wrap"><div class="st-chip"><b>${ts}</b><span>RISULTATO TOP</span></div><div class="st-chip"><b>${th?th+':00':'–'}</b><span>ORA TOP</span></div><div class="st-chip"><b>${avgG}</b><span>GAME A PARTITA</span></div></div>
+        <div class="st-sm p3">${sc[ts]>1?`Il ${ts} è uscito ${sc[ts]} volte.`:'Nessun risultato si è ripetuto.'} ${R.draws?`${R.draws===1?'Un pareggio':R.draws+' pareggi'} in settimana.`:'Nessun pareggio.'}</div>`});}
+  }
   if(R.hot){const m=R.hot,p1=players.find(x=>x.id===m.p1Id),p2=players.find(x=>x.id===m.p2Id);
     const day=new Date(m.data+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'});
     const pos=id=>{const i=R.pA(id);return i<99?(i+1)+'°':'';};
