@@ -4038,7 +4038,7 @@ function cmcHtml(m){
   const admin=!m.risultato
     ?`<button class="add-res-btn" onclick="event.stopPropagation();openCalModalRes(${m.id})"><span class="add-res-full">+ Risultato</span><span class="add-res-short">+</span></button>`:'';
   return`<div class="cmc mk ${m.risultato?'cd':live?'cs live':'cs'}${!m.risultato&&m.data===today?' oggi':''}" style="--mc:${col}" onclick="cmcClick(${m.id})">
-    <div class="mk-time"><b>${esc(m.ora||'—')}</b>${!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`}</div>
+    <div class="mk-time"><b>${esc(m.ora||'—')}</b>${!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`}${typeof cmBadge==="function"?cmBadge(m):""}</div>
     <div class="mk-pl">${av(p1)}${nm(n1,win1,win2)}</div>
     <div class="mk-c${m.risultato?" played":""}">${m.risultato?"":`<b>${esc(m.ora||"—")}</b>`}${m.risultato?`<span class="mk-c-sc ${!win1&&!win2?'d':''}"><i class="${win1?'w':win2?'l':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</i><u>-</u><i class="${win2?'w':win1?'l':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</i></span><small>${m.ora?esc(m.ora)+" · ":""}${esc(tag)}</small>`:(!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`)}</div>
     ${m.risultato?`<span class="mk-score${!win1&&!win2?' draw':''}"><b class="${win1?'w':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</b><b class="${win2?'w':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</b></span>`:'<span class="mk-vs">VS</span>'}
@@ -8284,7 +8284,7 @@ function _sxHtml(id){
   const mx=(f,flt)=>ps.filter(flt||(()=>true)).sort((a,b)=>f(b)-f(a))[0];let s=0,best=0,bEnd=null;ps.forEach(m=>{s=_resFor(m,id)==='w'?s+1:0;if(s>best){best=s;bEnd=m;}});
   const tg=m=>{const g=_games(m);return g[0]+g[1];};
   const REC=[['🎯','PIÙ GAME IN UNA PARTITA',mx(m=>_sxGF(m,id)),m=>_sxGF(m,id)+' game'],['💥','VITTORIA PIÙ LARGA',mx(m=>_sxGF(m,id)-_sxGA(m,id),m=>_resFor(m,id)==='w'),m=>`${_sxGF(m,id)}-${_sxGA(m,id)}`],['⏱️','PARTITA PIÙ LUNGA',mx(tg),m=>tg(m)+' game'],['🌧️','SCONFITTA PIÙ PESANTE',mx(m=>_sxGA(m,id)-_sxGF(m,id),m=>_resFor(m,id)==='l'),m=>`${_sxGF(m,id)}-${_sxGA(m,id)}`]];
-  if(typeof awardsOf==='function'){const aw=awardsOf(id);if(aw.length)h+=_sxSec('🏅 I TUOI PREMI DEL MESE',`<div class="sx-card aw-mine">${aw.map(a=>`<div class="aw-chip"><span>${a.e}</span><div><b>${a.t}</b><em>${a.mese}</em></div></div>`).join('')}</div>`);}
+  if(typeof awardsOf==='function'){const aw=awardsOf(id);if(aw.length)h+=_sxSec('🏅 I TUOI PREMI DEL MESE',`<div class="sx-card aw-mine">${aw.map(a=>`<div class="aw-chip"><span>${a.e}</span><div><b>${a.t}</b><em>${a.mese}</em></div></div>`).join('')}</div>`);}if(typeof kudosHtml==='function')h+=_sxSec('🎁 I COMPLIMENTI RICEVUTI',kudosHtml(id,true));
   h+=_sxSec('🏅 I TUOI RECORD',`<div class="sx-card"><div class="sx-row"><span class="em">🔥</span><div class="t"><small style="color:#ff8a00">SERIE DI VITTORIE PIÙ LUNGA</small><em>${bEnd?'finita il '+_sxD(bEnd.data):'nessuna vittoria ancora'}</em></div><span class="v" style="color:#ff8a00;font-size:30px">${best}</span></div>
     ${REC.map(([e,l,m,f])=>m?`<div class="sx-row" onclick="openMatchView(${m.id})" style="cursor:pointer"><span class="em">${e}</span><div class="t"><small style="color:rgba(255,255,255,.62)">${l}</small><em>contro ${_sxNm(_sxOpp(m,id))} · ${_sxD(m.data)}</em></div><span class="v">${f(m)}</span></div>`:'').join('')}</div>`);
   // 10 · 11 · orario e giorno migliore
@@ -8913,6 +8913,133 @@ function renderAwHome(){const feat=document.getElementById('home-feat');if(!feat
   const mvp=M.A.find(a=>a.k==='mvp'),p=mvp&&players.find(x=>x.id===mvp.id);
   el.innerHTML=`<button type="button" class="rc-btn" onclick="switchTab('albo');setTimeout(()=>{const s=document.getElementById('aw-albo');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});},350)"><div class="rc-ring" style="background:conic-gradient(#fbbf24,#fff3b0,#b8860b,#fbbf24)"><div>${p?avHtmlBig(p):'🏆'}</div></div><div class="rc-tx"><small>🏅 CONSEGNATI I PREMI</small><b>I premi di ${esc(M.label.split(' ')[0])}</b></div><span class="rc-go" style="background:#fbbf24"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.2 5.6v12.8a.9.9 0 0 0 1.37.77l10.1-6.4a.9.9 0 0 0 0-1.54l-10.1-6.4a.9.9 0 0 0-1.37.77z"/></svg></span></button>`;}
 {const _rhf2=renderHomeFeat;renderHomeFeat=function(){_rhf2.apply(this,arguments);try{renderAwHome();}catch(e){}};}
+</script>
+<style>
+/* ═══ COMMENTI ALLE PARTITE ═══ */
+#mv-bg .mv{max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+#mv-bg .mv::-webkit-scrollbar{display:none}
+.mv-cm{margin:14px 0 14px;text-align:left}
+.mv-cm-h{display:flex;align-items:center;justify-content:center;gap:8px;font:800 11px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.75);margin-bottom:8px}
+.mv-cm-h span{background:rgba(232,255,0,.16);color:var(--accent);border-radius:999px;padding:2px 8px;font-size:11px}
+.mv-cm-l{display:flex;flex-direction:column;gap:8px;max-height:230px;overflow-y:auto;overscroll-behavior:contain;padding:2px 2px 4px;scrollbar-width:thin}
+.mv-cm-0{font:600 13px "DM Sans",sans-serif;color:rgba(255,255,255,.55);text-align:center;padding:4px 0 2px}
+.cm-it{display:flex;align-items:flex-start;gap:8px;animation:cmIn .3s ease-out both}
+@keyframes cmIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cm-it .mk-av{width:30px;height:30px;flex-shrink:0;font-size:11px}
+.cm-b{flex:1;min-width:0;background:rgba(0,0,0,.32);border-radius:4px 16px 16px 16px;padding:7px 11px 8px}
+.cm-it.me .cm-b{background:rgba(232,255,0,.12)}
+.cm-hd{display:flex;align-items:center;gap:6px;font:800 11.5px "DM Sans",sans-serif;line-height:1.2}
+.cm-hd b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.cm-hd span{color:rgba(255,255,255,.5);font-weight:700;white-space:nowrap}
+.cm-del{margin-left:auto;border:0;background:none;color:#fca5a5;font-size:13px;cursor:pointer;padding:0 0 0 6px;line-height:1}
+.cm-t{font:500 14px/1.35 "DM Sans",sans-serif;color:#fff;margin-top:2px;overflow-wrap:anywhere;white-space:pre-wrap}
+.mv-cm-f{display:flex;gap:8px;margin-top:10px}
+.mv-cm-f input{flex:1;min-width:0;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.35);color:#fff;padding:0 16px;font:500 16px "DM Sans",sans-serif;outline:none}
+.mv-cm-f input:focus{border-color:var(--accent)}
+.mv-cm-f button{height:42px;padding:0 18px;border-radius:999px;border:0;background:var(--accent);color:#0b1640;font:800 14px "DM Sans",sans-serif;cursor:pointer;flex-shrink:0}
+.mv-cm-f button:disabled{opacity:.5}
+.mv-cm-who{display:block;margin:10px auto 0;height:40px;padding:0 18px;border-radius:999px;border:1px dashed rgba(232,255,0,.6);background:rgba(232,255,0,.08);color:var(--accent);font:800 13px "DM Sans",sans-serif;cursor:pointer}
+.mk-time .mk-cm{display:block;font:800 10px "DM Sans",sans-serif;color:#fff;margin-top:2px;letter-spacing:0}
+.mk-time .mk-cm:empty{display:none}
+/* ═══ COMPLIMENTI E ADESIVI ═══ */
+.kd-card{background:#0f2770;border-radius:22px;padding:14px 12px 12px;box-shadow:0 6px 16px rgba(0,0,0,.28);margin-bottom:14px}
+.kd-tot{text-align:center;font:800 12px "DM Sans",sans-serif;color:rgba(255,255,255,.7);margin-bottom:10px}
+.kd-tot b{font-family:"Anton",sans-serif;font-weight:400;font-size:22px;color:var(--accent);margin-right:4px;vertical-align:-2px}
+.kd-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kd-s{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:11px 4px 9px;border-radius:16px;border:0;background:rgba(0,0,0,.26);color:#fff;cursor:pointer;min-width:0;transition:transform .15s}
+.kd-s:active{transform:scale(.94)}
+.kd-s em{font-style:normal;font-size:28px;line-height:1}
+.kd-s span{font:800 9.5px "DM Sans",sans-serif;letter-spacing:.6px;white-space:nowrap}
+.kd-s i{position:absolute;top:5px;right:6px;min-width:20px;height:20px;border-radius:999px;background:var(--accent);color:#0b1640;font:800 11px/20px "DM Sans",sans-serif;font-style:normal;text-align:center;padding:0 5px}
+.kd-s.z em{filter:grayscale(.7);opacity:.55}.kd-s.z i{display:none}
+.kd-s.sent{box-shadow:inset 0 0 0 2px rgba(232,255,0,.55)}
+.kd-s.ro{cursor:default}.kd-s.ro:active{transform:none}
+.kd-s.pop{animation:kdPop .45s ease-out}
+@keyframes kdPop{40%{transform:scale(1.2) rotate(-6deg)}100%{transform:none}}
+.kd-h{text-align:center;font:600 12.5px "DM Sans",sans-serif;color:rgba(255,255,255,.6);margin-top:10px}
+.kd-last{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.kd-l{display:flex;align-items:center;justify-content:center;gap:8px;font:700 12.5px "DM Sans",sans-serif;color:rgba(255,255,255,.85)}
+.kd-l em{font-style:normal;font-size:17px}.kd-l small{color:rgba(255,255,255,.5);font:700 11.5px "DM Sans",sans-serif}
+</style>
+<script>
+// ═══ COMMENTI ALLE PARTITE ═══
+// clubs/laurera15a40/commenti/{id}: {mid, testo, nome, pid, t}. Chiunque legge; si scrive col nome scelto in "Chi sei?"; solo l'admin cancella.
+const _cmCol=()=>_db.collection('clubs').doc('laurera15a40').collection('commenti');
+let _cm={};
+function _cmMine(){try{return JSON.parse(localStorage.getItem('laurera_cm_mine')||'[]');}catch(e){return[];}}
+// chi sono io per commentare/mandare complimenti: il giocatore scelto in "Chi sei?", oppure "Admin"
+function socialMe(){const me=+localStorage.getItem('laurera_me'),p=players.find(x=>x.id===me);
+  if(p)return{nome:String(p.nome).slice(0,40),pid:p.id,p};if(!_checkViewer())return{nome:'Admin',pid:null,p:null};return null;}
+function agoText(ms){if(!ms)return'ora';const s=(Date.now()-ms)/1000;if(s<60)return'ora';if(s<3600)return Math.floor(s/60)+' min fa';if(s<86400)return Math.floor(s/3600)+' h fa';
+  const d=Math.floor(s/86400);if(d===1)return'ieri';if(d<7)return d+' giorni fa';return new Date(ms).toLocaleDateString('it-IT',{day:'numeric',month:'short'});}
+function cmBadge(m){const n=(_cm[String(m.id)]||[]).length;return`<small class="mk-cm" data-cm="${m.id}">${n?'💬 '+n:''}</small>`;}
+function _cmItem(c){const p=c.pid!=null?players.find(x=>x.id===c.pid):null,name=p?dispName(p.nome):(c.nome||'Socio'),mine=_cmMine().includes(c.id);
+  return`<div class="cm-it${mine?' me':''}"><div class="mk-av">${p?avHtmlBig(p):'<span>🎾</span>'}</div><div class="cm-b"><div class="cm-hd"><b>${esc(name)}</b><span>· ${esc(agoText(c.t))}</span>${!_checkViewer()?`<button type="button" class="cm-del" onclick="cmDel('${esc(c.id)}')" aria-label="Cancella commento">🗑</button>`:''}</div><div class="cm-t">${esc(c.testo)}</div></div></div>`;}
+function _cmList(mid){const L=_cm[String(mid)]||[];return L.length?L.map(_cmItem).join(''):'<div class="mv-cm-0">Ancora nessun commento: scrivi il primo!</div>';}
+function cmSecHtml(mid){const L=_cm[String(mid)]||[],me=socialMe();
+  return`<div class="mv-cm" data-mid="${mid}"><div class="mv-cm-h">💬 COMMENTI${L.length?`<span>${L.length}</span>`:''}</div><div class="mv-cm-l">${_cmList(mid)}</div>
+    ${me?`<form class="mv-cm-f" onsubmit="event.preventDefault();cmSend(${mid},this)"><input type="text" maxlength="200" placeholder="Scrivi un commento…" aria-label="Scrivi un commento" enterkeyhint="send"><button type="submit">Invia</button></form>`
+       :`<button type="button" class="mv-cm-who" onclick="closeMatchView();obShow(3)">✋ Scegli chi sei per commentare</button>`}</div>`;}
+function cmRefresh(){
+  document.querySelectorAll('.mk-cm[data-cm]').forEach(el=>{const n=(_cm[el.dataset.cm]||[]).length;el.textContent=n?'💬 '+n:'';});
+  document.querySelectorAll('.mv-cm[data-mid]').forEach(el=>{const mid=el.dataset.mid,L=_cm[mid]||[],l=el.querySelector('.mv-cm-l'),h=el.querySelector('.mv-cm-h');
+    const atEnd=l.scrollHeight-l.scrollTop-l.clientHeight<30;l.innerHTML=_cmList(mid);if(atEnd)l.scrollTop=l.scrollHeight;
+    h.innerHTML='💬 COMMENTI'+(L.length?`<span>${L.length}</span>`:'');});
+}
+let _cmLast=0;
+function cmSend(mid,form){const inp=form.querySelector('input'),btn=form.querySelector('button'),testo=inp.value.replace(/\s+/g,' ').trim().slice(0,200),me=socialMe();
+  if(!testo||!me)return;if(Date.now()-_cmLast<10000){toast('Aspetta qualche secondo prima del prossimo commento');return;}
+  btn.disabled=true;_cmLast=Date.now();
+  _cmCol().add({mid:String(mid),testo,nome:me.nome,pid:me.pid,t:firebase.firestore.FieldValue.serverTimestamp()}).then(ref=>{
+    const a=_cmMine();a.push(ref.id);try{localStorage.setItem('laurera_cm_mine',JSON.stringify(a.slice(-300)));}catch(e){}
+    inp.value='';btn.disabled=false;cmRefresh();const l=form.parentNode.querySelector('.mv-cm-l');if(l)l.scrollTop=l.scrollHeight;
+    try{if(navigator.vibrate)navigator.vibrate(12);}catch(e){}
+  }).catch(()=>{btn.disabled=false;_cmLast=0;toast('Commento non inviato, riprova più tardi');});}
+function cmDel(id){if(_checkViewer()||!confirm('Cancellare questo commento?'))return;
+  _cmCol().doc(id).delete().then(()=>toast('Commento cancellato')).catch(()=>toast('Non sono riuscito a cancellarlo'));}
+try{_cmCol().onSnapshot(s=>{const o={};s.forEach(d=>{const x=d.data({serverTimestamps:'estimate'});if(!x||!x.mid||!x.testo)return;
+    (o[x.mid]=o[x.mid]||[]).push({id:d.id,testo:String(x.testo),nome:x.nome,pid:x.pid??null,t:x.t&&x.t.toMillis?x.t.toMillis():Date.now()});});
+  Object.values(o).forEach(L=>L.sort((a,b)=>a.t-b.t));_cm=o;cmRefresh();if(typeof onSocialData==='function')onSocialData('cm');},()=>{});}catch(e){}
+// la sezione commenti va nella scheda della partita, sopra i bottoni
+{const _omv2=openMatchView;openMatchView=function(id){_omv2.apply(this,arguments);try{const bg=document.getElementById('mv-bg'),m=sched.find(x=>x.id===id);if(!bg||!m)return;
+  const b=bg.querySelector('.mv-btns');if(b)b.insertAdjacentHTML('beforebegin',cmSecHtml(m.id));else bg.querySelector('.mv').insertAdjacentHTML('beforeend',cmSecHtml(m.id));
+  const l=bg.querySelector('.mv-cm-l');if(l)l.scrollTop=l.scrollHeight;}catch(e){console.error(e);}};}
+setInterval(()=>{document.querySelectorAll('.mv-cm .cm-hd span').length&&cmRefresh();},60000);   // "5 min fa" si aggiorna da solo
+
+// ═══ COMPLIMENTI E ADESIVI ═══
+// clubs/laurera15a40/complimenti/{id}: {to, k, da, dpid, t}. Dalla scheda di un giocatore gli mandi un adesivo (uno per tipo al giorno).
+const KUDOS=[['gp','👏','GRAN PARTITA'],['sv','🚀','CHE SERVIZIO'],['mu','🧱','MURO'],['ri','🔄','RIMONTA'],['cl','🎩','CLASSE'],['fa','😅','CHE FATICA']];
+const _kdCol=()=>_db.collection('clubs').doc('laurera15a40').collection('complimenti');
+let _kd=[];
+function _kdSent(){try{return JSON.parse(localStorage.getItem('laurera_kd')||'{}')||{};}catch(e){return{};}}
+const kudosOf=pid=>_kd.filter(x=>x.to===pid);
+function kudosHtml(pid,own){const L=kudosOf(pid),me=socialMe(),self=own||(me&&me.pid===pid),sent=_kdSent(),today=fmtD(new Date()),p=players.find(x=>x.id===pid);
+  const c={};L.forEach(x=>c[x.k]=(c[x.k]||0)+1);
+  const last=L.slice(0,3).map(x=>{const q=x.dpid!=null?players.find(y=>y.id===x.dpid):null,s=KUDOS.find(k=>k[0]===x.k);return`<div class="kd-l"><em>${s?s[1]:'🎁'}</em><span>da ${esc(q?dispName(q.nome):(x.da||'un socio'))}</span><small>· ${esc(agoText(x.t))}</small></div>`;}).join('');
+  const hint=self?(L.length?'':'Te li mandano i soci dalla tua scheda giocatore'):me?`Tocca un adesivo per mandarlo a ${esc(p?dispName(p.nome):'')}`:'Scegli chi sei in Statistiche per mandare complimenti';
+  return`<div class="kd-card" data-kd="${pid}" data-own="${own?1:0}"><div class="kd-tot">${L.length?`<b>${L.length}</b>${L.length===1?'complimento ricevuto':'complimenti ricevuti'}`:'Ancora nessun complimento'}</div>
+    <div class="kd-g">${KUDOS.map(([k,e,t])=>`<button type="button" class="kd-s${c[k]?'':' z'}${!self&&sent[pid+'_'+k]===today?' sent':''}${self?' ro':''}" ${self?'':`onclick="kudosSend(${pid},'${k}',this)"`} aria-label="${t}"><em>${e}</em><span>${t}</span><i>${c[k]||0}</i></button>`).join('')}</div>
+    ${hint?`<div class="kd-h">${hint}</div>`:''}${last?`<div class="kd-last">${last}</div>`:''}</div>`;}
+function kudosRefresh(){document.querySelectorAll('.kd-card[data-kd]').forEach(el=>{const n=document.createElement('div');n.innerHTML=kudosHtml(+el.dataset.kd,el.dataset.own==='1');el.replaceWith(n.firstChild);});}
+function kudosSend(pid,k,btn){const me=socialMe();
+  if(!me){if(typeof closeProfile==='function')closeProfile();obShow(3);return;}
+  if(me.pid===pid)return;
+  const sent=_kdSent(),today=fmtD(new Date()),key=pid+'_'+k;if(sent[key]===today){toast('Questo gliel\'hai già mandato oggi');return;}
+  sent[key]=today;Object.keys(sent).forEach(x=>{if(sent[x]!==today)delete sent[x];});try{localStorage.setItem('laurera_kd',JSON.stringify(sent));}catch(e){}
+  const s=KUDOS.find(x=>x[0]===k),p=players.find(x=>x.id===pid);
+  if(btn){btn.classList.remove('pop');void btn.offsetWidth;btn.classList.add('pop','sent');if(typeof reaFly==='function')reaFly(btn.getBoundingClientRect(),s[1]);}
+  try{if(navigator.vibrate)navigator.vibrate(15);}catch(e){}
+  _kdCol().add({to:pid,k,da:me.nome,dpid:me.pid,t:firebase.firestore.FieldValue.serverTimestamp()})
+    .then(()=>toast(`${s[1]} Complimento mandato a ${p?dispName(p.nome):''}!`))
+    .catch(()=>{delete sent[key];try{localStorage.setItem('laurera_kd',JSON.stringify(sent));}catch(e){}if(btn)btn.classList.remove('sent');toast('Complimento non inviato, riprova più tardi');});}
+try{_kdCol().onSnapshot(s=>{const a=[];s.forEach(d=>{const x=d.data({serverTimestamps:'estimate'});if(!x||!KUDOS.some(k=>k[0]===x.k))return;
+    a.push({id:d.id,to:x.to,k:x.k,da:x.da,dpid:x.dpid??null,t:x.t&&x.t.toMillis?x.t.toMillis():Date.now()});});
+  a.sort((x,y)=>y.t-x.t);_kd=a;kudosRefresh();if(typeof onSocialData==='function')onSocialData('kd');},()=>{});}catch(e){}
+// nella scheda giocatore: sezione Complimenti prima delle partite in programma
+{const _op2=openProfile;openProfile=function(id){_op2.apply(this,arguments);try{
+  let w=document.getElementById('profile-kudos');
+  if(!w){w=document.createElement('div');w.id='profile-kudos';const up=document.getElementById('profile-upcoming'),sec=up&&up.previousElementSibling;if(sec)sec.before(w);else return;}
+  w.innerHTML=`<div class="profile-section">🎁 Complimenti</div>${kudosHtml(id,false)}`;}catch(e){console.error(e);}};}
 </script>
 <script>window.matchMedia("(max-width:640px)").addEventListener("change",()=>{if(typeof currentTab!=="undefined"&&currentTab==="risultati")renderRisultati();});
 function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>
