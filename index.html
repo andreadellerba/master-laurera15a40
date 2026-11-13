@@ -4043,7 +4043,7 @@ function cmcHtml(m){
     <div class="mk-c${m.risultato?" played":""}">${m.risultato?"":`<b>${esc(m.ora||"—")}</b>`}${m.risultato?`<span class="mk-c-sc ${!win1&&!win2?'d':''}"><i class="${win1?'w':win2?'l':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</i><u>-</u><i class="${win2?'w':win1?'l':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</i></span><small>${m.ora?esc(m.ora)+" · ":""}${esc(tag)}</small>`:(!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`)}</div>
     ${m.risultato?`<span class="mk-score${!win1&&!win2?' draw':''}"><b class="${win1?'w':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</b><b class="${win2?'w':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</b></span>`:'<span class="mk-vs">VS</span>'}
     <div class="mk-pl rt">${nm(n2,win2,win1)}${av(p2)}</div>
-    <div class="mk-st">${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
+    <div class="mk-st">${typeof wxChip==="function"?wxChip(m):""}${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
     ${m.risultato&&typeof reaHtml==='function'?reaHtml(m.id):''}
   </div>`;
 }
@@ -8284,6 +8284,7 @@ function _sxHtml(id){
   const mx=(f,flt)=>ps.filter(flt||(()=>true)).sort((a,b)=>f(b)-f(a))[0];let s=0,best=0,bEnd=null;ps.forEach(m=>{s=_resFor(m,id)==='w'?s+1:0;if(s>best){best=s;bEnd=m;}});
   const tg=m=>{const g=_games(m);return g[0]+g[1];};
   const REC=[['🎯','PIÙ GAME IN UNA PARTITA',mx(m=>_sxGF(m,id)),m=>_sxGF(m,id)+' game'],['💥','VITTORIA PIÙ LARGA',mx(m=>_sxGF(m,id)-_sxGA(m,id),m=>_resFor(m,id)==='w'),m=>`${_sxGF(m,id)}-${_sxGA(m,id)}`],['⏱️','PARTITA PIÙ LUNGA',mx(tg),m=>tg(m)+' game'],['🌧️','SCONFITTA PIÙ PESANTE',mx(m=>_sxGA(m,id)-_sxGF(m,id),m=>_resFor(m,id)==='l'),m=>`${_sxGF(m,id)}-${_sxGA(m,id)}`]];
+  if(typeof awardsOf==='function'){const aw=awardsOf(id);if(aw.length)h+=_sxSec('🏅 I TUOI PREMI DEL MESE',`<div class="sx-card aw-mine">${aw.map(a=>`<div class="aw-chip"><span>${a.e}</span><div><b>${a.t}</b><em>${a.mese}</em></div></div>`).join('')}</div>`);}
   h+=_sxSec('🏅 I TUOI RECORD',`<div class="sx-card"><div class="sx-row"><span class="em">🔥</span><div class="t"><small style="color:#ff8a00">SERIE DI VITTORIE PIÙ LUNGA</small><em>${bEnd?'finita il '+_sxD(bEnd.data):'nessuna vittoria ancora'}</em></div><span class="v" style="color:#ff8a00;font-size:30px">${best}</span></div>
     ${REC.map(([e,l,m,f])=>m?`<div class="sx-row" onclick="openMatchView(${m.id})" style="cursor:pointer"><span class="em">${e}</span><div class="t"><small style="color:rgba(255,255,255,.62)">${l}</small><em>contro ${_sxNm(_sxOpp(m,id))} · ${_sxD(m.data)}</em></div><span class="v">${f(m)}</span></div>`:'').join('')}</div>`);
   // 10 · 11 · orario e giorno migliore
@@ -8750,6 +8751,169 @@ html body .rea-bar .rb.zero.on,html body .rea-bar .rb.zero:hover{opacity:1}
 /* Riepilogo (Statistiche e scheda giocatore): stesso riquadro pieno delle altre schede */
 html body:not(.light) .profile-stats-row:is(.z.z.z.z,*){background:#0f2770!important;border:0!important;border-radius:22px!important;box-shadow:0 6px 16px rgba(0,0,0,.28)!important;padding:10px!important}
 </style>
+<style>
+/* ═══ LOGO VIVO: il logo è diviso in fette sovrapposte all'immagine originale (foglia che ondeggia, lettere che saltano) ═══ */
+.logo-live{position:absolute;z-index:3;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.logo-live i{position:absolute;top:0;height:100%;background-repeat:no-repeat;display:block;will-change:transform}
+.logo-live i.lf{transform-origin:100% 100%;animation:llLeaf 3.2s ease-in-out infinite}
+@keyframes llLeaf{0%,100%{transform:rotate(0)}50%{transform:rotate(-11deg)}}
+.logo-live i.jp{animation:llJump .62s cubic-bezier(.3,.7,.4,1) both}
+@keyframes llJump{0%{transform:none}30%{transform:translateY(-34%)}55%{transform:translateY(0) scale(1.08,.9)}72%{transform:translateY(-9%)}100%{transform:none}}
+img.logo-img.ll-on{opacity:0!important}
+/* ═══ FUOCHI D'ARTIFICIO per la tua vittoria ═══ */
+#fw-cv{position:fixed;inset:0;width:100%;height:100%;z-index:5250;pointer-events:none}
+#fw-tx{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 64px);z-index:5251;text-align:center;pointer-events:none;padding:10px 22px 12px;border-radius:22px;background:rgba(8,20,70,.82);box-shadow:0 10px 30px rgba(0,0,0,.45);white-space:nowrap;animation:fwTx 3.4s ease-out both}
+#fw-tx small{display:block;font:800 13px "DM Sans",sans-serif;letter-spacing:3px;color:var(--accent)}
+#fw-tx b{display:block;font-family:"Anton",sans-serif;font-weight:400;font-size:38px;line-height:1;color:#fff;text-shadow:0 0 30px rgba(232,255,0,.6),0 4px 0 rgba(0,0,0,.4)}
+@keyframes fwTx{0%{opacity:0;transform:translateX(-50%) scale(.6)}12%{opacity:1;transform:translateX(-50%) scale(1.08)}22%{transform:translateX(-50%) scale(1)}85%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(1)}}
+/* ═══ AVATAR CHE VOLA nella scheda giocatore ═══ */
+.av-fly{position:fixed;z-index:1600;border-radius:50%;overflow:hidden;pointer-events:none;box-shadow:0 12px 30px rgba(0,0,0,.5);transition:all .5s cubic-bezier(.3,1.15,.4,1)}
+.av-fly img{width:100%;height:100%;object-fit:cover;display:block}
+/* ═══ METEO DELLA PARTITA ═══ */
+.mk-wx{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-width:44px;line-height:1}
+.mk-wx em{font-style:normal;font-size:20px}
+.mk-wx b{font:800 12px "DM Sans",sans-serif;color:#fff}
+.mk-wx small{font:800 9.5px "DM Sans",sans-serif;color:#7dd3fc}
+.mk-wx.rain small{color:#38bdf8}
+.mv-wx{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 12px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.3);font:700 13px "DM Sans",sans-serif;width:max-content;max-width:100%}
+.mv-wx em{font-style:normal;font-size:20px}
+.mv-wx.rain{background:rgba(56,189,248,.18);color:#e0f2fe}
+/* ═══ PREMI DEL MESE ═══ */
+.aw-sec{margin:0 0 22px}
+.aw-mh{font-family:"Bebas Neue",sans-serif;font-size:20px;letter-spacing:1.5px;color:#fbbf24;margin:0 2px 8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.aw-mh span{font:800 10px "DM Sans",sans-serif;letter-spacing:1px;color:rgba(255,255,255,.6);background:rgba(0,0,0,.25);border-radius:999px;padding:3px 9px}
+.aw-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.aw-card:last-child:nth-child(odd){grid-column:1/-1}@media(min-width:900px){.aw-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.aw-card:last-child:nth-child(odd){grid-column:auto}}
+.aw-card{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:12px 8px;border-radius:20px;background:#0f2770;box-shadow:0 6px 16px rgba(0,0,0,.28);cursor:pointer;min-width:0}
+.aw-card .e{font-size:26px;line-height:1}
+.aw-card small{font:800 9.5px "DM Sans",sans-serif;letter-spacing:.9px;color:var(--c,#fbbf24);white-space:nowrap}
+.aw-card .mk-av{width:46px;height:46px;font-size:16px}
+.aw-card b{font-family:"Anton",sans-serif;font-weight:400;font-size:16px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.aw-card em{font:700 11px "DM Sans",sans-serif;font-style:normal;color:rgba(255,255,255,.65)}
+.aw-mine{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.aw-chip{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:16px;background:rgba(0,0,0,.24)}
+.aw-chip span{font-size:22px}
+.aw-chip b{display:block;font:800 12.5px "DM Sans",sans-serif}
+.aw-chip em{display:block;font:700 11px "DM Sans",sans-serif;font-style:normal;color:rgba(255,255,255,.6)}
+#home-aw{margin:0}
+@media (prefers-reduced-motion:reduce){.logo-live i{animation:none!important}#fw-tx{animation:none}}
+</style>
+<script>
+// ═══ LOGO VIVO ═══
+(function(){
+  const SL=[[0,62,'lf'],[64,140],[140,253],[262,352],[360,433],[433,520],[528,602],[602,700],[735,999]],IW=999;
+  let box=null,img=null;
+  function build(){img=document.querySelector('header .logo-img');const hdr=document.querySelector('header .hdr');if(!img||!hdr||!img.complete||!img.naturalWidth)return false;
+    if(getComputedStyle(hdr).position==='static')hdr.style.position='relative';
+    box=document.createElement('div');box.className='logo-live';box.setAttribute('role','button');box.setAttribute('aria-label','Laurera 15·40, vai alla Home');
+    box.innerHTML=SL.map(([a0,b0,c])=>{const a=Math.max(0,a0-1),b=Math.min(IW,b0+1);return`<i class="${c||''}" style="left:${(a/IW*100).toFixed(3)}%;width:${((b-a)/IW*100).toFixed(3)}%;background-image:url('${img.src}');background-size:${(IW/(b-a)*100).toFixed(3)}% 100%;background-position:${(a/(IW-(b-a))*100).toFixed(3)}% 0"></i>`;}).join('');
+    hdr.appendChild(box);img.classList.add('ll-on');place();
+    box.onclick=()=>{jump();if(typeof switchTab==='function')switchTab('players');};
+    if(window.ResizeObserver)new ResizeObserver(place).observe(img);addEventListener('resize',place);
+    setTimeout(jump,3600);return true;}
+  function place(){if(!box||!img)return;const h=img.closest('.hdr'),r=img.getBoundingClientRect(),hr=h.getBoundingClientRect();
+    if(!r.width){box.style.display='none';img.classList.remove('ll-on');return;}box.style.display='';img.classList.add('ll-on');
+    Object.assign(box.style,{left:(r.left-hr.left)+'px',top:(r.top-hr.top)+'px',width:r.width+'px',height:r.height+'px'});}
+  function jump(){if(!box||_reduceMotion())return;[...box.children].forEach((s,i)=>{if(!i)return;s.classList.remove('jp');void s.offsetWidth;s.style.animationDelay=(i*.07)+'s';s.classList.add('jp');});}
+  window.logoJump=jump;
+  const t=setInterval(()=>{if(build())clearInterval(t);},400);setTimeout(()=>clearInterval(t),15000);
+})();
+
+// ═══ FUOCHI D'ARTIFICIO: la prima volta che apri una partita che hai vinto tu ═══
+function fwShow(name,double){
+  if(_reduceMotion())return;document.querySelectorAll('#fw-cv,#fw-tx').forEach(x=>x.remove());
+  const cv=document.createElement('canvas');cv.id='fw-cv';document.body.appendChild(cv);
+  const tx=document.createElement('div');tx.id='fw-tx';tx.innerHTML=`<small>${double?'HAI BATTUTO IL NUMERO 1!':'HAI VINTO!'}</small><b>${esc(name)}</b>`;document.body.appendChild(tx);
+  const d=Math.min(2,devicePixelRatio||1),W=innerWidth,H=innerHeight;cv.width=W*d;cv.height=H*d;const c=cv.getContext('2d');c.scale(d,d);
+  const cols=['#e8ff00','#ff4fb8','#38bdf8','#22c55e','#fbbf24','#ffffff'];let parts=[];
+  const burst=()=>{const x=W*(.15+Math.random()*.7),y=H*(.15+Math.random()*.35),col=cols[Math.floor(Math.random()*cols.length)];for(let i=0;i<60;i++){const a=i/60*Math.PI*2,v=2+Math.random()*3.5;parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:70+Math.random()*30,col});}};
+  const n=double?12:7;for(let k=0;k<n;k++)setTimeout(burst,k*(double?220:300));
+  const t0=performance.now();(function f(t){c.clearRect(0,0,W,H);parts=parts.filter(p=>p.l>0);parts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.05;p.vx*=.985;p.l--;c.globalAlpha=Math.min(1,p.l/40);c.fillStyle=p.col;c.beginPath();c.arc(p.x,p.y,2.2,0,7);c.fill();});c.globalAlpha=1;
+    if(t-t0<4200)requestAnimationFrame(f);else{cv.remove();tx.remove();}})(t0);
+  try{if(navigator.vibrate)navigator.vibrate([30,60,30,60,60]);}catch(e){}
+}
+
+// ═══ METEO DELLA PARTITA (previsione ora per ora di Volvera, fino a 16 giorni) ═══
+let _wx=null;
+async function wxLoad(){
+  try{const c=JSON.parse(sessionStorage.getItem('laurera_wx')||'null');if(c&&Date.now()-c.t<3600e3){_wx=c.d;return;}}catch(e){}
+  try{const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=44.93&longitude=7.67&hourly=temperature_2m,precipitation_probability,weathercode,windspeed_10m&forecast_days=16&timezone=Europe%2FRome');if(!r.ok)return;
+    const j=await r.json(),h=j.hourly,o={};h.time.forEach((t,i)=>{o[t]={t:Math.round(h.temperature_2m[i]),p:h.precipitation_probability[i]??0,wc:h.weathercode[i],w:Math.round(h.windspeed_10m[i])};});
+    _wx=o;try{sessionStorage.setItem('laurera_wx',JSON.stringify({t:Date.now(),d:o}));}catch(e){}
+    if(typeof currentTab!=='undefined'&&currentTab==='calendario'&&typeof calRender==='function')calRender();
+  }catch(e){}
+}
+const _wxIco=(wc,night)=>wc===0?(night?'🌙':'☀️'):wc<=2?(night?'☁️':'🌤️'):wc===3?'☁️':wc<=48?'🌫️':wc<=57?'🌦️':wc<=67?'🌧️':wc<=77?'❄️':wc<=82?'🌧️':wc<=86?'🌨️':'⛈️';
+function wxFor(m){if(!_wx||!m||m.risultato||!m.data)return null;const h=String(m.ora||'20:00').slice(0,2);return _wx[m.data+'T'+h+':00']||null;}
+function wxChip(m){const w=wxFor(m);if(!w)return'';const night=+(m.ora||'20').slice(0,2)>=18,rain=w.p>=50;
+  return`<div class="mk-wx${rain?' rain':''}" title="Previsione per l'ora della partita"><em>${_wxIco(w.wc,night)}</em><b>${w.t}°</b><small>💧${w.p}%</small></div>`;}
+function wxLine(m){const w=wxFor(m);if(!w)return'';const night=+(m.ora||'20').slice(0,2)>=18,rain=w.p>=50;
+  return`<div class="mv-wx${rain?' rain':''}"><em>${_wxIco(w.wc,night)}</em><span>${w.t}° · pioggia ${w.p}% · vento ${w.w} km/h</span></div>${rain?'<div class="mv-prec" style="margin:-4px auto 12px;display:block;width:max-content;max-width:100%;color:#7dd3fc">☔ RISCHIO PIOGGIA: SENTITEVI CON L\'AVVERSARIO</div>':''}`;}
+wxLoad();setInterval(wxLoad,3600e3);
+
+// scheda partita: meteo per le partite da giocare, fuochi per le tue vittorie
+{const _omv=openMatchView;openMatchView=function(id){_omv.apply(this,arguments);try{
+  const m=sched.find(x=>x.id===id),bg=document.getElementById('mv-bg');if(!m||!bg)return;
+  if(!m.risultato){const mid=bg.querySelector('.mv-mid'),l=wxLine(m);if(mid&&l)mid.insertAdjacentHTML('afterend',l);return;}
+  const me=+localStorage.getItem('laurera_me');if(!me||_resFor(m,me)!=='w')return;
+  let seen=[];try{seen=JSON.parse(localStorage.getItem('laurera_fw')||'[]');}catch(e){}if(seen.includes(m.id))return;
+  seen.push(m.id);try{localStorage.setItem('laurera_fw',JSON.stringify(seen.slice(-200)));}catch(e){}
+  const opp=_side(m,me)===1?m.p2Id:m.p1Id,p=players.find(x=>x.id===me);
+  setTimeout(()=>fwShow(p?dispName(p.nome):'',typeof _sxPosE==='function'&&_sxPosE(opp)===1),250);
+}catch(e){}};}
+
+// ═══ AVATAR CHE VOLA: dalla riga toccata fino in cima alla scheda giocatore ═══
+let _flySrc=null;
+document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closest('[onclick*="openProfile("],.k4-av,.hl-rc,.podio-slot,.vp-it,.sx-row');if(!el){return;}
+  const a=el.querySelector('.mk-av img,.k4-av img,.hl-av img,.podio-av img,img')||(el.matches('.k4-av')?el.querySelector('img'):null);if(!a)return;
+  const r=a.getBoundingClientRect();if(r.width<10)return;_flySrc={r,src:a.src,t:performance.now()};},true);
+{const _op=openProfile;openProfile=function(id){const fs=_flySrc;_flySrc=null;_op.apply(this,arguments);
+  try{if(!fs||performance.now()-fs.t>700||_reduceMotion())return;const pm=document.getElementById('profile-modal'),av=document.getElementById('profile-av');if(!pm||!av)return;
+    const fl=document.createElement('div');fl.className='av-fly';fl.innerHTML=`<img src="${fs.src}" alt="">`;Object.assign(fl.style,{left:fs.r.left+'px',top:fs.r.top+'px',width:fs.r.width+'px',height:fs.r.height+'px'});document.body.appendChild(fl);
+    av.style.visibility='hidden';
+    setTimeout(()=>{const t=av.getBoundingClientRect();Object.assign(fl.style,{left:t.left+'px',top:t.top+'px',width:t.width+'px',height:t.height+'px'});},380);
+    setTimeout(()=>{av.style.visibility='';fl.style.opacity='0';setTimeout(()=>fl.remove(),200);},920);
+  }catch(e){}};}
+
+// ═══ PREMI DEL MESE ═══
+const _MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+function monthAwards(){
+  const k=sched.length+'|'+sched.filter(m=>m.risultato).length+'|'+players.length;if(monthAwards._k===k)return monthAwards._v;
+  const done=sched.filter(m=>m.risultato&&m.data&&m.p1Id&&m.p2Id&&m.p1Id2==null&&m.p2Id2==null),P=id=>players.find(x=>x.id===id);
+  const months=[...new Set(done.map(m=>m.data.slice(0,7)))].sort().reverse(),now=fmtD(new Date()).slice(0,7),H=eloData().H,out=[];
+  months.forEach(mk=>{const ms=done.filter(m=>m.data.slice(0,7)===mk);if(!ms.length)return;const st={};
+    ms.forEach(m=>{const g=_games(m);[[m.p1Id,g[0],g[1]],[m.p2Id,g[1],g[0]]].forEach(([id,gf,ga])=>{if(!P(id))return;const s=st[id]=st[id]||{n:0,w:0,gf:0,ga:0};s.n++;s.gf+=gf;s.ga+=ga;if(_resFor(m,id)==='w')s.w++;});});
+    const ids=Object.keys(st).map(Number),best=(f,min=1)=>ids.filter(id=>f(id)>=min).sort((a,b)=>f(b)-f(a)||(st[b].gf-st[b].ga)-(st[a].gf-st[a].ga))[0];
+    const eloGain=id=>{const h=(H[id]||[]).filter(x=>x.m.data.slice(0,7)===mk);if(!h.length)return 0;const before=(H[id]||[]).filter(x=>x.m.data.slice(0,7)<mk);const s=before.length?before[before.length-1].e:1500;return Math.round(h[h.length-1].e-s);};
+    const A=[];
+    const mvp=best(id=>st[id].w*100+(st[id].gf-st[id].ga));if(mvp!=null)A.push({k:'mvp',e:'🏆',t:'MVP del mese',id:mvp,v:`${st[mvp].w} vinte su ${st[mvp].n}`,c:'#fbbf24'});
+    const gm=best(id=>st[id].gf);if(gm!=null)A.push({k:'game',e:'🎯',t:'Re dei game',id:gm,v:`${st[gm].gf} game`,c:'#e8ff00'});
+    const rv=best(eloGain,1);if(rv!=null)A.push({k:'riv',e:'🚀',t:'Rivelazione',id:rv,v:`+${eloGain(rv)} Elo`,c:'#38bdf8'});
+    const fd=best(id=>st[id].n,2);if(fd!=null)A.push({k:'fed',e:'🎾',t:'Fedelissimo',id:fd,v:`${st[fd].n} partite`,c:'#ff4fb8'});
+    const bm=ms.slice().sort((a,b)=>{const x=_games(a),y=_games(b);return Math.abs(x[0]-x[1])-Math.abs(y[0]-y[1])||(y[0]+y[1])-(x[0]+x[1]);})[0];
+    if(bm)A.push({k:'match',e:'⭐',t:'Partita del mese',id:bm.p1Id,id2:bm.p2Id,mid:bm.id,v:_games(bm).join('-'),c:'#a78bfa'});
+    const [y,mo]=mk.split('-').map(Number);out.push({mk,label:_MESI[mo-1]+' '+y,live:mk===now,A});});
+  monthAwards._k=k;return monthAwards._v=out;
+}
+function awardsOf(id){const L=[];monthAwards().filter(x=>!x.live).forEach(M=>M.A.forEach(a=>{if(a.id===id||a.id2===id)L.push({e:a.e,t:a.t,mese:M.label.charAt(0).toUpperCase()+M.label.slice(1)});}));return L;}
+function awCard(a){const p=players.find(x=>x.id===a.id),q=a.id2!=null?players.find(x=>x.id===a.id2):null;if(!p)return'';
+  const click=a.mid!=null?`openMatchView(${a.mid})`:`openProfile(${a.id})`;
+  return`<div class="aw-card" style="--c:${a.c}" onclick="${click}"><span class="e">${a.e}</span><small>${a.t.toUpperCase()}</small>${q?`<div style="display:flex;gap:4px"><div class="mk-av">${avHtmlBig(p)}</div><div class="mk-av">${avHtmlBig(q)}</div></div><b>${esc(surnameOf(p.nome))} – ${esc(surnameOf(q.nome))}</b>`:`<div class="mk-av">${avHtmlBig(p)}</div><b>${esc(dispName(p.nome))}</b>`}<em>${esc(a.v)}</em></div>`;}
+function renderAwardsAlbo(){const list=document.getElementById('albo-list');if(!list)return;let sec=document.getElementById('aw-albo');const M=monthAwards();
+  if(!M.length){if(sec)sec.remove();return;}
+  if(!sec){sec=document.createElement('div');sec.id='aw-albo';}
+  sec.innerHTML=`<div class="albo-year" style="margin-top:18px!important;text-align:center">PREMI DEL MESE</div>`+M.map(x=>`<div class="aw-sec"><div class="aw-mh">${esc(x.label.toUpperCase())}${x.live?'<span>IN CORSO</span>':''}</div><div class="aw-grid">${x.A.map(awCard).join('')}</div></div>`).join('');
+  list.appendChild(sec);}
+{const _ra2=renderAlbo;renderAlbo=function(){_ra2.apply(this,arguments);try{renderAwardsAlbo();}catch(e){console.error(e);}};}
+// in Home, nei primi 14 giorni del mese: i premi del mese appena finito
+function renderAwHome(){const feat=document.getElementById('home-feat');if(!feat)return;let el=document.getElementById('home-aw');
+  const day=new Date().getDate(),M=monthAwards().find(x=>!x.live);
+  if(day>14||!M){if(el)el.remove();return;}
+  if(!el){el=document.createElement('div');el.id='home-aw';}
+  const rec=document.getElementById('home-recap');if(rec&&rec.nextSibling!==el)rec.after(el);else if(!rec&&feat.firstChild!==el)feat.insertBefore(el,feat.firstChild);
+  const mvp=M.A.find(a=>a.k==='mvp'),p=mvp&&players.find(x=>x.id===mvp.id);
+  el.innerHTML=`<button type="button" class="rc-btn" onclick="switchTab('albo');setTimeout(()=>{const s=document.getElementById('aw-albo');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});},350)"><div class="rc-ring" style="background:conic-gradient(#fbbf24,#fff3b0,#b8860b,#fbbf24)"><div>${p?avHtmlBig(p):'🏆'}</div></div><div class="rc-tx"><small>🏅 CONSEGNATI I PREMI</small><b>I premi di ${esc(M.label.split(' ')[0])}</b></div><span class="rc-go" style="background:#fbbf24"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.2 5.6v12.8a.9.9 0 0 0 1.37.77l10.1-6.4a.9.9 0 0 0 0-1.54l-10.1-6.4a.9.9 0 0 0-1.37.77z"/></svg></span></button>`;}
+{const _rhf2=renderHomeFeat;renderHomeFeat=function(){_rhf2.apply(this,arguments);try{renderAwHome();}catch(e){}};}
+</script>
 <script>window.matchMedia("(max-width:640px)").addEventListener("change",()=>{if(typeof currentTab!=="undefined"&&currentTab==="risultati")renderRisultati();});
 function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>
 </body>
