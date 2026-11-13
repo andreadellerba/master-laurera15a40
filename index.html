@@ -4068,6 +4068,7 @@ function cmcHtml(m){
     <div class="mk-pl rt">${nm(n2,win2,win1)}${av(p2)}</div>
     <div class="mk-st">${typeof wxChip==="function"?wxChip(m):""}${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
     ${m.risultato&&typeof reaHtml==='function'?reaHtml(m.id):''}
+    ${m.risultato&&typeof cmCardHtml==='function'?cmCardHtml(m.id):''}
   </div>`;
 }
 // ═══ CAL MODAL ═══
@@ -4346,7 +4347,7 @@ function renderRisultati(){
       <div class="rs-side ${cL}">${av(L)}${nm(teamOf(m,L),draw?'PAREGGIO':(wIsP1?'VINCE':'PERDE'))}</div>
       <div class="rs-score"><span class="${draw?'dr':(wIsP1?'win':'')}">${sL}</span>${sR!==''?`<span class="${draw?'dr':(wIsP1?'':'win')}">${sR}</span>`:''}</div>
       <div class="rs-side ${cR} rt">${nm(teamOf(m,R),draw?'PAREGGIO':(wIsP1?'PERDE':'VINCE'))}${av(R)}</div>
-      ${m.ora?`<div class="rs-time">${esc(m.ora)}</div>`:''}${rc}
+      ${m.ora?`<div class="rs-time">${esc(m.ora)}</div>`:''}${rc}${typeof cmCardHtml==='function'?cmCardHtml(m.id):''}
     </div>`;
   };
   const days={};done.forEach(m=>{(days[m.data]=days[m.data]||[]).push(m);});
@@ -8308,7 +8309,7 @@ function _sxHtml(id){
   const mx=(f,flt)=>ps.filter(flt||(()=>true)).sort((a,b)=>f(b)-f(a))[0];let s=0,best=0,bEnd=null;ps.forEach(m=>{s=_resFor(m,id)==='w'?s+1:0;if(s>best){best=s;bEnd=m;}});
   const tg=m=>{const g=_games(m);return g[0]+g[1];};
   const REC=[['🎯','PIÙ GAME IN UNA PARTITA',mx(m=>_sxGF(m,id)),m=>_sxGF(m,id)+' game'],['💥','VITTORIA PIÙ LARGA',mx(m=>_sxGF(m,id)-_sxGA(m,id),m=>_resFor(m,id)==='w'),m=>`${_sxGF(m,id)}-${_sxGA(m,id)}`],['⏱️','PARTITA PIÙ LUNGA',mx(tg),m=>tg(m)+' game'],['🌧️','SCONFITTA PIÙ PESANTE',mx(m=>_sxGA(m,id)-_sxGF(m,id),m=>_resFor(m,id)==='l'),m=>`${_sxGF(m,id)}-${_sxGA(m,id)}`]];
-  if(typeof awardsOf==='function'){const aw=awardsOf(id);if(aw.length)h+=_sxSec('🏅 I TUOI PREMI DEL MESE',`<div class="sx-card aw-mine">${aw.map(a=>`<div class="aw-chip"><span>${a.e}</span><div><b>${a.t}</b><em>${a.mese}</em></div></div>`).join('')}</div>`);}if(typeof kudosHtml==='function')h+=_sxSec('🎁 I COMPLIMENTI RICEVUTI',kudosHtml(id,true));
+  if(typeof kudosHtml==='function')h+=_sxSec('🎁 I COMPLIMENTI RICEVUTI',kudosHtml(id,true));
   h+=_sxSec('🏅 I TUOI RECORD',`<div class="sx-card"><div class="sx-row"><span class="em">🔥</span><div class="t"><small style="color:#ff8a00">SERIE DI VITTORIE PIÙ LUNGA</small><em>${bEnd?'finita il '+_sxD(bEnd.data):'nessuna vittoria ancora'}</em></div><span class="v" style="color:#ff8a00;font-size:30px">${best}</span></div>
     ${REC.map(([e,l,m,f])=>m?`<div class="sx-row" onclick="openMatchView(${m.id})" style="cursor:pointer"><span class="em">${e}</span><div class="t"><small style="color:rgba(255,255,255,.62)">${l}</small><em>contro ${_sxNm(_sxOpp(m,id))} · ${_sxD(m.data)}</em></div><span class="v">${f(m)}</span></div>`:'').join('')}</div>`);
   // 10 · 11 · orario e giorno migliore
@@ -8780,7 +8781,7 @@ html body:not(.light) .profile-stats-row:is(.z.z.z.z,*){background:#0f2770!impor
 .logo-live{position:absolute;z-index:3;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .logo-live i{position:absolute;top:0;height:100%;background-repeat:no-repeat;display:block;will-change:transform}
 .logo-live i.lf{transform-origin:100% 100%;animation:llLeaf 3.2s ease-in-out infinite}
-@keyframes llLeaf{0%,100%{transform:rotate(0)}50%{transform:rotate(-11deg)}}
+@keyframes llLeaf{0%,100%{transform:rotate(0)}50%{transform:rotate(-15deg)}}
 .logo-live i.jp{animation:llJump .62s cubic-bezier(.3,.7,.4,1) both}
 @keyframes llJump{0%{transform:none}30%{transform:translateY(-34%)}55%{transform:translateY(0) scale(1.08,.9)}72%{transform:translateY(-9%)}100%{transform:none}}
 img.logo-img.ll-on{opacity:0!important}
@@ -8802,23 +8803,6 @@ img.logo-img.ll-on{opacity:0!important}
 .mv-wx{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 12px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.3);font:700 13px "DM Sans",sans-serif;width:max-content;max-width:100%}
 .mv-wx em{font-style:normal;font-size:20px}
 .mv-wx.rain{background:rgba(56,189,248,.18);color:#e0f2fe}
-/* ═══ PREMI DEL MESE ═══ */
-.aw-sec{margin:0 0 22px}
-.aw-mh{font-family:"Bebas Neue",sans-serif;font-size:20px;letter-spacing:1.5px;color:#fbbf24;margin:0 2px 8px;display:flex;align-items:center;justify-content:center;gap:8px}
-.aw-mh span{font:800 10px "DM Sans",sans-serif;letter-spacing:1px;color:rgba(255,255,255,.6);background:rgba(0,0,0,.25);border-radius:999px;padding:3px 9px}
-.aw-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.aw-card:last-child:nth-child(odd){grid-column:1/-1}@media(min-width:900px){.aw-grid{grid-template-columns:repeat(5,minmax(0,1fr))}.aw-card:last-child:nth-child(odd){grid-column:auto}}
-.aw-card{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:12px 8px;border-radius:20px;background:#0f2770;box-shadow:0 6px 16px rgba(0,0,0,.28);cursor:pointer;min-width:0}
-.aw-card .e{font-size:26px;line-height:1}
-.aw-card small{font:800 9.5px "DM Sans",sans-serif;letter-spacing:.9px;color:var(--c,#fbbf24);white-space:nowrap}
-.aw-card .mk-av{width:46px;height:46px;font-size:16px}
-.aw-card b{font-family:"Anton",sans-serif;font-weight:400;font-size:16px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.aw-card em{font:700 11px "DM Sans",sans-serif;font-style:normal;color:rgba(255,255,255,.65)}
-.aw-mine{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
-.aw-chip{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:16px;background:rgba(0,0,0,.24)}
-.aw-chip span{font-size:22px}
-.aw-chip b{display:block;font:800 12.5px "DM Sans",sans-serif}
-.aw-chip em{display:block;font:700 11px "DM Sans",sans-serif;font-style:normal;color:rgba(255,255,255,.6)}
-#home-aw{margin:0}
 @media (prefers-reduced-motion:reduce){.logo-live i{animation:none!important}#fw-tx{animation:none}}
 </style>
 <script>
@@ -8839,7 +8823,7 @@ img.logo-img.ll-on{opacity:0!important}
     Object.assign(box.style,{left:(r.left-hr.left)+'px',top:(r.top-hr.top)+'px',width:r.width+'px',height:r.height+'px'});}
   function jump(){if(!box||_reduceMotion())return;[...box.children].forEach((s,i)=>{if(!i)return;s.classList.remove('jp');void s.offsetWidth;s.style.animationDelay=(i*.07)+'s';s.classList.add('jp');});}
   window.logoJump=jump;
-  const t=setInterval(()=>{if(build())clearInterval(t);},400);setTimeout(()=>clearInterval(t),15000);
+  const t=setInterval(()=>{if(build())clearInterval(t);},400);setInterval(()=>{if(!document.hidden)jump();},9000);setTimeout(()=>clearInterval(t),15000);   // le lettere fanno l'onda ogni 9 secondi
 })();
 
 // ═══ FUOCHI D'ARTIFICIO: la prima volta che apri una partita che hai vinto tu ═══
@@ -8897,46 +8881,6 @@ document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closes
     setTimeout(()=>{const t=av.getBoundingClientRect();Object.assign(fl.style,{left:t.left+'px',top:t.top+'px',width:t.width+'px',height:t.height+'px'});},380);
     setTimeout(()=>{av.style.visibility='';fl.style.opacity='0';setTimeout(()=>fl.remove(),200);},920);
   }catch(e){}};}
-
-// ═══ PREMI DEL MESE ═══
-const _MESI=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
-function monthAwards(){
-  const k=sched.length+'|'+sched.filter(m=>m.risultato).length+'|'+players.length;if(monthAwards._k===k)return monthAwards._v;
-  const done=sched.filter(m=>m.risultato&&m.data&&m.p1Id&&m.p2Id&&m.p1Id2==null&&m.p2Id2==null),P=id=>players.find(x=>x.id===id);
-  const months=[...new Set(done.map(m=>m.data.slice(0,7)))].sort().reverse(),now=fmtD(new Date()).slice(0,7),H=eloData().H,out=[];
-  months.forEach(mk=>{const ms=done.filter(m=>m.data.slice(0,7)===mk);if(!ms.length)return;const st={};
-    ms.forEach(m=>{const g=_games(m);[[m.p1Id,g[0],g[1]],[m.p2Id,g[1],g[0]]].forEach(([id,gf,ga])=>{if(!P(id))return;const s=st[id]=st[id]||{n:0,w:0,gf:0,ga:0};s.n++;s.gf+=gf;s.ga+=ga;if(_resFor(m,id)==='w')s.w++;});});
-    const ids=Object.keys(st).map(Number),best=(f,min=1)=>ids.filter(id=>f(id)>=min).sort((a,b)=>f(b)-f(a)||(st[b].gf-st[b].ga)-(st[a].gf-st[a].ga))[0];
-    const eloGain=id=>{const h=(H[id]||[]).filter(x=>x.m.data.slice(0,7)===mk);if(!h.length)return 0;const before=(H[id]||[]).filter(x=>x.m.data.slice(0,7)<mk);const s=before.length?before[before.length-1].e:1500;return Math.round(h[h.length-1].e-s);};
-    const A=[];
-    const mvp=best(id=>st[id].w*100+(st[id].gf-st[id].ga));if(mvp!=null)A.push({k:'mvp',e:'🏆',t:'MVP del mese',id:mvp,v:`${st[mvp].w} vinte su ${st[mvp].n}`,c:'#fbbf24'});
-    const gm=best(id=>st[id].gf);if(gm!=null)A.push({k:'game',e:'🎯',t:'Re dei game',id:gm,v:`${st[gm].gf} game`,c:'#e8ff00'});
-    const rv=best(eloGain,1);if(rv!=null)A.push({k:'riv',e:'🚀',t:'Rivelazione',id:rv,v:`+${eloGain(rv)} Elo`,c:'#38bdf8'});
-    const fd=best(id=>st[id].n,2);if(fd!=null)A.push({k:'fed',e:'🎾',t:'Fedelissimo',id:fd,v:`${st[fd].n} partite`,c:'#ff4fb8'});
-    const bm=ms.slice().sort((a,b)=>{const x=_games(a),y=_games(b);return Math.abs(x[0]-x[1])-Math.abs(y[0]-y[1])||(y[0]+y[1])-(x[0]+x[1]);})[0];
-    if(bm)A.push({k:'match',e:'⭐',t:'Partita del mese',id:bm.p1Id,id2:bm.p2Id,mid:bm.id,v:_games(bm).join('-'),c:'#a78bfa'});
-    const [y,mo]=mk.split('-').map(Number);out.push({mk,label:_MESI[mo-1]+' '+y,live:mk===now,A});});
-  monthAwards._k=k;return monthAwards._v=out;
-}
-function awardsOf(id){const L=[];monthAwards().filter(x=>!x.live).forEach(M=>M.A.forEach(a=>{if(a.id===id||a.id2===id)L.push({e:a.e,t:a.t,mese:M.label.charAt(0).toUpperCase()+M.label.slice(1)});}));return L;}
-function awCard(a){const p=players.find(x=>x.id===a.id),q=a.id2!=null?players.find(x=>x.id===a.id2):null;if(!p)return'';
-  const click=a.mid!=null?`openMatchView(${a.mid})`:`openProfile(${a.id})`;
-  return`<div class="aw-card" style="--c:${a.c}" onclick="${click}"><span class="e">${a.e}</span><small>${a.t.toUpperCase()}</small>${q?`<div style="display:flex;gap:4px"><div class="mk-av">${avHtmlBig(p)}</div><div class="mk-av">${avHtmlBig(q)}</div></div><b>${esc(surnameOf(p.nome))} – ${esc(surnameOf(q.nome))}</b>`:`<div class="mk-av">${avHtmlBig(p)}</div><b>${esc(dispName(p.nome))}</b>`}<em>${esc(a.v)}</em></div>`;}
-function renderAwardsAlbo(){const list=document.getElementById('albo-list');if(!list)return;let sec=document.getElementById('aw-albo');const M=monthAwards();
-  if(!M.length){if(sec)sec.remove();return;}
-  if(!sec){sec=document.createElement('div');sec.id='aw-albo';}
-  sec.innerHTML=`<div class="albo-year" style="margin-top:18px!important;text-align:center">PREMI DEL MESE</div>`+M.map(x=>`<div class="aw-sec"><div class="aw-mh">${esc(x.label.toUpperCase())}${x.live?'<span>IN CORSO</span>':''}</div><div class="aw-grid">${x.A.map(awCard).join('')}</div></div>`).join('');
-  list.appendChild(sec);}
-{const _ra2=renderAlbo;renderAlbo=function(){_ra2.apply(this,arguments);try{renderAwardsAlbo();}catch(e){console.error(e);}};}
-// in Home, nei primi 14 giorni del mese: i premi del mese appena finito
-function renderAwHome(){const feat=document.getElementById('home-feat');if(!feat)return;let el=document.getElementById('home-aw');
-  const day=new Date().getDate(),M=monthAwards().find(x=>!x.live);
-  if(day>14||!M){if(el)el.remove();return;}
-  if(!el){el=document.createElement('div');el.id='home-aw';}
-  const rec=document.getElementById('home-recap');if(rec&&rec.nextSibling!==el)rec.after(el);else if(!rec&&feat.firstChild!==el)feat.insertBefore(el,feat.firstChild);
-  const mvp=M.A.find(a=>a.k==='mvp'),p=mvp&&players.find(x=>x.id===mvp.id);
-  el.innerHTML=`<button type="button" class="rc-btn" onclick="switchTab('albo');setTimeout(()=>{const s=document.getElementById('aw-albo');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});},350)"><div class="rc-ring" style="background:conic-gradient(#fbbf24,#fff3b0,#b8860b,#fbbf24)"><div>${p?avHtmlBig(p):'🏆'}</div></div><div class="rc-tx"><small>🏅 CONSEGNATI I PREMI</small><b>I premi di ${esc(M.label.split(' ')[0])}</b></div><span class="rc-go" style="background:#fbbf24"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8.2 5.6v12.8a.9.9 0 0 0 1.37.77l10.1-6.4a.9.9 0 0 0 0-1.54l-10.1-6.4a.9.9 0 0 0-1.37.77z"/></svg></span></button>`;}
-{const _rhf2=renderHomeFeat;renderHomeFeat=function(){_rhf2.apply(this,arguments);try{renderAwHome();}catch(e){}};}
 </script>
 <style>
 /* ═══ COMMENTI ALLE PARTITE ═══ */
@@ -8996,7 +8940,7 @@ function socialMe(){const me=+localStorage.getItem('laurera_me'),p=players.find(
   if(p)return{nome:String(p.nome).slice(0,40),pid:p.id,p};if(!_checkViewer())return{nome:'Admin',pid:null,p:null};return null;}
 function agoText(ms){if(!ms)return'ora';const s=(Date.now()-ms)/1000;if(s<60)return'ora';if(s<3600)return Math.floor(s/60)+' min fa';if(s<86400)return Math.floor(s/3600)+' h fa';
   const d=Math.floor(s/86400);if(d===1)return'ieri';if(d<7)return d+' giorni fa';return new Date(ms).toLocaleDateString('it-IT',{day:'numeric',month:'short'});}
-function cmBadge(m){const n=(_cm[String(m.id)]||[]).length;return`<small class="mk-cm" data-cm="${m.id}">${n?'💬 '+n:''}</small>`;}
+function cmBadge(m){if(m.risultato)return"";const n=(_cm[String(m.id)]||[]).length;return`<small class="mk-cm" data-cm="${m.id}">${n?'💬 '+n:''}</small>`;}
 function _cmItem(c){const p=c.pid!=null?players.find(x=>x.id===c.pid):null,name=p?dispName(p.nome):(c.nome||'Socio'),mine=_cmMine().includes(c.id);
   return`<div class="cm-it${mine?' me':''}"><div class="mk-av">${p?avHtmlBig(p):'<span>🎾</span>'}</div><div class="cm-b"><div class="cm-hd"><b>${esc(name)}</b><span>· ${esc(agoText(c.t))}</span>${!_checkViewer()?`<button type="button" class="cm-del" onclick="cmDel('${esc(c.id)}')" aria-label="Cancella commento">🗑</button>`:''}</div><div class="cm-t">${esc(c.testo)}</div></div></div>`;}
 function _cmList(mid){const L=_cm[String(mid)]||[];return L.length?L.map(_cmItem).join(''):'<div class="mv-cm-0">Ancora nessun commento: scrivi il primo!</div>';}
@@ -9068,28 +9012,25 @@ try{_kdCol().onSnapshot(s=>{const a=[];s.forEach(d=>{const x=d.data({serverTimes
 <style>
 /* ═══ NOTIFICHE SUL TELEFONO ═══ */
 .ps-card{text-align:center}
-.ps-card p{font:500 13.5px/1.45 "DM Sans",sans-serif;color:rgba(255,255,255,.8);margin:0 auto 12px;max-width:34ch}
+.ps-card p{font:500 13.5px/1.45 "DM Sans",sans-serif;color:rgba(255,255,255,.8);margin:0 auto 12px;max-width:34ch;text-wrap:balance}
 .ps-go{height:44px;padding:0 22px;border-radius:999px;border:0;background:var(--accent);color:#0b1640;font:800 14.5px "DM Sans",sans-serif;cursor:pointer}
 .ps-go:disabled{opacity:.6}
 .ps-on{display:inline-flex;align-items:center;gap:8px;font:800 13px "DM Sans",sans-serif;color:#4ade80;margin-bottom:10px}
 .ps-on i{width:9px;height:9px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80}
-.ps-t{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:10px}
-.ps-t button{height:34px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:rgba(255,255,255,.55);font:700 12.5px "DM Sans",sans-serif;cursor:pointer}
-.ps-t button.on{background:rgba(232,255,0,.14);border-color:rgba(232,255,0,.55);color:#fff}
-.ps-off{border:0;background:none;color:rgba(255,255,255,.5);font:700 12px "DM Sans",sans-serif;text-decoration:underline;cursor:pointer;padding:4px}
+.ps-go.ps-no{background:rgba(0,0,0,.3);color:#fff;border:1px solid rgba(255,255,255,.25)}
 .ps-ic{font-size:30px;line-height:1;margin-bottom:6px}
 </style>
 <script>
 // ═══ NOTIFICHE SUL TELEFONO (anche ad app chiusa) ═══
 // L'iscrizione del telefono va in clubs/laurera15a40/push/{telefono}; il "postino" su GitHub Actions (.github/notifiche) manda le notifiche.
 // La chiave pubblica la pubblica il postino in data/push: finché non c'è, il riquadro lo vede solo l'admin.
-const PUSH_TIPI=[['prom','⏰ Prima delle partite'],['ris','🎾 Risultati'],['cal','📅 Nuove partite'],['cm','💬 Commenti'],['kd','👏 Complimenti']];
+const PUSH_TIPI=[['ris','🎾 Risultati']];   // solo i risultati delle proprie partite
 const _pushCol=()=>_db.collection('clubs').doc('laurera15a40').collection('push');
 let _pushKey=null,_pushKeyLetta=false;
 const _pushLS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){return null;}};
 function _pushDev(){let d=_pushLS('laurera_dev');if(d&&/^[0-9a-f]{24}$/.test(d))return d;d=_pushLS('laurera_push_dev');if(d&&/^[0-9a-f]{24}$/.test(d))return d;
   d=[...crypto.getRandomValues(new Uint8Array(12))].map(b=>b.toString(16).padStart(2,'0')).join('');_pushLS('laurera_push_dev',d);return d;}
-function _pushTipi(){try{const a=JSON.parse(_pushLS('laurera_push_tipi')||'null');if(Array.isArray(a))return a.filter(x=>PUSH_TIPI.some(t=>t[0]===x));}catch(e){}return PUSH_TIPI.map(t=>t[0]);}
+function _pushTipi(){return['ris'];}
 const _pushIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const _pushStandalone=()=>window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
 const _pushOk=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window&&location.protocol==='https:';
@@ -9108,8 +9049,8 @@ function pushSecHtml(id){
   if(s==='ios')b=`<div class="ps-ic">📲</div><p>Su iPhone le notifiche arrivano solo con l'app sulla schermata Home: in Safari tocca <b>Condividi</b> → <b>Aggiungi alla schermata Home</b>, poi apri Laurera da lì e torna qui.</p>`;
   else if(s==='no')b=`<div class="ps-ic">🔕</div><p>Questo browser non può ricevere notifiche. Su Android usa Chrome, su iPhone l'app dalla schermata Home.</p>`;
   else if(s==='bloccate')b=`<div class="ps-ic">🔕</div><p>Hai bloccato le notifiche di Laurera: per riaverle riattivale nelle impostazioni del telefono (Notifiche), poi torna qui.</p>`;
-  else if(s==='on')b=`<div class="ps-on"><i></i>Attive su questo telefono</div><div class="ps-t">${PUSH_TIPI.map(([k,l])=>`<button type="button" class="${T.includes(k)?'on':''}" onclick="pushTipo('${k}')" aria-pressed="${T.includes(k)}">${l}</button>`).join('')}</div><button type="button" class="ps-off" onclick="pushOff()">Spegni le notifiche</button>`;
-  else b=`<div class="ps-ic">🔔</div><p>Ti avvisiamo prima delle tue partite, quando esce un tuo risultato, se qualcuno commenta o ti manda un complimento. Arrivano anche con l'app chiusa.</p>${adm&&!meOk?`<p style="margin-top:-4px"><b>Per: ${esc(dispName((players.find(x=>x.id===id)||{}).nome||''))}</b> (sarai tu su questo telefono)</p>`:''}<button type="button" class="ps-go" onclick="pushOn(this,${id})">Attiva le notifiche</button>`;
+  else if(s==='on')b=`<div class="ps-on"><i></i>Attive su questo telefono</div><p>Ti avvisiamo quando viene inserito il risultato di una tua partita.</p><button type="button" class="ps-go ps-no" onclick="pushOff()">Disattiva</button>`;
+  else b=`<div class="ps-ic">🎾</div><p>Ricevi una notifica quando viene inserito il risultato di una tua partita, anche ad app chiusa.</p>${adm&&!meOk?`<p style="margin-top:-4px"><b>Per: ${esc(dispName((players.find(x=>x.id===id)||{}).nome||''))}</b> (sarai tu su questo telefono)</p>`:''}<button type="button" class="ps-go" onclick="pushOn(this,${id})">Attiva le notifiche</button>`;
   return _sxSec('🔔 NOTIFICHE SUL TELEFONO',`<div class="sx-card ps-card" id="ps-card">${b}</div>`);}
 function pushRefresh(){if(typeof currentTab!=='undefined'&&currentTab==='statistiche'&&typeof renderStats==='function'){const y=scrollY;renderStats();scrollTo(0,y);}}
 async function _pushSalva(sub){const me=+_pushLS('laurera_me'),j=JSON.stringify(sub);
@@ -9150,6 +9091,55 @@ function apriDaLink(u){const h=String(u||location.hash).split('#')[1]||'',m=h.ma
   try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}return true;}
 apriDaLink();addEventListener('hashchange',()=>apriDaLink());
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.laureraApri)apriDaLink(e.data.laureraApri);});
+</script>
+<style>
+/* ═══ COMMENTI NELLE CARD (sotto le reazioni) ═══ */
+.cmc-cm{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;margin-top:6px;cursor:default;text-align:left;min-width:0}
+#ris-list .cmc.ris-c .cmc-cm{grid-row:4}
+.cmc-cm-l{display:flex;flex-direction:column;gap:5px;min-width:0}
+.cmc-cm-l:empty{display:none}
+.cc-it{display:flex;align-items:flex-start;gap:7px;min-width:0}
+.cc-av{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#1e1f23;border:1.5px solid var(--accent);font:400 10px "Bebas Neue",sans-serif;color:#fff}
+.cc-av img{width:100%;height:100%;object-fit:cover}
+.cc-b{flex:1;min-width:0;font:500 13px/1.35 "DM Sans",sans-serif;color:#fff;overflow-wrap:anywhere;padding-top:3px}
+.cc-b b{font-weight:800;margin-right:5px;white-space:nowrap}
+.cc-b small{color:rgba(255,255,255,.45);font:700 11px "DM Sans",sans-serif;white-space:nowrap}
+.cmc-cm-more{align-self:flex-start;border:0;background:none;color:rgba(255,255,255,.6);font:700 12px "DM Sans",sans-serif;padding:0;cursor:pointer}
+.cmc-cm-f{display:flex;align-items:center;gap:6px;height:36px;border-radius:999px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);padding:0 4px 0 14px;width:100%;box-sizing:border-box;margin:0}
+.cmc-cm-f input{flex:1;min-width:0;height:100%;border:0;background:none;color:#fff;font:500 16px "DM Sans",sans-serif;outline:none;padding:0}
+.cmc-cm-f input::placeholder{color:rgba(255,255,255,.45)}
+.cmc-cm-f:focus-within{border-color:var(--accent)}
+.cmc-cm-f button[type=submit],.cmc-cm-f .go{width:28px;height:28px;border-radius:50%;border:0;background:var(--accent);color:#0b1640;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;padding:0}
+.cmc-cm-f svg{width:14px;height:14px}
+.cmc-cm-f button[type=submit]:disabled{opacity:.5}
+button.cmc-cm-f.who{cursor:pointer;justify-content:space-between;color:rgba(255,255,255,.45);font:500 14px "DM Sans",sans-serif}
+/* ═══ CALENDARIO ADMIN: meteo, "+" e matita affiancati sulla stessa riga ═══ */
+@media(max-width:640px){
+  html body .cmc.mk .mk-st:is(.z.z.z,*){flex-direction:row!important;align-items:center!important;gap:6px!important;flex-wrap:nowrap!important}
+  html body:not(.viewer) .cmc.mk.cd:not(.ris-c):is(.z.z.z,*){grid-template-columns:auto minmax(0,1fr) auto auto!important}
+  html body:not(.viewer) .cmc.mk.cd:not(.ris-c) .mk-st{grid-column:4!important}
+  html body.viewer .cmc.mk.cd .mk-st,#ris-list .cmc.ris-c .mk-st{display:none!important}
+}
+</style>
+<script>
+// ═══ COMMENTI NELLE CARD: sotto le reazioni gli ultimi commenti e la riga per scriverne uno ═══
+const _cmSendSvg='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6l-.01 6.53L15 12 3.39 13.87z"/></svg>';
+function _cmCardList(mid){const L=_cm[String(mid)]||[];if(!L.length)return'';const sh=L.slice(-3),more=L.length-sh.length;
+  return(more>0?`<button type="button" class="cmc-cm-more" onclick="openMatchView(${mid})">Vedi tutti i ${L.length} commenti</button>`:'')+sh.map(c=>{
+    const p=c.pid!=null?players.find(x=>x.id===c.pid):null,name=p?dispName(p.nome):(c.nome||'Socio');
+    return`<div class="cc-it"><div class="cc-av">${p?avHtmlBig(p):'🎾'}</div><div class="cc-b"><b>${esc(name)}</b>${esc(c.testo)} <small>· ${esc(agoText(c.t))}</small></div></div>`;}).join('');}
+function cmCardHtml(mid){const me=socialMe();
+  return`<div class="cmc-cm" data-mid="${mid}" onclick="event.stopPropagation()"><div class="cmc-cm-l">${_cmCardList(mid)}</div>
+    ${me?`<form class="cmc-cm-f" onsubmit="event.preventDefault();cmSend(${mid},this)"><input type="text" maxlength="200" placeholder="Scrivi un commento…" enterkeyhint="send" aria-label="Scrivi un commento"><button type="submit" aria-label="Invia">${_cmSendSvg}</button></form>`
+       :`<button type="button" class="cmc-cm-f who" onclick="cmChiSei(${mid})"><span>Scrivi un commento…</span><span class="go">${_cmSendSvg}</span></button>`}</div>`;}
+// chi non ha ancora scelto il proprio nome: prima "Chi sei?", poi torna sulla partita con la riga pronta
+function cmChiSei(mid){window._cmPending={mid,tab:typeof currentTab!=='undefined'?currentTab:'risultati'};closeMatchView();obShow(3);}
+{const _sc=sxClaim;sxClaim=function(id){const pend=window._cmPending;window._cmPending=null;
+  if(pend)_sxLS('laurera_stats_news','1');   // niente giro delle Statistiche: torna subito al commento
+  _sc.apply(this,arguments);
+  if(pend)setTimeout(()=>{switchTab(pend.tab);setTimeout(()=>{const el=document.querySelector(`.cmc-cm[data-mid="${pend.mid}"] input`);if(el){el.scrollIntoView({block:'center'});el.focus();}toast('Ora puoi commentare');},450);},60);};}
+// aggiorna anche le card quando arrivano commenti nuovi
+{const _cr=cmRefresh;cmRefresh=function(){_cr.apply(this,arguments);document.querySelectorAll('.cmc-cm[data-mid]').forEach(el=>{const l=el.querySelector('.cmc-cm-l');if(l)l.innerHTML=_cmCardList(el.dataset.mid);});};}
 </script>
 <script>window.matchMedia("(max-width:640px)").addEventListener("change",()=>{if(typeof currentTab!=="undefined"&&currentTab==="risultati")renderRisultati();});
 function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>
