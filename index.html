@@ -8107,6 +8107,7 @@ function _sxFacts(id){
     gfA:avg(ps.map(GF)),gaA:avg(ps.map(GA)),dayConc:bd!=null&&w.length?dc[bd]/w.length:0,
     maxVsId:opps.slice().sort((a,b)=>V[b].n-V[a].n)[0]??null,maxVs:opps.length?Math.max(...opps.map(x=>V[x].n)):0,
     lastDays:Math.floor((Date.now()-new Date(ps[n-1].data+'T12:00:00').getTime())/864e5),
+    lastM:ps[n-1],bestW:w.slice().sort((a,b)=>_sxE(_sxOpp(b,id))-_sxE(_sxOpp(a,id)))[0]||null,worstL:l.slice().sort((a,b)=>(GA(b)-GF(b))-(GA(a)-GF(a)))[0]||null,eloNow:Math.round(_sxE(id)),rkEo:_sxPosE(id),clubGf:_sxAct().reduce((s,p)=>s+(+p.mg||0),0)/Math.max(1,_sxAct().length),
     champ:(typeof alboData!=='undefined'?alboData:[]).some(a=>String(a.vincitore||'').toUpperCase().split('/').some(v=>v.trim()===nome))};
 }
 const _SX_TYPES=[
@@ -8175,6 +8176,16 @@ function _sxType(id){
   if(T.length){const a=pick(T,5);d+=' '+a;const rest=T.filter(x=>x!==a);if(rest.length)d+=' '+pick(rest,8);}
   // numeri del tuo gioco in una frase
   d+=` In media fai ${f.gfA.toFixed(1)} game e ne concedi ${f.gaA.toFixed(1)} a partita${f.close?`, e ${f.close===1?'una partita è finita':f.close+' partite sono finite'} con un game o meno di scarto`:''}.`;
+  // secondo paragrafo: il racconto della stagione nel dettaglio
+  const pn=x=>esc(dispName(_sxP(x).nome)),D2=[];
+  { const parts=[f.w?`${f.w} ${f.w===1?'vinta':'vinte'}`:'',f.d?`${f.d} ${f.d===1?'pareggiata':'pareggiate'}`:'',f.l?`${f.l} ${f.l===1?'persa':'perse'}`:''].filter(Boolean);
+    const lst=parts.length>1?parts.slice(0,-1).join(', ')+' e '+parts[parts.length-1]:parts[0];
+    D2.push(`In stagione hai giocato ${f.n} ${f.n===1?'partita':'partite'}${parts.length===1&&f.n>1?`, tutte ${f.w?'vinte':f.d?'pareggiate':'perse'}`:`: ${lst}`}.`); }
+  if(f.bestW){const o=_sxOpp(f.bestW,id);D2.push(`La vittoria più pesante è quella contro ${pn(o)} (${_sxGF(f.bestW,id)}-${_sxGA(f.bestW,id)}), ${_sxPosE(o)}° per forza nel circolo.`);}
+  if(f.worstL&&f.worstL!==f.bestW){const o=_sxOpp(f.worstL,id);D2.push(`La sconfitta che brucia di più è il ${_sxGF(f.worstL,id)}-${_sxGA(f.worstL,id)} contro ${pn(o)}: c'è una rivincita da prendersi.`);}
+  const gd=f.gfA-f.clubGf;D2.push(`Con ${f.gfA.toFixed(1)} game a partita sei ${Math.abs(gd)<.3?'esattamente nella media del circolo':gd>0?`sopra la media del circolo di ${gd.toFixed(1)}`:`sotto la media del circolo di ${(-gd).toFixed(1)}`}, e il tuo Elo di ${f.eloNow} ti mette ${f.rkEo}° per forza.`);
+  if(f.lastM){const r=_resFor(f.lastM,id),o=_sxOpp(f.lastM,id);D2.push(`L'ultima volta in campo, ${f.lastDays===0?'oggi':f.lastDays===1?'ieri':f.lastDays+' giorni fa'}, ${r==='w'?'hai battuto':r==='l'?'hai perso contro':'hai pareggiato con'} ${pn(o)} ${_sxGF(f.lastM,id)}-${_sxGA(f.lastM,id)}.`);}
+  let d2=D2.join(' ');
   // consiglio, solo per chi deve risalire
   let tip='';
   if(f.tier==='media'||f.tier==='bassa'){const P=[];
@@ -8193,7 +8204,7 @@ function _sxType(id){
     d=d.replace('sei tu quello da battere','sei tu quella da battere').replace('Primo nella classifica','Prima nella classifica').replace('un giocatore completo','una giocatrice completa').replace('un altro giocatore',"un'altra giocatrice");
   }
   if(tt.includes('@DAY@'))tt=tt.replace('@DAY@',f.bd==='domenica'?'DELLA DOMENICA':'DEL '+String(f.bd||'').toUpperCase());
-  return{em:t[2],t:tt,d,tip,f,tot:f.tot,marg:f.marg,dr:Math.round(f.d/f.n*100)};
+  if(_sxF(id))d2=d2.replace(/hai battuto /,'hai battuto ');return{em:t[2],t:tt,d,d2,tip,f,tot:f.tot,marg:f.marg,dr:Math.round(f.d/f.n*100)};
 }
 // i numeri sotto "Che giocatore sei": cose che raccontano come giochi, confrontate con la media del circolo
 function _sxTypeChips(f){
@@ -8224,7 +8235,7 @@ function _sxHtml(id){
   let h=adm?`<div class="sx-adm"><span>👁 GUARDA COME</span><select id="sx-as" aria-label="Guarda le statistiche come" onchange="_sxLS('laurera_me_admin',this.value);renderStats()">${players.filter(x=>!x.archiviato).sort(bySurname).map(x=>`<option value="${x.id}"${x.id===id?' selected':''}>${esc(dispName(x.nome))}</option>`).join('')}</select></div>`:'';
   h+=`<div class="sx-card sx-hero">${_sxAv(id)}<div class="sx-hero-t"><small>${adm?'COSÌ LE VEDE':'LE TUE STATISTICHE'}</small><b>${_sxNm(id)}</b><span class="sx-rk">${posG?posG+'° IN CLASSIFICA GAME':'NON ANCORA IN CLASSIFICA'}</span></div></div>`;
   // 15 · che giocatore sei
-  if(T)h+=_sxSec(_sxF(id)?'🎭 CHE GIOCATRICE SEI':'🎭 CHE GIOCATORE SEI',`<div class="sx-card"><div class="sx-type"><span class="em">${T.em}</span><div style="min-width:0"><small>SEI…</small><b>${T.t}</b><p>${T.d}</p></div></div>${T.tip?`<div class="sx-tip">💡 <b>Consiglio:</b> ${T.tip}</div>`:""}
+  if(T)h+=_sxSec(_sxF(id)?'🎭 CHE GIOCATRICE SEI':'🎭 CHE GIOCATORE SEI',`<div class="sx-card"><div class="sx-type sx-type2"><span class="em">${T.em}</span><div style="min-width:0"><small>SEI…</small><b>${T.t}</b></div></div><p class="sx-td">${T.d}</p>${T.d2?`<p class="sx-td">${T.d2}</p>`:""}${T.tip?`<div class="sx-tip">💡 <b>Consiglio:</b> ${T.tip}</div>`:""}
     ${_sxTypeChips(T.f)}</div>`);
   // 3 · riepilogo (come nel profilo) e posizione in ogni classifica
   const tile=(l,v,c)=>`<div class="pk-t" style="--tc:${c}"><span>${l}</span><b>${v}</b></div>`;
@@ -8554,6 +8565,11 @@ html body .hl-rc[data-rec="9"]>span{font-size:15px!important;letter-spacing:-.3p
 #sx-body .pr-sec{margin-top:16px!important;margin-bottom:8px!important}
 #sx-body .sx-card{padding:12px!important}
 #sx-body .sx-row+.sx-row{margin-top:8px}
+.sx-type2{align-items:center!important;gap:12px!important}
+.sx-type2 .em{font-size:44px!important;line-height:1!important}
+.sx-type2 b{font-size:30px!important}
+p.sx-td{margin:10px 0 0;font:500 14px/1.5 "DM Sans",sans-serif;color:rgba(255,255,255,.86)}
+p.sx-td+p.sx-td{margin-top:6px;color:rgba(255,255,255,.72)}
 .sx-chips6{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 .sx-chips6 .sx-chip{padding:9px 4px 8px}
 .sx-chips6 .sx-chip span{white-space:normal;line-height:1.15;min-height:21px;display:flex;align-items:center;justify-content:center}
