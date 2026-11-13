@@ -8584,6 +8584,13 @@ html body:not(.light) .cal-day.sel:is(.z.z.z,*){background:var(--page)!important
 /* X della scheda partita: sempre sopra il resto e con un'area da toccare più grande */
 .mv-x{z-index:20!important;width:42px!important;height:42px!important;top:8px!important;right:8px!important;display:grid;place-items:center;padding:0}
 .vs-x,.st-x{z-index:20!important}
+/* nel Recap la X sta sotto la riga delle storie, lontana dal notch (anche nell'app da schermata Home) */
+html body .st .mv-x.st-x:is(.z.z.z,*){top:calc(max(env(safe-area-inset-top,0px),44px) + 22px)!important;right:12px!important}
+html body .st .st-bars:is(.z.z.z,*){top:calc(max(env(safe-area-inset-top,0px),44px) + 10px)!important}
+html body .st .st-hd:is(.z.z.z,*){top:calc(max(env(safe-area-inset-top,0px),44px) + 22px)!important;line-height:42px!important}
+html body .st .st-sl:is(.z.z.z,*){padding-top:calc(max(env(safe-area-inset-top,0px),44px) + 80px)!important}
+html body .vs .mv-x.vs-x:is(.z.z.z,*){top:calc(max(env(safe-area-inset-top,0px),20px) + 10px)!important}
+@media(min-width:641px){html body .st .mv-x.st-x:is(.z.z.z.z,*),html body .st .st-hd:is(.z.z.z.z,*){top:26px!important}html body .st .st-bars:is(.z.z.z.z,*){top:12px!important}html body .st .st-sl:is(.z.z.z.z,*){padding-top:80px!important}html body .vs .mv-x.vs-x:is(.z.z.z.z,*){top:12px!important}}
 /* LISTA GIOCATORI apribile: chiusa di default, si apre toccando il titolo */.hf-tog{display:flex!important;align-items:center;justify-content:center;gap:10px;width:100%;background:none!important;border:0!important;cursor:pointer;padding:6px 0!important;-webkit-tap-highlight-color:transparent}.hf-chev{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#111;transition:transform .3s;flex-shrink:0}.hf-chev svg{width:18px;height:18px}.hf-tog[aria-expanded="true"] .hf-chev{transform:rotate(180deg)}#cards-grid.lst-closed{display:none!important}.home-filters.searching~#cards-grid.lst-closed{display:grid!important}
 /* avvisi a forma di pallina: entrano rotolando e si aprono in una pillola */
 html body .toast{left:50%!important;right:auto!important;bottom:calc(118px + env(safe-area-inset-bottom))!important;transform:translate(-50%,16px)!important;
