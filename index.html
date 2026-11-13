@@ -8964,12 +8964,21 @@ function cmSend(mid,form){const inp=form.querySelector('input'),btn=form.querySe
     try{if(navigator.vibrate)navigator.vibrate(12);}catch(e){}
   }).catch(()=>{btn.disabled=false;_cmLast=0;toast('Commento non inviato, riprova più tardi');});}
 function cmDel(id){if(_checkViewer()||!confirm('Cancellare questo commento?'))return;
-  _cmCol().doc(id).delete().then(()=>toast('Commento cancellato')).catch(()=>toast('Non sono riuscito a cancellarlo'));}
-try{_cmCol().onSnapshot(s=>{const o={};s.forEach(d=>{const x=d.data({serverTimestamps:'estimate'});if(!x||!x.mid||!x.testo)return;
-    (o[x.mid]=o[x.mid]||[]).push({id:d.id,testo:String(x.testo),nome:x.nome,pid:x.pid??null,t:x.t&&x.t.toMillis?x.t.toMillis():Date.now()});});
-  Object.values(o).forEach(L=>L.sort((a,b)=>a.t-b.t));_cm=o;cmRefresh();if(typeof onSocialData==='function')onSocialData('cm');},()=>{});}catch(e){}
+  _cmCol().doc(id).delete().then(()=>{Object.keys(_cmMid).forEach(k=>{_cmMid[k]=_cmMid[k].filter(c=>c.id!==id);});_cmMerge();toast('Commento cancellato');}).catch(()=>toast('Non sono riuscito a cancellarlo'));}
+// Per restare nei limiti gratuiti di Firebase: all'apertura si leggono solo i commenti delle ultime 3 settimane;
+// quelli più vecchi si leggono solo aprendo una partita vecchia (e solo di quella partita).
+const _CM_GIORNI=21;let _cmWin={},_cmMid={};
+const _cmDoc=d=>{const x=d.data({serverTimestamps:'estimate'});if(!x||!x.mid||!x.testo)return null;
+  return{id:d.id,mid:String(x.mid),testo:String(x.testo),nome:x.nome,pid:x.pid??null,t:x.t&&x.t.toMillis?x.t.toMillis():Date.now()};};
+function _cmMerge(){const o={},add=(k,L)=>{const m=o[k]=o[k]||new Map();L.forEach(c=>m.set(c.id,c));};
+  Object.entries(_cmMid).forEach(([k,L])=>add(k,L));Object.entries(_cmWin).forEach(([k,L])=>add(k,L));
+  const r={};Object.entries(o).forEach(([k,m])=>{r[k]=[...m.values()].sort((a,b)=>a.t-b.t);});_cm=r;cmRefresh();}
+function cmLoadMatch(mid){mid=String(mid);_cmCol().where('mid','==',mid).get().then(s=>{const L=[];s.forEach(d=>{const c=_cmDoc(d);if(c)L.push(c);});_cmMid[mid]=L;_cmMerge();}).catch(()=>{});}
+try{_cmCol().where('t','>=',firebase.firestore.Timestamp.fromMillis(Date.now()-_CM_GIORNI*86400e3)).onSnapshot(s=>{const o={};
+  s.forEach(d=>{const c=_cmDoc(d);if(c)(o[c.mid]=o[c.mid]||[]).push(c);});_cmWin=o;_cmMerge();},()=>{});}catch(e){}
 // la sezione commenti va nella scheda della partita, sopra i bottoni
 {const _omv2=openMatchView;openMatchView=function(id){_omv2.apply(this,arguments);try{const bg=document.getElementById('mv-bg'),m=sched.find(x=>x.id===id);if(!bg||!m)return;
+  if(m.data&&new Date(m.data+'T12:00:00').getTime()<Date.now()-(_CM_GIORNI-4)*86400e3)cmLoadMatch(m.id);   // partita vecchia: si leggono anche i suoi commenti vecchi
   const b=bg.querySelector('.mv-btns');if(b)b.insertAdjacentHTML('beforebegin',cmSecHtml(m.id));else bg.querySelector('.mv').insertAdjacentHTML('beforeend',cmSecHtml(m.id));
   const l=bg.querySelector('.mv-cm-l');if(l)l.scrollTop=l.scrollHeight;}catch(e){console.error(e);}};}
 setInterval(()=>{document.querySelectorAll('.mv-cm .cm-hd span').length&&cmRefresh();},60000);   // "5 min fa" si aggiorna da solo
@@ -8978,14 +8987,20 @@ setInterval(()=>{document.querySelectorAll('.mv-cm .cm-hd span').length&&cmRefre
 // clubs/laurera15a40/complimenti/{id}: {to, k, da, dpid, t}. Dalla scheda di un giocatore gli mandi un adesivo (uno per tipo al giorno).
 const KUDOS=[['gp','👏','GRAN PARTITA'],['sv','🚀','CHE SERVIZIO'],['mu','🧱','MURO'],['ri','🔄','RIMONTA'],['cl','🎩','CLASSE'],['fa','😅','CHE FATICA']];
 const _kdCol=()=>_db.collection('clubs').doc('laurera15a40').collection('complimenti');
-let _kd=[];
+// Per restare nei limiti gratuiti di Firebase i complimenti non si leggono tutti all'apertura:
+// si leggono solo quelli del giocatore di cui si apre la scheda (o le proprie Statistiche).
+let _kdBy={};const _kdLoading=new Set();
 function _kdSent(){try{return JSON.parse(localStorage.getItem('laurera_kd')||'{}')||{};}catch(e){return{};}}
-const kudosOf=pid=>_kd.filter(x=>x.to===pid);
-function kudosHtml(pid,own){const L=kudosOf(pid),me=socialMe(),self=own||(me&&me.pid===pid),sent=_kdSent(),today=fmtD(new Date()),p=players.find(x=>x.id===pid);
+const kudosOf=pid=>_kdBy[pid]||[];
+function kudosLoad(pid){if(_kdLoading.has(pid))return;_kdLoading.add(pid);
+  _kdCol().where('to','==',pid).get().then(s=>{const a=[];s.forEach(d=>{const x=d.data({serverTimestamps:'estimate'});if(!x||!KUDOS.some(k=>k[0]===x.k))return;
+    a.push({id:d.id,to:x.to,k:x.k,da:x.da,dpid:x.dpid??null,t:x.t&&x.t.toMillis?x.t.toMillis():Date.now()});});
+    a.sort((x,y)=>y.t-x.t);_kdBy[pid]=a;kudosRefresh();}).catch(()=>{if(!(pid in _kdBy))_kdBy[pid]=[];kudosRefresh();}).finally(()=>_kdLoading.delete(pid));}
+function kudosHtml(pid,own){if(!(pid in _kdBy))kudosLoad(pid);const L=kudosOf(pid),me=socialMe(),self=own||(me&&me.pid===pid),sent=_kdSent(),today=fmtD(new Date()),p=players.find(x=>x.id===pid);
   const c={};L.forEach(x=>c[x.k]=(c[x.k]||0)+1);
   const last=L.slice(0,3).map(x=>{const q=x.dpid!=null?players.find(y=>y.id===x.dpid):null,s=KUDOS.find(k=>k[0]===x.k);return`<div class="kd-l"><em>${s?s[1]:'🎁'}</em><span>da ${esc(q?dispName(q.nome):(x.da||'un socio'))}</span><small>· ${esc(agoText(x.t))}</small></div>`;}).join('');
   const hint=self?(L.length?'':'Te li mandano i soci dalla tua scheda giocatore'):me?`Tocca un adesivo per mandarlo a ${esc(p?dispName(p.nome):'')}`:'Scegli chi sei in Statistiche per mandare complimenti';
-  return`<div class="kd-card" data-kd="${pid}" data-own="${own?1:0}"><div class="kd-tot">${L.length?`<b>${L.length}</b>${L.length===1?'complimento ricevuto':'complimenti ricevuti'}`:'Ancora nessun complimento'}</div>
+  return`<div class="kd-card" data-kd="${pid}" data-own="${own?1:0}"><div class="kd-tot">${!(pid in _kdBy)?'…':L.length?`<b>${L.length}</b>${L.length===1?'complimento ricevuto':'complimenti ricevuti'}`:'Ancora nessun complimento'}</div>
     <div class="kd-g">${KUDOS.map(([k,e,t])=>`<button type="button" class="kd-s${c[k]?'':' z'}${!self&&sent[pid+'_'+k]===today?' sent':''}${self?' ro':''}" ${self?'':`onclick="kudosSend(${pid},'${k}',this)"`} aria-label="${t}"><em>${e}</em><span>${t}</span><i>${c[k]||0}</i></button>`).join('')}</div>
     ${hint?`<div class="kd-h">${hint}</div>`:''}${last?`<div class="kd-last">${last}</div>`:''}</div>`;}
 function kudosRefresh(){document.querySelectorAll('.kd-card[data-kd]').forEach(el=>{const n=document.createElement('div');n.innerHTML=kudosHtml(+el.dataset.kd,el.dataset.own==='1');el.replaceWith(n.firstChild);});}
@@ -8998,13 +9013,11 @@ function kudosSend(pid,k,btn){const me=socialMe();
   if(btn){btn.classList.remove('pop');void btn.offsetWidth;btn.classList.add('pop','sent');if(typeof reaFly==='function')reaFly(btn.getBoundingClientRect(),s[1]);}
   try{if(navigator.vibrate)navigator.vibrate(15);}catch(e){}
   _kdCol().add({to:pid,k,da:me.nome,dpid:me.pid,t:firebase.firestore.FieldValue.serverTimestamp()})
-    .then(()=>toast(`${s[1]} Complimento mandato a ${p?dispName(p.nome):''}!`))
+    .then(()=>{(_kdBy[pid]=_kdBy[pid]||[]).unshift({id:'n'+Date.now(),to:pid,k,da:me.nome,dpid:me.pid,t:Date.now()});kudosRefresh();
+      toast(`${s[1]} Complimento mandato a ${p?dispName(p.nome):''}!`);})
     .catch(()=>{delete sent[key];try{localStorage.setItem('laurera_kd',JSON.stringify(sent));}catch(e){}if(btn)btn.classList.remove('sent');toast('Complimento non inviato, riprova più tardi');});}
-try{_kdCol().onSnapshot(s=>{const a=[];s.forEach(d=>{const x=d.data({serverTimestamps:'estimate'});if(!x||!KUDOS.some(k=>k[0]===x.k))return;
-    a.push({id:d.id,to:x.to,k:x.k,da:x.da,dpid:x.dpid??null,t:x.t&&x.t.toMillis?x.t.toMillis():Date.now()});});
-  a.sort((x,y)=>y.t-x.t);_kd=a;kudosRefresh();if(typeof onSocialData==='function')onSocialData('kd');},()=>{});}catch(e){}
-// nella scheda giocatore: sezione Complimenti prima delle partite in programma
-{const _op2=openProfile;openProfile=function(id){_op2.apply(this,arguments);try{
+// nella scheda giocatore: sezione Complimenti prima delle partite in programma (riletti a ogni apertura)
+{const _op2=openProfile;openProfile=function(id){_op2.apply(this,arguments);try{kudosLoad(id);
   let w=document.getElementById('profile-kudos');
   if(!w){w=document.createElement('div');w.id='profile-kudos';const up=document.getElementById('profile-upcoming'),sec=up&&up.previousElementSibling;if(sec)sec.before(w);else return;}
   w.innerHTML=`<div class="profile-section">🎁 Complimenti</div>${kudosHtml(id,false)}`;}catch(e){console.error(e);}};}

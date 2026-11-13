@@ -17,17 +17,20 @@ const club = db.collection('clubs').doc('laurera15a40');
 const vRef = club.collection('segreti').doc('vapid');
 let v = (await vRef.get()).data();
 if (!v || !v.publicKey || !v.privateKey) { const k = webpush.generateVAPIDKeys(); v = { publicKey: k.publicKey, privateKey: k.privateKey }; await vRef.set(v); console.log('Chiavi VAPID create.'); }
-const pubRef = club.collection('data').doc('push'), pub = (await pubRef.get()).data();
-if (!pub || pub.vapid !== v.publicKey) await pubRef.set({ vapid: v.publicKey });
+if (v.creata !== true) { await club.collection('data').doc('push').set({ vapid: v.publicKey }); await vRef.set({ ...v, creata: true }); }   // la chiave pubblica per l'app, una volta sola
 webpush.setVapidDetails('https://andreadellerba.github.io/master-laurera15a40/', v.publicKey, v.privateKey);
 
-// dati del circolo, iscritti e stato dell'ultimo giro
-const [mainS, pushS, stS] = await Promise.all([
-  club.collection('data').doc('main').get(), club.collection('push').get(), club.collection('segreti').doc('notifiche').get()]);
-const iscritti = pushS.docs.map(d => { const x = d.data(); let sub = null; try { sub = JSON.parse(x.sub); } catch (e) {} return { ref: d.ref, pid: x.pid, tipi: Array.isArray(x.tipi) ? x.tipi : TIPI, sub }; }).filter(s => s.sub && s.sub.endpoint);
+// dati del circolo e stato dell'ultimo giro (pochissime letture: gira 144 volte al giorno, i limiti gratuiti sono 50.000)
+const stRef = club.collection('segreti').doc('notifiche');
+const [mainS, stS] = await Promise.all([club.collection('data').doc('main').get(), stRef.get()]);
 const stato = stS.exists ? stS.data() : null;
 const { eventi, stato: nuovo } = calcola({ main: mainS.data() || {}, stato, ora: Date.now() });
-console.log(`${stato ? '' : 'Primo giro (si prende nota, niente notifiche). '}Risultati da avvisare: ${eventi.length} · telefoni iscritti: ${iscritti.length}`);
+if (JSON.stringify(nuovo) !== JSON.stringify(stato)) await stRef.set(nuovo);
+if (!eventi.length) { console.log(`${stato ? '' : 'Primo giro (si prende nota, niente notifiche). '}Nessun risultato nuovo.`); process.exit(0); }
+// i telefoni iscritti si leggono solo quando c'è qualcosa da mandare
+const pushS = await club.collection('push').get();
+const iscritti = pushS.docs.map(d => { const x = d.data(); let sub = null; try { sub = JSON.parse(x.sub); } catch (e) {} return { ref: d.ref, pid: x.pid, tipi: Array.isArray(x.tipi) ? x.tipi : TIPI, sub }; }).filter(s => s.sub && s.sub.endpoint);
+console.log(`Risultati da avvisare: ${eventi.length} · telefoni iscritti: ${iscritti.length}`);
 
 // ogni iscritto riceve tutti i risultati nuovi: quelli delle sue partite in versione personale,
 // gli altri uno per uno (se sono più di 3 nello stesso giro, un solo riepilogo)
@@ -48,6 +51,5 @@ for (const s of iscritti.filter(s => s.tipi.includes('ris'))) {
     }
   }
 }
-await club.collection('segreti').doc('notifiche').set(nuovo);
 console.log(`Notifiche inviate: ${inviate}${tolte ? ` · iscrizioni scadute tolte: ${tolte}` : ''}`);
 process.exit(0);
