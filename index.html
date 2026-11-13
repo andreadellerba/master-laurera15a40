@@ -8706,6 +8706,27 @@ html body .rea-bar .rb.zero.on,html body .rea-bar .rb.zero:hover{opacity:1}
   html body header.header .hdr .tabs:is(.z.z.z.z.z,*){justify-self:center!important}
 }
 </style>
+<script>
+// telefono (admin): "+ Incontro" e "PDF" sulla stessa riga del giorno, a destra
+(function(){const nav=document.querySelector('#page-calendario .cal-nav');if(!nav)return;const home=nav.parentNode,next=nav.nextSibling;
+  const mq=window.matchMedia('(max-width:640px)');
+  function place(){const dh=document.getElementById('cal-dh');if(!dh)return;
+    if(mq.matches){if(nav.parentNode!==dh){const t=dh.textContent;dh.textContent='';const s=document.createElement('span');s.className='cal-dh-t';s.textContent=t;dh.appendChild(s);dh.appendChild(nav);}}
+    else if(nav.parentNode!==home){home.insertBefore(nav,next);const s=dh.querySelector('.cal-dh-t');if(s)dh.textContent=s.textContent;}}
+  const _cr=calRender;calRender=function(){_cr.apply(this,arguments);try{place();}catch(e){}};
+  mq.addEventListener('change',()=>{try{calRender();}catch(e){}});place();
+})();
+</script>
+<style>
+@media(max-width:640px){
+  html body #cal-dh{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:8px;min-height:34px}
+  html body #cal-dh .cal-dh-t{flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  html body #cal-dh .cal-nav{display:flex!important;align-items:center;gap:6px;margin:0!important;flex:0 0 auto!important;width:auto!important;max-width:none!important;justify-content:flex-end!important}
+  html body #cal-dh .cal-nav .btn,html body #cal-dh .cal-nav .pdf-btn{height:32px;padding:0 12px!important;display:inline-flex;align-items:center;font-size:12px!important;letter-spacing:.3px}
+}
+/* Riepilogo (Statistiche e scheda giocatore): stesso riquadro pieno delle altre schede */
+html body:not(.light) .profile-stats-row:is(.z.z.z.z,*){background:#0f2770!important;border:0!important;border-radius:22px!important;box-shadow:0 6px 16px rgba(0,0,0,.28)!important;padding:10px!important}
+</style>
 <script>window.matchMedia("(max-width:640px)").addEventListener("change",()=>{if(typeof currentTab!=="undefined"&&currentTab==="risultati")renderRisultati();});
 function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>
 </body>
