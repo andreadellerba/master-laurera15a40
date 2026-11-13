@@ -19,7 +19,17 @@
 <!-- Niente "salto" di font all'apertura: la pagina appare quando i font sono pronti (max 1,5 s) -->
 <style>html.fw body{opacity:0}body{transition:opacity .18s ease}</style>
 <script>window.__fwDone=function(){document.documentElement.classList.remove("fw")};document.documentElement.classList.add("fw");setTimeout(window.__fwDone,3000);</script>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Exo+2:wght@700;900&family=Nunito:wght@700;900&display=block" rel="stylesheet" onload="try{Promise.all(['400','500','600','700'].map(function(w){return document.fonts.load(w+' 16px DM Sans')}).concat([document.fonts.load('16px Bebas Neue')])).then(window.__fwDone,window.__fwDone)}catch(e){window.__fwDone()}" onerror="window.__fwDone()">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@700;900&family=Nunito:wght@700;900&display=block" rel="stylesheet" onload="try{Promise.all(['400','500','600','700'].map(function(w){return document.fonts.load(w+' 16px DM Sans')}).concat([document.fonts.load('16px Bebas Neue')])).then(window.__fwDone,window.__fwDone)}catch(e){window.__fwDone()}" onerror="window.__fwDone()">
+<style>
+/* Laurera 2.0: caratteri Barlow Condensed (titoli e numeri) e Barlow (testi). I vecchi nomi usati nel codice
+   (Anton, Bebas Neue, DM Sans) puntano ai file Barlow, così cambia tutta l'app senza toccare ogni regola. */
+@font-face{font-family:"Anton";src:url(https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B47b1z3bWuQ.woff2) format("woff2");font-weight:100 900;font-display:swap;size-adjust:112%}
+@font-face{font-family:"Bebas Neue";src:url(https://fonts.gstatic.com/s/barlowcondensed/v13/HTxwL3I-JCGChYJ8VI-L6OO_au7B46r2z3bWuQ.woff2) format("woff2");font-weight:100 900;font-display:swap;size-adjust:102%}
+@font-face{font-family:"DM Sans";src:url(https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E3_-gs51os.woff2) format("woff2");font-weight:400;font-display:swap;size-adjust:104%}
+@font-face{font-family:"DM Sans";src:url(https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E30-8s51os.woff2) format("woff2");font-weight:500;font-display:swap;size-adjust:104%}
+@font-face{font-family:"DM Sans";src:url(https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E3t-4s51os.woff2) format("woff2");font-weight:600 700;font-display:swap;size-adjust:104%}
+@font-face{font-family:"DM Sans";src:url(https://fonts.gstatic.com/s/barlow/v13/7cHqv4kjgoGqM7E3q-0s51os.woff2) format("woff2");font-weight:800 900;font-display:swap;size-adjust:104%}
+</style>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -8586,6 +8596,59 @@ html body .toast.show::before{animation:tRoll .7s cubic-bezier(.3,1.1,.4,1) both
 @keyframes tOpen{0%{clip-path:inset(0 calc(100% - 38px) 0 0 round 999px)}45%{clip-path:inset(0 calc(100% - 38px) 0 0 round 999px)}100%{clip-path:inset(0 0 0 0 round 999px)}}
 @keyframes tRoll{0%{transform:translateX(-90px) rotate(-360deg)}45%{transform:none}}
 @media (prefers-reduced-motion:reduce){html body .toast.show,html body .toast.show::before}
+</style>
+<style>
+/* ═══════════ LAURERA 2.0: barra piatta, schede morbide, forme a pillola, densità compatta, selezioni gialle ═══════════ */
+html body:not(.light){--page:var(--accent)!important}
+/* intestazione: barra piatta a tutta larghezza, ticker nello stesso blu sotto una riga sottile */
+html body:not(.light) header.header:is(.z.z.z,*){padding:0!important;background:#0d2366!important;backdrop-filter:none!important;border-bottom:1px solid rgba(126,224,255,.22)!important;box-shadow:0 6px 18px rgba(0,0,0,.35)!important}
+html body:not(.light) header.header .hdr:is(.z.z.z.z,*){max-width:none!important;margin:0!important;border-radius:0!important;border:0!important;box-shadow:none!important;background:transparent!important;
+  padding-top:calc(8px + env(safe-area-inset-top,0px))!important;padding-left:max(14px,env(safe-area-inset-left,0px))!important;padding-right:max(14px,env(safe-area-inset-right,0px))!important}
+html body:not(.light) header.header .hdr .ticker-tape:is(.z.z.z.z,*){border-radius:0!important;border-top:1px solid rgba(126,224,255,.18)!important;background:transparent!important}
+@media(max-width:640px){
+  html body:not(.light) header.header .hdr .ticker-tape:is(.z.z.z.z,*){margin:8px calc(-1 * max(14px,env(safe-area-inset-left,0px))) 0!important;width:auto!important}
+  html body:not(.light) header.header .hdr .hdr-info,html body:not(.light) header.header .hdr .hdr-players-mobile{top:calc(24px + env(safe-area-inset-top,0px))!important;transform:translateY(-50%)!important}
+  html body:not(.light) header.header .hdr .logo-img{margin:2px auto!important}
+}
+@media(min-width:641px){
+  html body:not(.light) header.header .hdr .ticker-tape:is(.z.z.z.z,*){margin:8px calc(-1 * max(14px,env(safe-area-inset-right,0px))) 0 calc(-1 * max(14px,env(safe-area-inset-left,0px)))!important}
+  html body:not(.light) header.header .hdr:is(.z.z.z.z.z,*){padding-left:max(24px,env(safe-area-inset-left,0px))!important;padding-right:max(24px,env(safe-area-inset-right,0px))!important}
+  html body:not(.light) header.header .hdr .ticker-tape:is(.z.z.z.z.z,*){margin-left:calc(-1 * max(24px,env(safe-area-inset-left,0px)))!important;margin-right:calc(-1 * max(24px,env(safe-area-inset-right,0px)))!important;padding:0 10px}
+}
+/* menu in basso: pillola flottante, voce attiva sempre giallo fluo e icone tutte dello stesso colore */
+html body:not(.light) .tabs-mobile2 .tbtn{--tc:var(--accent)!important;color:rgba(255,255,255,.72)!important}
+html body:not(.light) .tabs-mobile2 .tbtn.active{background:var(--accent)!important;color:#111!important;box-shadow:0 0 16px rgba(232,255,0,.45)!important}
+html body:not(.light) .tabs-mobile2 .tbar:is(.z.z.z.z,*){border:0!important;box-shadow:0 10px 26px rgba(0,0,0,.45)!important;border-radius:999px!important;background:#0d2366!important}
+/* menu PC: voci bianche, quella attiva con la sottolineatura gialla */
+html body:not(.light) .hdr .tab svg{color:currentColor!important}
+html body:not(.light) .hdr .tabs-inner .tab.active{color:#fff!important}
+html body:not(.light) .hdr .tabs-inner .tab.active::after,html body:not(.light) .hdr .tabs-inner .tab.active::before{background:var(--accent)!important}
+/* schede morbide: piene, senza bordo né neon, con un'ombra leggera */
+html body:not(.light) :is(.hl,.cmc.mk,.rs,.rk-row,.pcrd.pk .pk-bd,.tor-bd,.albo-card,.cards-grid .pcrd.k4c,.pr-rv,.sx-card,.rc-btn,.dy-c,.card,.rcard,.torneo-card,.pr-chart,.vs-rows,.sx-hero,.tr3d,.rs.motw,.rk-seg,.sx-adm,.mv,.vs,.st,.ob-card,.cal-day,.rk-row.top):is(.z.z.z.z.z,*){border:0!important;box-shadow:0 6px 16px rgba(0,0,0,.28)!important}
+html body:not(.light) :is(.profile-stats-row .pk-t,.mk-time,.sx-chip,.dy-i,.vs-pm,.st-row,.rb,.sx-cc,.sx-sug button,.hl-rc):is(.z.z.z.z.z,*){border:0!important;box-shadow:none!important}
+html body:not(.light) :is(.profile-stats-row .pk-t,.mk-time,.sx-chip,.dy-i,.vs-pm,.sx-sug button):is(.z.z.z.z.z,*){background:rgba(0,0,0,.24)!important}
+html body:not(.light) .cal-day.sel:is(.z.z.z.z.z.z,*){background:var(--accent)!important;box-shadow:0 0 16px rgba(232,255,0,.4)!important}
+html body:not(.light) .rk-row.me:is(.z.z.z.z.z.z,*){box-shadow:inset 0 0 0 2px var(--accent),0 -6px 18px rgba(0,0,0,.45)!important}
+html body:not(.light) .rs.motw:is(.z.z.z.z.z.z,*),html body:not(.light) #ris-list .cmc.ris-c.motw:is(.z.z.z.z.z.z,*){box-shadow:inset 0 0 0 1.5px rgba(255,210,63,.75),0 6px 16px rgba(0,0,0,.28)!important}
+html body:not(.light) .cards-grid .pcrd.k4c:is(.z.z.z.z.z,*){border:0!important;box-shadow:0 6px 16px rgba(0,0,0,.28)!important}
+/* forme a pillola */
+html body:not(.light) :is(.hl,.cmc.mk,.rs,.rk-row,.cards-grid .pcrd.k4c,.pr-rv,.sx-card,.rc-btn,.dy-c,.albo-card,.tor-bd,.mv,.vs-arena,.vs-rows,.tr3d,.ob-card,.st-row,.pr-chart,.card,.rcard,.torneo-card,.sx-hero):is(.z.z.z.z.z,*){border-radius:22px!important}
+html body:not(.light) :is(.dy-i,.vs-pm,.profile-stats-row .pk-t,.mk-time,.cal-day,.sx-chip,.sx-pl,.hl-rc,.sx-cc,.sx-sug button):is(.z.z.z.z.z,*){border-radius:16px!important}
+html body:not(.light) :is(.rk-seg,.rk-seg button,.btn,.pdf-btn,.rb,.add-res-btn,.mv-btns button,.ob-go,.ob-nx,.sx-vs-go,.sx-vsrow select):is(.z.z.z.z,*){border-radius:999px!important}
+/* densità compatta */
+html body:not(.light) :is(.cmc.mk):is(.z.z.z.z,*){padding:7px 10px 7px 8px!important}
+html body:not(.light) #ris-list .cmc.ris-c{margin-bottom:7px!important}
+html body:not(.light) .rs{margin-bottom:7px!important}
+html body:not(.light) .cal-list{gap:7px!important}
+html body:not(.light) .rk-row:is(.z.z.z.z,*){padding-top:6px!important;padding-bottom:6px!important}
+html body:not(.light) .rk-list{gap:6px!important}
+html body:not(.light) #sx-body .sx-card{padding:10px 12px!important}
+html body:not(.light) .hl:is(.z.z.z.z,*){padding:10px!important}
+html body:not(.light) .hl-rec{gap:6px!important}
+html body:not(.light) .cards-grid{row-gap:16px!important}
+html body:not(.light) .page.active>.wrap,html body:not(.light) #page-players{padding-top:12px}
+html body:not(.light) .profile-h2h-btn{border:0!important;background:var(--accent)!important;color:#111!important;box-shadow:0 5px 0 #8a9900!important}
+html body:not(.light) .ph-band{border:0!important}
 </style>
 <script>window.matchMedia("(max-width:640px)").addEventListener("change",()=>{if(typeof currentTab!=="undefined"&&currentTab==="risultati")renderRisultati();});
 function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>
