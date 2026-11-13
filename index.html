@@ -3674,11 +3674,11 @@ function renderRank(){
       <div class="rk-c rk-e"><b>${esc(normStorico(p.storico))}</b><span>STORICO</span></div>
       <div class="rk-c${keyCls('gv')}"><b style="color:#e8ff00">${+p.gv||0}</b><span>GAME</span></div>
       <div class="rk-c${keyCls('mg')}"><b style="color:#22b8f0">${(+p.mg||0).toFixed(2)}</b><span>MEDIA</span></div>
-      <div class="rk-c${keyCls('elo')}"><b style="color:#ff4fb8">${rankVal(p,'elo')||'–'}</b><span>ELO</span></div>
+      <div class="rk-c rk-elo${keyCls('elo')}"><b style="color:#ff2d3d">${rankVal(p,'elo')||'–'}</b></div>
       <div class="rk-c${keyCls('pt')}"><b style="color:#4ade80">${puntiOf(p)}</b><span>PUNTI</span></div>
     </div>`;}).join('');
   const _prevTops=typeof rankTops==='function'?rankTops():null;   // posizioni prima di ridisegnare: le righe poi scivolano al nuovo posto
-  document.getElementById('rank-body').innerHTML=(sortKey==='name'?'':podioHtml(list,sortKey))+`<div class="rk-list rk-by-${sortKey}">${rows?`<div class="rk-leg"><span></span><span></span><span></span><span${keyCls("pg")}>PARTITE</span><span>STORICO</span><span${keyCls("gv")} style="color:#e8ff00">GAME</span><span${keyCls("mg")} style="color:#22b8f0">MEDIA</span><span${keyCls("elo")} style="color:#ff4fb8">ELO</span><span${keyCls("pt")} style="color:#4ade80">PUNTI</span></div>`:""}${rows||'<div class="cal-empty">Nessun giocatore</div>'}</div>`;
+  document.getElementById('rank-body').innerHTML=(sortKey==='name'?'':podioHtml(list,sortKey))+`<div class="rk-list rk-by-${sortKey}">${rows?`<div class="rk-leg"><span></span><span></span><span></span><span${keyCls("pg")}>PARTITE</span><span>STORICO</span><span${keyCls("gv")} style="color:#e8ff00">GAME</span><span${keyCls("mg")} style="color:#22b8f0">MEDIA</span><span${keyCls("elo")} style="color:#ff2d3d">ELO</span><span${keyCls("pt")} style="color:#4ade80">PUNTI</span></div>`:""}${rows||'<div class="cal-empty">Nessun giocatore</div>'}</div>`;
   countUp(document.getElementById('rank-body'));
   if(typeof rankAnim==='function')rankAnim(_prevTops,sortKey);
 }
@@ -7376,10 +7376,11 @@ function _reaSetMine(o){try{localStorage.setItem('laurera_rea',JSON.stringify(o)
 const _reaAddSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5a8.5 8.5 0 1 1-8-8.48"/><path d="M8.5 14.5s1.3 1.8 3.5 1.8 3.5-1.8 3.5-1.8"/><path d="M9 9.5h.01M15 9.5h.01"/><path d="M19 2.5v5M16.5 5h5"/></svg>';
 function reaHtml(mid){const c=_rea[mid]||{},mine=_reaMine()[mid]||[];
   const used=REA.filter(([k])=>(+c[k]||0)>0).sort((a,b)=>(+c[b[0]]||0)-(+c[a[0]]||0));
-  return`<div class="rea-bar" data-mid="${mid}" onclick="event.stopPropagation()">${used.map(([k,e])=>`<button type="button" class="rb${mine.includes(k)?' on':''}" onclick="reaTap(${mid},'${k}',this)" aria-label="Reagisci con ${e}"><em>${e}</em>${+c[k]}</button>`).join('')}<button type="button" class="rb rb-add" onclick="reaPick(${mid},this)" aria-label="Aggiungi una reazione">${_reaAddSvg}${used.length?'':'Reagisci'}</button></div>`;}
+  return`<div class="rea-bar" data-mid="${mid}" onclick="event.stopPropagation()">${used.map(([k,e])=>`<button type="button" class="rb${mine.includes(k)?' on':''}" data-k="${k}" onclick="reaTap(${mid},'${k}',this)" aria-label="Reagisci con ${e}"><em>${e}</em>${+c[k]}</button>`).join('')}<button type="button" class="rb rb-add" onclick="reaPick(${mid},this)" aria-label="Aggiungi una reazione">${_reaAddSvg}${used.length?'':'Reagisci'}</button></div>`;}
 const reaChip=reaHtml;
 function _reaToggleMine(mid,k,add){const o=_reaMine(),a=(o[mid]||[]).filter(x=>x!==k);if(add)a.push(k);if(a.length)o[mid]=a;else delete o[mid];_reaSetMine(o);}
 function reaTap(mid,k,btn){
+  if(window._reaSuppress){window._reaSuppress=false;return;}   // dopo una pressione lunga (admin) il tocco non cambia la reazione
   const r=btn?btn.getBoundingClientRect():null;
   reaPickClose();
   const on=(_reaMine()[mid]||[]).includes(k),d=on?-1:1;
@@ -7388,6 +7389,7 @@ function reaTap(mid,k,btn){
   reaRefresh();
   if(!on&&r)reaFly(r,REA.find(x=>x[0]===k)[1]);
   try{if(navigator.vibrate)navigator.vibrate(12);}catch(e){}
+  reaWho(mid);
   _reaCol().doc(String(mid)).set({[k]:firebase.firestore.FieldValue.increment(d)},{merge:true}).catch(()=>{
     _reaToggleMine(mid,k,on);_rea[mid][k]=Math.max(0,(+_rea[mid][k]||0)-d);reaRefresh();
     toast('Reazione non salvata, riprova più tardi');});
@@ -7411,6 +7413,38 @@ function reaFly(r,e){if(_reduceMotion())return;
     const dx=(Math.random()-.5)*150;
     f.animate([{transform:'translate(0,0) scale(.5)',opacity:1},{transform:`translate(${dx}px,-${180+Math.random()*100}px) scale(${1+Math.random()*.7}) rotate(${dx/3}deg)`,opacity:0}],
       {duration:950+Math.random()*500,delay:j*60,easing:'cubic-bezier(.2,.6,.3,1)',fill:'both'}).onfinish=()=>f.remove();}}
+// ═══ CHI HA MESSO LE REAZIONI (solo admin) ═══
+// Ogni telefono salva le proprie reazioni a una partita in un documento suo ("partita_telefono"), con il nome scelto in "Chi sei?".
+// L'admin le vede tenendo premuta una faccina (telefono) o passandoci sopra il mouse (PC). Vale per le reazioni messe da ora in poi.
+const _reaWhoCol=()=>_db.collection('clubs').doc('laurera15a40').collection('reazioni_chi');
+function reaWho(mid){try{
+  const dev=localStorage.getItem('laurera_dev');if(!dev)return;
+  const me=+localStorage.getItem('laurera_me'),p=players.find(x=>x.id===me);
+  const nome=p?String(p.nome).slice(0,40):(!_checkViewer()?'Admin':'Senza nome');
+  _reaWhoCol().doc(String(mid)+'_'+dev).set({mid:String(mid),k:(_reaMine()[mid]||[]).slice(0,8),nome,pid:p?p.id:null}).catch(()=>{});
+}catch(e){}}
+let _reaWhoData=null,_reaWhoSub=null;
+function _reaWhoLoad(){if(_reaWhoSub||_checkViewer())return;try{_reaWhoSub=_reaWhoCol().onSnapshot(s=>{const o={};s.forEach(d=>{const x=d.data();(o[x.mid]=o[x.mid]||[]).push(x);});_reaWhoData=o;},()=>{_reaWhoData={};});}catch(e){}}
+function _reaWhoNames(mid,k){const L=(_reaWhoData&&_reaWhoData[String(mid)])||[];return L.filter(x=>Array.isArray(x.k)&&x.k.includes(k)).map(x=>{const p=x.pid!=null?players.find(q=>q.id===x.pid):null;return p?dispName(p.nome):(x.nome||'Senza nome');});}
+function _reaWhoShow(btn){
+  const bar=btn.closest('.rea-bar');if(!bar)return;const mid=+bar.dataset.mid,k=btn.dataset.k,e=(REA.find(x=>x[0]===k)||[])[1]||'';
+  const tot=(_rea[mid]&&+_rea[mid][k])||0,names=_reaWhoNames(mid,k),anon=Math.max(0,tot-names.length);
+  let el=document.getElementById('rea-who');if(!el){el=document.createElement('div');el.id='rea-who';document.body.appendChild(el);}
+  el.innerHTML=`<div class="rw-h"><em>${e}</em> ${tot} ${tot===1?'reazione':'reazioni'}</div>${names.length?names.map(n=>`<div class="rw-n">${esc(n)}</div>`).join(''):''}${anon?`<div class="rw-a">${anon} ${anon===1?'messa':'messe'} prima che si salvassero i nomi</div>`:''}${!_reaWhoData?'<div class="rw-a">Caricamento…</div>':''}`;
+  el.style.display='block';const r=btn.getBoundingClientRect(),w=el.offsetWidth,h=el.offsetHeight;
+  el.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2))+'px';el.style.top=(r.top-h-8<8?r.bottom+8:r.top-h-8)+'px';
+}
+function _reaWhoHide(){const el=document.getElementById('rea-who');if(el)el.style.display='none';}
+// PC: passando il mouse
+document.addEventListener('mouseover',e=>{const b=e.target.closest&&e.target.closest('.rea-bar .rb[data-k]');if(!b||_checkViewer())return;_reaWhoLoad();_reaWhoShow(b);});
+document.addEventListener('mouseout',e=>{const b=e.target.closest&&e.target.closest('.rea-bar .rb[data-k]');if(b&&!b.contains(e.relatedTarget))_reaWhoHide();});
+// telefono: tenendo premuto
+let _reaLp=null;
+document.addEventListener('touchstart',e=>{const b=e.target.closest&&e.target.closest('.rea-bar .rb[data-k]');if(!b||_checkViewer())return;_reaWhoLoad();clearTimeout(_reaLp);
+  _reaLp=setTimeout(()=>{window._reaSuppress=true;_reaWhoShow(b);try{navigator.vibrate&&navigator.vibrate(15);}catch(x){}},450);},{passive:true});
+['touchend','touchmove','touchcancel'].forEach(t=>document.addEventListener(t,()=>clearTimeout(_reaLp),{passive:true}));
+document.addEventListener('touchstart',e=>{if(!e.target.closest||!e.target.closest('#rea-who,.rea-bar .rb[data-k]'))_reaWhoHide();},{passive:true});
+addEventListener('scroll',_reaWhoHide,{passive:true,capture:true});
 function reaRefresh(){
   document.querySelectorAll('.rea-bar[data-mid]').forEach(el=>{const n=document.createElement('div');n.innerHTML=reaHtml(+el.dataset.mid);el.replaceWith(n.firstChild);});
 }
@@ -8395,6 +8429,17 @@ html body:not(.light) #ris-list .cmc.ris-c.motw:is(.z.z.z.z,*){border-color:#ffd
   html body .hl .hf-sub{font-size:15px!important;display:flex;flex-direction:column;gap:3px;margin-top:8px}
   html body .hl .hf-chips{justify-content:center!important;margin-top:10px}
 }
+/* Classifiche: Elo solo numero, centrato, rosso acceso */
+html body .rk-row .rk-elo{align-self:stretch;display:flex!important;align-items:center;justify-content:center}
+@media(max-width:640px){html body .rk-row .rk-elo:not(.k){display:none!important}}
+html body .rk-row .rk-elo b{font-size:24px!important;text-shadow:0 0 12px rgba(255,45,61,.55)}
+/* chi ha messo le reazioni (solo admin) */
+.rea-bar .rb{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#rea-who{position:fixed;z-index:6300;display:none;min-width:160px;max-width:min(280px,calc(100vw - 16px));padding:10px 12px;border-radius:14px;background:#0d2366;border:1.5px solid rgba(126,224,255,.75);box-shadow:0 0 16px rgba(126,224,255,.4),0 14px 34px rgba(0,0,0,.6);font:600 13px "DM Sans",sans-serif;color:#fff;pointer-events:none}
+#rea-who .rw-h{font:800 11px "DM Sans",sans-serif;letter-spacing:1px;color:var(--accent);margin-bottom:6px;text-transform:uppercase}
+#rea-who .rw-h em{font-style:normal;font-size:16px}
+#rea-who .rw-n{padding:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rea-who .rw-a{margin-top:4px;font-size:11px;color:rgba(255,255,255,.6)}
 /* "% vittorie": numero un po' più piccolo, così il nome ci sta intero */
 html body .hl-rc[data-rec="9"]>span{font-size:15px!important;letter-spacing:-.3px}
 @media(min-width:641px){html body .hl-rc[data-rec="9"]>span{font-size:21px!important}}
