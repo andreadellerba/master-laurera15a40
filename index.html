@@ -3544,6 +3544,16 @@ function renderHomeFeat(){
     return list.filter(x=>x.v===mx&&!seen.has(x.id+'|'+(x.s||''))&&seen.add(x.id+'|'+(x.s||''))).map(x=>({p:players.find(q=>q.id===x.id),v:mk(x),s:x.s})).filter(x=>x.p).sort((a,b)=>bySurname(a.p,b.p));};
   recs.push({l:it=>'PIÙ GAME IN 1 PARTITA',c:'#ff8a00',items:topOf(gList,x=>x.v)});
   recs.push({l:it=>'MAGGIOR DISTACCO',c:'#a78bfa',items:topOf(dList,x=>x.s)});
+  // altri 6 record: punti, Elo, serie di vittorie, % vittorie, avversari diversi, forma recente
+  { const E=typeof eloData==='function'?eloData():{E:{},H:{}};
+    const streak=p=>{let s=0,b=0;playedOf(p.id).slice().reverse().forEach(m=>{s=_resFor(m,p.id)==='w'?s+1:0;b=Math.max(b,s);});return b;};
+    const opps=p=>new Set(playedOf(p.id).map(m=>_side(m,p.id)===1?m.p2Id:m.p1Id)).size;
+    const wr=p=>(+p.pg||0)>=3?wins(p)/(+p.pg||1):0;
+    const form=p=>{const h=E.H[p.id]||[];return h.length>=2?Math.round(h[h.length-1].e-h[Math.max(0,h.length-4)].e):0;};
+    const more=[['PIÙ PUNTI',p=>puntiOf(p),'#4ade80',v=>v],['ELO PIÙ ALTO',p=>E.E[p.id]!=null?Math.round(E.E[p.id]):0,'#e879f9',v=>v],
+      ['SERIE DI VITTORIE',streak,'#fbbf24',v=>v],['% VITTORIE',wr,'#2dd4bf',v=>Math.round(v*100)+'%'],
+      ['PIÙ AVVERSARI',opps,'#60a5fa',v=>v],['IN FORMA',form,'#f43f5e',v=>'+'+v]];
+    more.forEach(([l,f,c,fm])=>{const it=tiedBy(f).filter(x=>x.v>0);recs.push({l:()=>l,c,items:it.map(x=>({p:x.p,v:fm(x.v)}))});}); }
   window._recs=recs;
   const tile=(r,k)=>{const it=r.items[0];return `<div class="hl-rc" data-rec="${k}" data-i="0" style="--c:${r.c}" onclick="openProfile(+this.dataset.pid)" data-pid="${it.p.id}"><div class="hl-av">${avHtmlBig(it.p)}</div><div class="hl-tx"><small>${esc(r.l(it))}</small><b>${esc(dispName(it.p.nome))}</b></div><span>${esc(String(it.v))}</span></div>`;};
   const rec=act.length?`<div class="hl-rec">${recs.map((r,k)=>r.items.length?tile(r,k):'').join('')}</div>`:'';
@@ -8375,6 +8385,19 @@ html body:not(.light) #ris-list .cmc.ris-c.motw:is(.z.z.z.z,*){border-color:#ffd
   html body :is(#page-calendario,#page-risultati,#page-statistiche,#page-classifiche,#page-albo,#page-tornei,#page-fanta,#page-classifiche-torneo) :is(.pg-title.pg-big,.cal-title-big,.cal-titlebox){display:none!important}
   html body #page-risultati .ris-hd{display:none!important}
 }
+/* PC: giocatore della settimana più grande e centrato accanto ai 12 record */
+@media(min-width:641px){
+  html body .hl .hf-feat{flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center;gap:12px!important}
+  html body .hl .hf-ph{width:150px!important;height:150px!important;font-size:52px!important}
+  html body .hl .hf-txt{display:flex;flex-direction:column;align-items:center}
+  html body .hl .hf-k{font-size:15px!important;letter-spacing:2px}
+  html body .hl .hf-nm{font-size:50px!important;margin-top:6px}
+  html body .hl .hf-sub{font-size:15px!important;display:flex;flex-direction:column;gap:3px;margin-top:8px}
+  html body .hl .hf-chips{justify-content:center!important;margin-top:10px}
+}
+/* "% vittorie": numero un po' più piccolo, così il nome ci sta intero */
+html body .hl-rc[data-rec="9"]>span{font-size:15px!important;letter-spacing:-.3px}
+@media(min-width:641px){html body .hl-rc[data-rec="9"]>span{font-size:21px!important}}
 /* badge (forma, podio…) staccati dalle partite sopra */
 #sx-px .pr-badges{margin-top:18px!important}
 /* Statistiche più compatte: meno spazio sopra e sotto i titoli delle sezioni */
