@@ -127,6 +127,21 @@ service cloud.firestore {
                     && request.resource.data.t == request.time;
     }
 
+    // Notifiche sul telefono: ogni telefono salva solo la propria iscrizione (documento col suo codice di 24 caratteri).
+    // Le legge solo l'admin (e il "postino" su GitHub Actions, che usa la chiave dell'account di servizio).
+    // clubs/{clubId}/segreti/* (chiavi delle notifiche) resta illeggibile dall'app: lo coprono le regole di default qui sotto.
+    match /clubs/{clubId}/push/{devId} {
+      allow read: if request.auth != null;
+      allow delete: if devId.matches('[0-9a-f]{24}') || request.auth != null;
+      allow create, update: if devId.matches('[0-9a-f]{24}')
+                    && request.resource.data.keys().hasOnly(['sub', 'pid', 'tipi', 't'])
+                    && request.resource.data.keys().hasAll(['sub', 'pid', 'tipi', 't'])
+                    && request.resource.data.sub is string && request.resource.data.sub.size() <= 2000
+                    && (request.resource.data.pid is int || request.resource.data.pid is float)
+                    && request.resource.data.tipi is list && request.resource.data.tipi.size() <= 8
+                    && request.resource.data.t == request.time;
+    }
+
     // Tutto il resto: negato di default.
     match /{document=**} {
       allow read, write: if false;

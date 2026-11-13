@@ -1,0 +1,10 @@
+{
+  "name": "laurera-notifiche",
+  "private": true,
+  "type": "module",
+  "description": "Postino delle notifiche di Laurera 15·40 (gira su GitHub Actions)",
+  "dependencies": {
+    "firebase-admin": "12.7.0",
+    "web-push": "3.6.7"
+  }
+}

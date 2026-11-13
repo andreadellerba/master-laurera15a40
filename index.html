@@ -8257,6 +8257,7 @@ function _sxHtml(id){
   const posG=(()=>{const i=rankListGv().findIndex(x=>x.id===id);return i<0?null:i+1;})();
   let h=adm?`<div class="sx-adm"><span>👁 GUARDA COME</span><select id="sx-as" aria-label="Guarda le statistiche come" onchange="_sxLS('laurera_me_admin',this.value);renderStats()">${players.filter(x=>!x.archiviato).sort(bySurname).map(x=>`<option value="${x.id}"${x.id===id?' selected':''}>${esc(dispName(x.nome))}</option>`).join('')}</select></div>`:'';
   h+=`<div class="sx-card sx-hero">${_sxAv(id)}<div class="sx-hero-t"><small>${adm?'COSÌ LE VEDE':'LE TUE STATISTICHE'}</small><b>${_sxNm(id)}</b><span class="sx-rk">${posG?posG+'° IN CLASSIFICA GAME':'NON ANCORA IN CLASSIFICA'}</span></div></div>`;
+  if(typeof pushSecHtml==='function')h+=pushSecHtml(id);   // notifiche sul telefono
   // 15 · che giocatore sei
   if(T)h+=_sxSec(_sxF(id)?'🎭 CHE GIOCATRICE SEI':'🎭 CHE GIOCATORE SEI',`<div class="sx-card"><div class="sx-type sx-type2"><span class="em">${T.em}</span><div style="min-width:0"><small>SEI…</small><b>${T.t}</b></div></div><p class="sx-td">${T.d}</p>${T.d2?`<p class="sx-td">${T.d2}</p>`:""}${T.tip?`<div class="sx-tip">💡 <b>Consiglio:</b> ${T.tip}</div>`:""}
     ${_sxTypeChips(T.f)}</div>`);
@@ -9063,6 +9064,92 @@ try{_kdCol().onSnapshot(s=>{const a=[];s.forEach(d=>{const x=d.data({serverTimes
   let w=document.getElementById('profile-kudos');
   if(!w){w=document.createElement('div');w.id='profile-kudos';const up=document.getElementById('profile-upcoming'),sec=up&&up.previousElementSibling;if(sec)sec.before(w);else return;}
   w.innerHTML=`<div class="profile-section">🎁 Complimenti</div>${kudosHtml(id,false)}`;}catch(e){console.error(e);}};}
+</script>
+<style>
+/* ═══ NOTIFICHE SUL TELEFONO ═══ */
+.ps-card{text-align:center}
+.ps-card p{font:500 13.5px/1.45 "DM Sans",sans-serif;color:rgba(255,255,255,.8);margin:0 auto 12px;max-width:34ch}
+.ps-go{height:44px;padding:0 22px;border-radius:999px;border:0;background:var(--accent);color:#0b1640;font:800 14.5px "DM Sans",sans-serif;cursor:pointer}
+.ps-go:disabled{opacity:.6}
+.ps-on{display:inline-flex;align-items:center;gap:8px;font:800 13px "DM Sans",sans-serif;color:#4ade80;margin-bottom:10px}
+.ps-on i{width:9px;height:9px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80}
+.ps-t{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:10px}
+.ps-t button{height:34px;padding:0 12px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:rgba(255,255,255,.55);font:700 12.5px "DM Sans",sans-serif;cursor:pointer}
+.ps-t button.on{background:rgba(232,255,0,.14);border-color:rgba(232,255,0,.55);color:#fff}
+.ps-off{border:0;background:none;color:rgba(255,255,255,.5);font:700 12px "DM Sans",sans-serif;text-decoration:underline;cursor:pointer;padding:4px}
+.ps-ic{font-size:30px;line-height:1;margin-bottom:6px}
+</style>
+<script>
+// ═══ NOTIFICHE SUL TELEFONO (anche ad app chiusa) ═══
+// L'iscrizione del telefono va in clubs/laurera15a40/push/{telefono}; il "postino" su GitHub Actions (.github/notifiche) manda le notifiche.
+// La chiave pubblica la pubblica il postino in data/push: finché non c'è, il riquadro lo vede solo l'admin.
+const PUSH_TIPI=[['prom','⏰ Prima delle partite'],['ris','🎾 Risultati'],['cal','📅 Nuove partite'],['cm','💬 Commenti'],['kd','👏 Complimenti']];
+const _pushCol=()=>_db.collection('clubs').doc('laurera15a40').collection('push');
+let _pushKey=null,_pushKeyLetta=false;
+const _pushLS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){return null;}};
+function _pushDev(){let d=_pushLS('laurera_dev');if(d&&/^[0-9a-f]{24}$/.test(d))return d;d=_pushLS('laurera_push_dev');if(d&&/^[0-9a-f]{24}$/.test(d))return d;
+  d=[...crypto.getRandomValues(new Uint8Array(12))].map(b=>b.toString(16).padStart(2,'0')).join('');_pushLS('laurera_push_dev',d);return d;}
+function _pushTipi(){try{const a=JSON.parse(_pushLS('laurera_push_tipi')||'null');if(Array.isArray(a))return a.filter(x=>PUSH_TIPI.some(t=>t[0]===x));}catch(e){}return PUSH_TIPI.map(t=>t[0]);}
+const _pushIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const _pushStandalone=()=>window.navigator.standalone===true||(window.matchMedia&&matchMedia('(display-mode: standalone)').matches);
+const _pushOk=()=>'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window&&location.protocol==='https:';
+function _pushStato(){
+  if(!_pushOk())return _pushIOS()&&!_pushStandalone()?'ios':'no';
+  if(Notification.permission==='denied')return'bloccate';
+  return _pushLS('laurera_push')==='1'&&Notification.permission==='granted'?'on':'off';}
+function _pushB64(s){const p='='.repeat((4-s.length%4)%4),b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0));}
+function pushSecHtml(id){
+  if(!_pushKeyLetta)return'';
+  const me=+_pushLS('laurera_me'),adm=!_checkViewer(),meOk=players.some(x=>x.id===me);
+  if(!_pushKey)return!adm?'':_sxSec('🔔 NOTIFICHE SUL TELEFONO',`<div class="sx-card ps-card"><div class="ps-ic">⏳</div><p>Le notifiche non sono ancora accese: manca la chiave di Firebase su GitHub (solo l'admin vede questo riquadro).</p></div>`);
+  // il riquadro sta sulla propria pagina; l'admin che non ha ancora scelto chi è lo vede sul giocatore che sta guardando
+  if(!(id===me||(adm&&!meOk)))return'';
+  const s=_pushStato(),T=_pushTipi();let b;
+  if(s==='ios')b=`<div class="ps-ic">📲</div><p>Su iPhone le notifiche arrivano solo con l'app sulla schermata Home: in Safari tocca <b>Condividi</b> → <b>Aggiungi alla schermata Home</b>, poi apri Laurera da lì e torna qui.</p>`;
+  else if(s==='no')b=`<div class="ps-ic">🔕</div><p>Questo browser non può ricevere notifiche. Su Android usa Chrome, su iPhone l'app dalla schermata Home.</p>`;
+  else if(s==='bloccate')b=`<div class="ps-ic">🔕</div><p>Hai bloccato le notifiche di Laurera: per riaverle riattivale nelle impostazioni del telefono (Notifiche), poi torna qui.</p>`;
+  else if(s==='on')b=`<div class="ps-on"><i></i>Attive su questo telefono</div><div class="ps-t">${PUSH_TIPI.map(([k,l])=>`<button type="button" class="${T.includes(k)?'on':''}" onclick="pushTipo('${k}')" aria-pressed="${T.includes(k)}">${l}</button>`).join('')}</div><button type="button" class="ps-off" onclick="pushOff()">Spegni le notifiche</button>`;
+  else b=`<div class="ps-ic">🔔</div><p>Ti avvisiamo prima delle tue partite, quando esce un tuo risultato, se qualcuno commenta o ti manda un complimento. Arrivano anche con l'app chiusa.</p>${adm&&!meOk?`<p style="margin-top:-4px"><b>Per: ${esc(dispName((players.find(x=>x.id===id)||{}).nome||''))}</b> (sarai tu su questo telefono)</p>`:''}<button type="button" class="ps-go" onclick="pushOn(this,${id})">Attiva le notifiche</button>`;
+  return _sxSec('🔔 NOTIFICHE SUL TELEFONO',`<div class="sx-card ps-card" id="ps-card">${b}</div>`);}
+function pushRefresh(){if(typeof currentTab!=='undefined'&&currentTab==='statistiche'&&typeof renderStats==='function'){const y=scrollY;renderStats();scrollTo(0,y);}}
+async function _pushSalva(sub){const me=+_pushLS('laurera_me'),j=JSON.stringify(sub);
+  await _pushCol().doc(_pushDev()).set({sub:j,pid:me,tipi:_pushTipi(),t:firebase.firestore.FieldValue.serverTimestamp()});
+  _pushLS('laurera_push_sub',j+'|'+me+'|'+_pushTipi().join(','));}
+async function _pushIscrivi(){const reg=await navigator.serviceWorker.register('sw.js');await navigator.serviceWorker.ready;
+  let sub=await reg.pushManager.getSubscription();
+  if(sub&&sub.options&&sub.options.applicationServerKey){const a=new Uint8Array(sub.options.applicationServerKey),b=_pushB64(_pushKey);if(a.length!==b.length||a.some((x,i)=>x!==b[i])){await sub.unsubscribe();sub=null;}}
+  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:_pushB64(_pushKey)});
+  return sub;}
+async function pushOn(btn,id){
+  let me=+_pushLS('laurera_me');
+  if(!players.find(x=>x.id===me)&&!_checkViewer()&&players.find(x=>x.id===id)){me=id;_pushLS('laurera_me',String(id));}   // admin: diventa il giocatore che sta guardando
+  if(!players.find(x=>x.id===me)){obShow(3);return;}
+  if(!_pushKey||!_pushOk())return;
+  if(btn){btn.disabled=true;btn.textContent='Un attimo…';}
+  try{const perm=await Notification.requestPermission();   // va chiesto subito al tocco (iPhone)
+    if(perm!=='granted'){pushRefresh();return;}
+    const sub=await _pushIscrivi();await _pushSalva(sub);_pushLS('laurera_push','1');
+    toast('🔔 Notifiche attive!');try{if(navigator.vibrate)navigator.vibrate([20,40,20]);}catch(e){}
+  }catch(e){console.error(e);toast('Non sono riuscito ad attivarle, riprova');}
+  pushRefresh();}
+async function pushOff(){
+  _pushLS('laurera_push','0');_pushLS('laurera_push_sub',null);
+  try{const reg=await navigator.serviceWorker.getRegistration();const sub=reg&&await reg.pushManager.getSubscription();if(sub)await sub.unsubscribe();}catch(e){}
+  _pushCol().doc(_pushDev()).delete().catch(()=>{});toast('Notifiche spente');pushRefresh();}
+async function pushTipo(k){const T=_pushTipi(),i=T.indexOf(k);if(i>=0)T.splice(i,1);else T.push(k);_pushLS('laurera_push_tipi',JSON.stringify(T));pushRefresh();
+  try{const reg=await navigator.serviceWorker.getRegistration(),sub=reg&&await reg.pushManager.getSubscription();if(sub)await _pushSalva(sub);}catch(e){toast('Preferenza non salvata, riprova');}}
+// a ogni apertura: se le notifiche sono attive, si controlla che l'iscrizione ci sia ancora e sia aggiornata (giocatore, tipi)
+async function pushSync(){try{if(!_pushKey||_pushStato()!=='on')return;const sub=await _pushIscrivi(),me=+_pushLS('laurera_me');
+  if(_pushLS('laurera_push_sub')!==JSON.stringify(sub)+'|'+me+'|'+_pushTipi().join(','))await _pushSalva(sub);}catch(e){}}
+try{_db.collection('clubs').doc('laurera15a40').collection('data').doc('push').get().then(s=>{_pushKey=s.exists&&s.data().vapid||null;_pushKeyLetta=true;pushRefresh();pushSync();}).catch(()=>{_pushKeyLetta=true;});}catch(e){}
+
+// ═══ APRIRE LA PARTITA O LA SCHEDA GIUSTA da una notifica (#m=ID, #p=ID) ═══
+function apriDaLink(u){const h=String(u||location.hash).split('#')[1]||'',m=h.match(/^([mp])=(\d+)$/);if(!m)return false;
+  const go=()=>{if(m[1]==='m'&&sched.some(x=>x.id===+m[2]))openMatchView(+m[2]);else if(m[1]==='p'&&players.some(x=>x.id===+m[2]))openProfile(+m[2]);};
+  let n=0;const iv=setInterval(()=>{if((typeof sched!=='undefined'&&sched.length&&players.length)||++n>40){clearInterval(iv);setTimeout(go,300);}},250);
+  try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}return true;}
+apriDaLink();addEventListener('hashchange',()=>apriDaLink());
+if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.laureraApri)apriDaLink(e.data.laureraApri);});
 </script>
 <script>window.matchMedia("(max-width:640px)").addEventListener("change",()=>{if(typeof currentTab!=="undefined"&&currentTab==="risultati")renderRisultati();});
 function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>

@@ -1,0 +1,46 @@
+# Notifiche sul telefono (anche con l'app chiusa): ogni 10 minuti controlla se c'è qualcosa da avvisare.
+# Si attiva solo dopo aver aggiunto il secret FIREBASE_SA (Settings → Secrets and variables → Actions).
+name: Notifiche
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: notifiche
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  invia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      HAS_SA: ${{ secrets.FIREBASE_SA != '' }}
+    steps:
+      - name: Secret mancante
+        if: env.HAS_SA != 'true'
+        run: echo "Secret FIREBASE_SA non ancora aggiunto, notifiche spente."
+      - uses: actions/checkout@v4
+        if: env.HAS_SA == 'true'
+        with:
+          sparse-checkout: .github/notifiche
+      - uses: actions/setup-node@v4
+        if: env.HAS_SA == 'true'
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: .github/notifiche/package-lock.json
+      - name: Installa
+        if: env.HAS_SA == 'true'
+        working-directory: .github/notifiche
+        run: npm ci --no-audit --no-fund
+      - name: Manda le notifiche
+        if: env.HAS_SA == 'true'
+        working-directory: .github/notifiche
+        env:
+          FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
+        run: node invia.mjs

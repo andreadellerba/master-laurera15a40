@@ -11,3 +11,5 @@ credentials.json
 serviceAccountKey.json
 firebase-debug.log
 .firebase/
+
+node_modules/
