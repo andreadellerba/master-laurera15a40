@@ -1120,7 +1120,7 @@ body:not(.light) .cmc.mk{display:grid!important;grid-template-columns:auto minma
 .rk-seg button{border:0;background:none;color:#aaa;font-family:"DM Sans",sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:8px 14px;border-radius:999px;cursor:pointer}
 .rk-seg button.on{background:var(--page);color:#111}
 .rk-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
-.rk-row{display:grid;grid-template-columns:44px auto minmax(0,1fr) repeat(5,70px);align-items:center;gap:10px;padding:9px 14px;border-radius:16px;cursor:pointer;
+.rk-row{display:grid;grid-template-columns:44px auto minmax(0,1fr) repeat(6,64px);align-items:center;gap:10px;padding:9px 14px;border-radius:16px;cursor:pointer;
   background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);transition:transform .12s}
 .rk-row:hover{transform:translateY(-2px)}
 .rk-row.top{background:linear-gradient(90deg,color-mix(in srgb,var(--m) 22%,transparent),rgba(255,255,255,.03) 60%);border-color:color-mix(in srgb,var(--m) 50%,transparent)}
@@ -1372,7 +1372,7 @@ html{background-color:#000!important}
 .rk-c.k b{text-shadow:0 0 14px currentColor}
 .rk-leg{display:none}
 @media(min-width:641px){
-  .rk-leg{display:grid;grid-template-columns:44px auto minmax(0,1fr) repeat(5,70px);gap:10px;padding:0 15px 6px;font:700 11px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.7)}
+  .rk-leg{display:grid;grid-template-columns:44px auto minmax(0,1fr) repeat(6,64px);gap:10px;padding:0 15px 6px;font:700 11px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.7)}
   .rk-leg span:nth-child(2){width:38px}
   .rk-leg span{text-align:center}
   .rk-leg span.k{color:#fff!important;text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
@@ -1975,17 +1975,15 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
           <button type="button" data-k="gv" class="on" onclick="setRankSort('gv')">Game</button>
           <button type="button" data-k="pt" onclick="setRankSort('pt')">Punti</button>
           <button type="button" data-k="mg" onclick="setRankSort('mg')">Media</button>
-          <button type="button" data-k="pg" onclick="setRankSort('pg')">Partite</button>
-          <button type="button" data-k="name" onclick="setRankSort('name')">A–Z</button>
+          <button type="button" data-k="elo" onclick="setRankSort('elo')">Elo</button>
+          <button type="button" class="rk-pdf" onclick="exportRankPDF()" aria-label="Scarica il PDF della classifica">PDF</button>
         </div>
         <select class="sort-sel" id="rank-sort-sel" onchange="renderRank()" hidden>
           <option value="gv">Game Totali ↓</option>
           <option value="pt">Punti ↓</option>
           <option value="mg">Media Game ↓</option>
-          <option value="pg">Partite Giocate ↓</option>
-          <option value="name">A→Z</option>
+          <option value="elo">Elo ↓</option>
         </select>
-        <button class="pdf-btn pdf-m" onclick="exportRankPDF()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
       </div>
     </div>
     <div id="rank-body"></div>
@@ -2024,9 +2022,8 @@ body.light .ios-title{color:#111}body.light .ios-h,body.light .ios-f{color:#555}
           <span class="cal-wlbl" id="cal-wlbl"></span>
           <button class="cal-nbtn" onclick="calNext()">›</button>
           <button class="btn btn-p" style="font-size:12px;padding:7px 12px" onclick="openCalModal()">+ Incontro</button>
-          <button class="btn btn-g" style="font-size:12px;padding:7px 10px" onclick="openExportCalModal()">📤</button>
+          <button class="pdf-btn pdf-m" onclick="openExportCalModal()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>
           
-          <button class="btn btn-g" style="font-size:12px;padding:7px 10px" onclick="recalcStats()" title="Ricalcola statistiche">🔄</button>
         </div>
       </div>
 
@@ -2783,8 +2780,8 @@ document.addEventListener('pointerleave',()=>document.querySelectorAll('.tilt').
 // ═══ WOW 5: podio animato in cima a Classifiche ═══
 function podioHtml(list,sortKey){
   const top=list.slice(0,3).filter(p=>(sortKey==='pt'?puntiOf(p):+p.gv||0)>0);if(!top.length)return'';
-  const val=p=>sortKey==='mg'?(+p.mg||0).toFixed(2):sortKey==='pg'?(+p.pg||0):sortKey==='pt'?puntiOf(p):(+p.gv||0);
-  const lbl=sortKey==='mg'?'MEDIA':sortKey==='pg'?'PARTITE':sortKey==='pt'?'PUNTI':'GAME';
+  const val=p=>sortKey==='elo'?rankVal(p,'elo'):sortKey==='mg'?(+p.mg||0).toFixed(2):sortKey==='pg'?(+p.pg||0):sortKey==='pt'?puntiOf(p):(+p.gv||0);
+  const lbl=sortKey==='elo'?'ELO':sortKey==='mg'?'MEDIA':sortKey==='pg'?'PARTITE':sortKey==='pt'?'PUNTI':'GAME';
   const av=p=>phUrl(p)?`<img src="${phUrl(p)}" alt="">`:`<span>${ini(p.nome)}</span>`;
   const slot=(p,pos)=>p?`<div class="podio-slot p${pos}" style="animation-delay:${pos===1?.35:pos===2?.15:0}s">
       <div class="podio-av">${av(p)}</div><div class="podio-name">${esc(dispName(p.nome))}</div>
@@ -3647,7 +3644,7 @@ function setRankSort(k){const s=document.getElementById('rank-sort-sel');if(s)s.
 // Punti: 3 a vittoria, 1 a pareggio, 0 a sconfitta, calcolati dallo storico V-P-S (quindi anche per le partite già giocate).
 // A pari punti conta chi ha più game, poi la media.
 function puntiOf(p){const s=normStorico(p.storico).split('-').map(Number);return 3*s[0]+s[1];}
-function rankVal(p,k){return k==='pt'?puntiOf(p):(+p[k]||0);}
+function rankVal(p,k){if(k==='elo'){const E=typeof eloData==='function'?eloData().E:{};return E[p.id]!=null?Math.round(E[p.id]):0;}return k==='pt'?puntiOf(p):(+p[k]||0);}
 function rankSorted(k){const list=players.filter(p=>!p.archiviato);
   if(k==='name')return list.sort((a,b)=>bySurname(a,b));
   return list.sort((a,b)=>rankVal(b,k)-rankVal(a,k)||(k==='pt'?(+b.gv||0)-(+a.gv||0)||(+b.mg||0)-(+a.mg||0):0)||bySurname(a,b));}
@@ -3665,12 +3662,13 @@ function renderRank(){
       <span class="rk-p">${sortKey==="name"?"":i+1}${sortKey==="gv"&&(+p.gv||0)>0?deltaHtml(p.id):""}</span>${av(p)}<span class="rk-n"><span class="rk-nm">${esc(dispName(p.nome))}</span>${last5Html(p.id)}</span>
       <div class="rk-c${keyCls('pg')}"><b>${+p.pg||0}</b><span>PARTITE</span></div>
       <div class="rk-c rk-e"><b>${esc(normStorico(p.storico))}</b><span>STORICO</span></div>
-      <div class="rk-c${keyCls('pt')}"><b style="color:#4ade80">${puntiOf(p)}</b><span>PUNTI</span></div>
-      <div class="rk-c${keyCls('mg')}"><b style="color:#22b8f0">${(+p.mg||0).toFixed(2)}</b><span>MEDIA</span></div>
       <div class="rk-c${keyCls('gv')}"><b style="color:#e8ff00">${+p.gv||0}</b><span>GAME</span></div>
+      <div class="rk-c${keyCls('mg')}"><b style="color:#22b8f0">${(+p.mg||0).toFixed(2)}</b><span>MEDIA</span></div>
+      <div class="rk-c${keyCls('elo')}"><b style="color:#ff4fb8">${rankVal(p,'elo')||'–'}</b><span>ELO</span></div>
+      <div class="rk-c${keyCls('pt')}"><b style="color:#4ade80">${puntiOf(p)}</b><span>PUNTI</span></div>
     </div>`;}).join('');
   const _prevTops=typeof rankTops==='function'?rankTops():null;   // posizioni prima di ridisegnare: le righe poi scivolano al nuovo posto
-  document.getElementById('rank-body').innerHTML=(sortKey==='name'?'':podioHtml(list,sortKey))+`<div class="rk-list rk-by-${sortKey}">${rows?`<div class="rk-leg"><span></span><span></span><span></span><span${keyCls("pg")}>PARTITE</span><span>STORICO</span><span${keyCls("pt")} style="color:#4ade80">PUNTI</span><span${keyCls("mg")} style="color:#22b8f0">MEDIA</span><span${keyCls("gv")} style="color:#e8ff00">GAME</span></div>`:""}${rows||'<div class="cal-empty">Nessun giocatore</div>'}</div>`;
+  document.getElementById('rank-body').innerHTML=(sortKey==='name'?'':podioHtml(list,sortKey))+`<div class="rk-list rk-by-${sortKey}">${rows?`<div class="rk-leg"><span></span><span></span><span></span><span${keyCls("pg")}>PARTITE</span><span>STORICO</span><span${keyCls("gv")} style="color:#e8ff00">GAME</span><span${keyCls("mg")} style="color:#22b8f0">MEDIA</span><span${keyCls("elo")} style="color:#ff4fb8">ELO</span><span${keyCls("pt")} style="color:#4ade80">PUNTI</span></div>`:""}${rows||'<div class="cal-empty">Nessun giocatore</div>'}</div>`;
   countUp(document.getElementById('rank-body'));
   if(typeof rankAnim==='function')rankAnim(_prevTops,sortKey);
 }
@@ -3820,18 +3818,19 @@ function exportRankPDF(){
       <td class="pos" style="color:${i===0?'#f0c040':i===1?'#9ca3b0':i===2?'#cd7c3f':'#888888'}">${isName?'':med?['🥇','🥈','🥉'][i]:i+1}${dt?` <span style="color:${{"▲":"#15803d","▼":"#b91c1c"}[dt[0]]||"#888888"}">${dt}</span>`:''}</td>
       <td class="nm">${pdfSide([p.id],pdfName(p.nome),700)}</td>
       <td class="st">${p.pg||0}</td>
-      <td class="st" style="color:#15803d">${puntiOf(p)}</td>
+      <td class="st">${storicoHtml(p.storico)}</td>
       <td class="st">${p.gv||0}</td>
       <td class="st" style="color:#b8860b">${(p.mg||0).toFixed(2)}</td>
-      <td class="st">${storicoHtml(p.storico)}</td>
+      <td class="st" style="color:#be185d">${rankVal(p,'elo')||'–'}</td>
+      <td class="st" style="color:#15803d">${puntiOf(p)}</td>
     </tr>`;}).join('');
-  const by={gv:'Game',pt:'Punti',mg:'Media',pg:'Partite',name:'A–Z'}[sortKey];
+  const by={gv:'Game',pt:'Punti',mg:'Media',pg:'Partite',elo:'Elo',name:'A–Z'}[sortKey];
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Classifiche</title>
   ${pdfFontsLink()}
   <style>${pdfDarkStyle()}td,th{white-space:nowrap}table.fit td,table.fit th{padding-left:var(--px,12px);padding-right:var(--px,12px)}table.fit td{font-size:var(--fs,13px)}
-  table.fit .pos{width:1%;padding-right:4px;text-align:left}table.fit .nm{text-align:left;padding-left:4px}.st{width:12%}td.pos,td.st,td.st .sv,td.st .sep{font-weight:700}</style></head><body>
+  table.fit .pos{width:1%;padding-right:4px;text-align:left}table.fit .nm{text-align:left;padding-left:4px}.st{width:11%}td.pos,td.st,td.st .sv,td.st .sep{font-weight:700}</style></head><body>
   ${pdfHeaderHtml('CLASSIFICA GENERALE',list.length+' giocatori · ordine: '+by)}
-  <div style="padding:0 24px"><table class="fit"><thead><tr><th class="pos">#</th><th class="nm">Giocatore</th><th class="st">Partite</th><th class="st">Punti</th><th class="st">Game</th><th class="st">Media</th><th class="st">Storico</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div style="padding:0 24px"><table class="fit"><thead><tr><th class="pos">#</th><th class="nm">Giocatore</th><th class="st">Partite</th><th class="st">Storico</th><th class="st">Game</th><th class="st">Media</th><th class="st">Elo</th><th class="st">Punti</th></tr></thead><tbody>${rows}</tbody></table></div>
   ${pdfFooterHtml()}${pdfFitScript()}
   </body></html>`;
   pdfOpenAndPrint(html);
@@ -4271,6 +4270,7 @@ function exportCalendarPDF(){
   pdfOpenAndPrint(html,()=>{document.getElementById('modal-exp-cal').classList.remove('open');});
 }
 // ═══ RISULTATI ═══
+function _risPdfBtn(){return '<button class="pdf-btn pdf-m rs-pdf" onclick="openExportCalModal(&quot;ris&quot;)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PDF</button>';}
 function renderRisultati(){
   // Ogni partita come un tabellone: vincitore a sinistra (VINCE), sconfitto attenuato a destra (PERDE),
   // punteggio grande col game del vincitore su giallo; pareggi in azzurro. Raggruppati per giorno.
@@ -4307,9 +4307,9 @@ function renderRisultati(){
     </div>`;
   };
   const days={};done.forEach(m=>{(days[m.data]=days[m.data]||[]).push(m);});
-  cont.innerHTML=Object.keys(days).sort((a,b)=>b.localeCompare(a)).map(d=>{
+  cont.innerHTML=Object.keys(days).sort((a,b)=>b.localeCompare(a)).map((d,di)=>{
     const lbl=new Date(d+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long'}).toUpperCase();
-    return `<div class="rs-day">${esc(lbl)}</div>${days[d].map(row).join('')}`;
+    return `<div class="rs-day"><span>${esc(lbl)}</span>${di===0?_risPdfBtn():''}</div>${days[d].map(row).join('')}`;
   }).join('');
 }
 // ═══ IMPORT / EXPORT ═══
@@ -8103,8 +8103,8 @@ function _sxTypeChips(f){
   const pw=Math.round(f.wr*100),cl=f.close?`${f.closeW}-${f.close-f.closeW}`:'–',fr=Math.round(f.e3);
   const C=[[pw+'%','VITTORIE','#22c55e',cmp(f.wr*100,avg('wr')*100)],[f.bestS,'SERIE MIGLIORE','#ff8a00',cmp(f.bestS,avg('bestS'))],
     [cl,'PUNTO A PUNTO','#38bdf8',f.close?'<i>partite decise di 1 game</i>':'<i>ancora nessuna</i>'],[f.bigW,'TOP 5 BATTUTI','#ff4fb8',cmp(f.bigW,avg('bigW'))],
-    [f.w?'+'+f.wm.toFixed(1):'–','SCARTO QUANDO VINCI','#e8ff00',f.w?cmp(f.wm,avg('wm')):'<i>serve una vittoria</i>'],[(fr>0?'▲':fr<0?'▼':'')+Math.abs(fr),'FORMA RECENTE',fr>=0?'#22c55e':'#ef4444','<i>ultime 3 partite</i>']];
-  const gd=[f.bd?`📆 Giorno d'oro: <b>${f.bd}</b>`:'',f.bh?`🕖 Ora d'oro: <b>${f.bh}:00</b>`:'',f.opps?`🤝 <b>${f.opps}</b> avversari diversi`:''].filter(Boolean);
+    [f.w?'+'+f.wm.toFixed(1):'–','SCARTO (VITTORIA)','#e8ff00',f.w?cmp(f.wm,avg('wm')):'<i>serve una vittoria</i>'],[(fr>0?'▲':fr<0?'▼':'')+Math.abs(fr),'FORMA RECENTE',fr>=0?'#22c55e':'#ef4444','<i>ultime 3 partite</i>']];
+  const gd=[f.bd?`📆 Giorno d'oro: <b>${f.bd}</b>`:'',f.bh?`🕖 Ora d'oro: <b>${f.bh}:00</b>`:'',f.opps?`🤝 <b>${f.opps}</b> avversari`:''].filter(Boolean);
   return`<div class="sx-chips sx-chips6">${C.map(([v,l,c,s])=>`<div class="sx-chip"><b style="color:${c}">${v}</b><span>${l}</span>${s?`<small>${s}</small>`:''}</div>`).join('')}</div>${gd.length?`<div class="sx-gold">${gd.map(x=>`<span>${x}</span>`).join('')}</div>`:''}`;
 }
 const _sxF=id=>{const p=_sxP(id);return!!(p&&typeof isDonna==='function'&&isDonna(p));};
@@ -8364,6 +8364,23 @@ html body:not(.light) #ris-list .cmc.ris-c.motw:is(.z.z.z.z,*){border-color:#ffd
   html body .header .hdr .tabs-inner .tab{font-size:14px!important;padding-left:6px!important;padding-right:6px!important}
   html body .header .hdr .tabs-inner .tab span{font-size:14px!important}
 }
+/* pulsante PDF nella riga del primo giorno dei Risultati; quello vecchio in alto non serve più */
+.ris-hd .pdf-btn{display:none!important}
+.rs-day{display:flex!important;align-items:center;justify-content:space-between;gap:10px}
+.rs-day .rs-pdf{position:static!important;transform:none!important;flex-shrink:0}
+/* Classifiche: il pulsante PDF al posto di A–Z (solo admin) */
+.rk-seg .rk-pdf{color:var(--accent)!important}
+/* telefono: niente titoli grandi in cima alle pagine (resta solo LISTA GIOCATORI in Home) */
+@media(max-width:640px){
+  html body :is(#page-calendario,#page-risultati,#page-statistiche,#page-classifiche,#page-albo,#page-tornei,#page-fanta,#page-classifiche-torneo) :is(.pg-title.pg-big,.cal-title-big,.cal-titlebox){display:none!important}
+  html body #page-risultati .ris-hd{display:none!important}
+}
+/* badge (forma, podio…) staccati dalle partite sopra */
+#sx-px .pr-badges{margin-top:18px!important}
+/* Statistiche più compatte: meno spazio sopra e sotto i titoli delle sezioni */
+#sx-body .pr-sec{margin-top:16px!important;margin-bottom:8px!important}
+#sx-body .sx-card{padding:12px!important}
+#sx-body .sx-row+.sx-row{margin-top:8px}
 .sx-chips6{grid-template-columns:repeat(3,minmax(0,1fr))!important}
 .sx-chips6 .sx-chip{padding:9px 4px 8px}
 .sx-chips6 .sx-chip span{white-space:normal;line-height:1.15;min-height:21px;display:flex;align-items:center;justify-content:center}
