@@ -1,5 +1,5 @@
 // Logica delle notifiche di Laurera 15·40 (senza rete: si può provare da sola).
-// Si avvisa SOLO quando viene inserito il risultato di una partita: ricevono la notifica i giocatori di quella partita.
+// Si avvisa SOLO quando viene inserito un risultato, e lo ricevono tutti gli iscritti (chi ha giocato riceve la versione personale).
 // Riceve i dati del circolo e lo stato salvato all'ultimo giro, restituisce le notifiche da mandare e il nuovo stato.
 
 export const TIPI = ['ris'];
@@ -52,7 +52,14 @@ function avversari(m, pid, P) {
   return n.length ? n.join(' / ') : nomeCorto(s === 1 ? m.teamName2 : m.teamName1);
 }
 
+function squadra(m, s, P) {
+  const ids = s === 1 ? [m.p1Id, m.p1Id2] : [m.p2Id, m.p2Id2];
+  const n = ids.filter(x => x != null).map(id => P.get(id)).filter(Boolean).map(p => nomeCorto(p.nome));
+  return n.length ? n.join(' / ') : nomeCorto(s === 1 ? m.teamName1 : m.teamName2);
+}
+
 /**
+ * Un evento per ogni risultato appena inserito: `tutti` è la notifica per chiunque, `mie[pid]` quella per chi ha giocato.
  * @param {object} a
  * @param {{players:any[], sched:any[]}} a.main   documento clubs/laurera15a40/data/main
  * @param {object|null} a.stato   stato salvato all'ultimo giro (null = primo giro: non si manda niente)
@@ -70,15 +77,19 @@ export function calcola({ main, stato, ora }) {
     ris.add(m.id);
     const t = oraPartita(m);
     if (t != null && ora - t >= GIORNI_RISULTATI * 86400e3) continue;
-    const [g1, g2] = game(m);
+    const [g1, g2] = game(m), w = esito(m, m.p1Id);   // dal punto di vista del lato 1
+    const A = squadra(m, 1, P), B = squadra(m, 2, P);
+    const riga = g1 == null ? `${A} – ${B} ${m.risultato}`
+      : w === 'w' ? `${A} batte ${B} ${g1}-${g2}` : w === 'l' ? `${B} batte ${A} ${g2}-${g1}` : `${A} e ${B} pareggiano ${g1}-${g2}`;
+    const e = { mid: m.id, url: `./#m=${m.id}`, tag: `ris-${m.id}`, riga, tutti: { title: '🎾 Nuovo risultato', body: riga }, mie: {} };
     for (const pid of giocatori(m)) {
       if (!P.has(pid)) continue;
-      const e = esito(m, pid), s = lato(m, pid), sc = g1 == null ? String(m.risultato) : (s === 1 ? `${g1}-${g2}` : `${g2}-${g1}`);
-      const title = e === 'w' ? `🏆 Hai vinto ${sc}!` : e === 'l' ? `🎾 Risultato inserito: ${sc}` : `🤝 Pareggio ${sc}`;
-      ev.push({ pid, tipo: 'ris', title, body: `Contro ${avversari(m, pid, P)} · tocca per vedere la partita`, url: `./#m=${m.id}`, tag: `ris-${m.id}` });
+      const r = esito(m, pid), s = lato(m, pid), sc = g1 == null ? String(m.risultato) : (s === 1 ? `${g1}-${g2}` : `${g2}-${g1}`);
+      e.mie[pid] = { title: r === 'w' ? `🏆 Hai vinto ${sc}!` : r === 'l' ? `🎾 Il tuo risultato: ${sc}` : `🤝 Pareggio ${sc}`, body: `Contro ${avversari(m, pid, P)} · tocca per vedere la partita` };
     }
+    ev.push(e);
   }
-  // si tengono solo le partite che esistono ancora (un risultato cancellato e reinserito riavvisa)
+    // si tengono solo le partite che esistono ancora (un risultato cancellato e reinserito riavvisa)
   const conRis = new Set(sched.filter(m => m.risultato).map(m => m.id));
   return { eventi: ev, stato: { ris: [...ris].filter(id => conRis.has(id)) } };
 }

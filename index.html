@@ -9049,8 +9049,8 @@ function pushSecHtml(id){
   if(s==='ios')b=`<div class="ps-ic">📲</div><p>Su iPhone le notifiche arrivano solo con l'app sulla schermata Home: in Safari tocca <b>Condividi</b> → <b>Aggiungi alla schermata Home</b>, poi apri Laurera da lì e torna qui.</p>`;
   else if(s==='no')b=`<div class="ps-ic">🔕</div><p>Questo browser non può ricevere notifiche. Su Android usa Chrome, su iPhone l'app dalla schermata Home.</p>`;
   else if(s==='bloccate')b=`<div class="ps-ic">🔕</div><p>Hai bloccato le notifiche di Laurera: per riaverle riattivale nelle impostazioni del telefono (Notifiche), poi torna qui.</p>`;
-  else if(s==='on')b=`<div class="ps-on"><i></i>Attive su questo telefono</div><p>Ti avvisiamo quando viene inserito il risultato di una tua partita.</p><button type="button" class="ps-go ps-no" onclick="pushOff()">Disattiva</button>`;
-  else b=`<div class="ps-ic">🎾</div><p>Ricevi una notifica quando viene inserito il risultato di una tua partita, anche ad app chiusa.</p>${adm&&!meOk?`<p style="margin-top:-4px"><b>Per: ${esc(dispName((players.find(x=>x.id===id)||{}).nome||''))}</b> (sarai tu su questo telefono)</p>`:''}<button type="button" class="ps-go" onclick="pushOn(this,${id})">Attiva le notifiche</button>`;
+  else if(s==='on')b=`<div class="ps-on"><i></i>Attive su questo telefono</div><p>Ti avvisiamo ogni volta che viene inserito un risultato.</p><button type="button" class="ps-go ps-no" onclick="pushOff()">Disattiva</button>`;
+  else b=`<div class="ps-ic">🎾</div><p>Ricevi una notifica ogni volta che viene inserito un risultato, anche ad app chiusa.</p>${adm&&!meOk?`<p style="margin-top:-4px"><b>Per: ${esc(dispName((players.find(x=>x.id===id)||{}).nome||''))}</b> (sarai tu su questo telefono)</p>`:''}<button type="button" class="ps-go" onclick="pushOn(this,${id})">Attiva le notifiche</button>`;
   return _sxSec('🔔 NOTIFICHE SUL TELEFONO',`<div class="sx-card ps-card" id="ps-card">${b}</div>`);}
 function pushRefresh(){if(typeof currentTab!=='undefined'&&currentTab==='statistiche'&&typeof renderStats==='function'){const y=scrollY;renderStats();scrollTo(0,y);}}
 async function _pushSalva(sub){const me=+_pushLS('laurera_me'),j=JSON.stringify(sub);
@@ -9085,7 +9085,9 @@ async function pushSync(){try{if(!_pushKey||_pushStato()!=='on')return;const sub
 try{_db.collection('clubs').doc('laurera15a40').collection('data').doc('push').get().then(s=>{_pushKey=s.exists&&s.data().vapid||null;_pushKeyLetta=true;pushRefresh();pushSync();}).catch(()=>{_pushKeyLetta=true;});}catch(e){}
 
 // ═══ APRIRE LA PARTITA O LA SCHEDA GIUSTA da una notifica (#m=ID, #p=ID) ═══
-function apriDaLink(u){const h=String(u||location.hash).split('#')[1]||'',m=h.match(/^([mp])=(\d+)$/);if(!m)return false;
+function apriDaLink(u){const h=String(u||location.hash).split('#')[1]||'';
+  if(h==='ris'){try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}setTimeout(()=>switchTab('risultati'),300);return true;}   // riepilogo di più risultati
+  const m=h.match(/^([mp])=(\d+)$/);if(!m)return false;
   const go=()=>{if(m[1]==='m'&&sched.some(x=>x.id===+m[2]))openMatchView(+m[2]);else if(m[1]==='p'&&players.some(x=>x.id===+m[2]))openProfile(+m[2]);};
   let n=0;const iv=setInterval(()=>{if((typeof sched!=='undefined'&&sched.length&&players.length)||++n>40){clearInterval(iv);setTimeout(go,300);}},250);
   try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}return true;}

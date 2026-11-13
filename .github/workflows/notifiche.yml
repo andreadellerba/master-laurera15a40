@@ -6,6 +6,12 @@ on:
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
+  # gira anche quando si pubblica una modifica al postino, così si vede subito se funziona
+  push:
+    branches: [main]
+    paths:
+      - '.github/notifiche/**'
+      - '.github/workflows/notifiche.yml'
 
 concurrency:
   group: notifiche

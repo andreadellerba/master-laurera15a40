@@ -1,6 +1,6 @@
 // Il "postino" delle notifiche di Laurera 15·40: lo fa girare GitHub Actions ogni 10 minuti.
-// Legge il calendario da Firestore, trova i risultati appena inseriti (logica.mjs) e avvisa i giocatori di quelle
-// partite sui telefoni iscritti (clubs/laurera15a40/push). Serve il secret FIREBASE_SA (chiave dell'account di servizio
+// Legge il calendario da Firestore, trova i risultati appena inseriti (logica.mjs) e li manda a tutti i telefoni
+// iscritti (clubs/laurera15a40/push); chi ha giocato la partita riceve la versione personale («Hai vinto 6-3!»). Serve il secret FIREBASE_SA (chiave dell'account di servizio
 // Firebase): senza, non fa niente. Le chiavi VAPID le crea da solo la prima volta e le tiene in clubs/laurera15a40/segreti
 // (che l'app non può leggere); la parte pubblica la mette in clubs/laurera15a40/data/push per l'app.
 import admin from 'firebase-admin';
@@ -29,16 +29,22 @@ const stato = stS.exists ? stS.data() : null;
 const { eventi, stato: nuovo } = calcola({ main: mainS.data() || {}, stato, ora: Date.now() });
 console.log(`${stato ? '' : 'Primo giro (si prende nota, niente notifiche). '}Risultati da avvisare: ${eventi.length} · telefoni iscritti: ${iscritti.length}`);
 
+// ogni iscritto riceve tutti i risultati nuovi: quelli delle sue partite in versione personale,
+// gli altri uno per uno (se sono più di 3 nello stesso giro, un solo riepilogo)
 let inviate = 0, tolte = 0;
-const morti = new Set();
-for (const e of eventi) {
-  for (const s of iscritti.filter(s => s.pid === e.pid && s.tipi.includes(e.tipo) && !morti.has(s.ref.id))) {
+for (const s of iscritti.filter(s => s.tipi.includes('ris'))) {
+  const mie = eventi.filter(e => e.mie[s.pid]).map(e => ({ ...e.mie[s.pid], url: e.url, tag: e.tag }));
+  const altre = eventi.filter(e => !e.mie[s.pid]);
+  const msg = [...mie, ...(altre.length > 3
+    ? [{ title: `🎾 ${altre.length} nuovi risultati`, body: altre.slice(0, 3).map(e => e.riga).join(' · ') + ' …', url: './#ris', tag: 'ris-tanti' }]
+    : altre.map(e => ({ ...e.tutti, url: e.url, tag: e.tag })))];
+  for (const n of msg) {
     try {
-      await webpush.sendNotification(s.sub, JSON.stringify({ title: e.title, body: e.body, url: e.url, tag: e.tag }), { TTL: 24 * 3600, urgency: 'high' });
+      await webpush.sendNotification(s.sub, JSON.stringify(n), { TTL: 24 * 3600, urgency: 'normal' });
       inviate++;
     } catch (err) {
-      if (err.statusCode === 404 || err.statusCode === 410) { morti.add(s.ref.id); await s.ref.delete().catch(() => {}); tolte++; }
-      else console.log('Invio non riuscito', err.statusCode || '', (err.body || err.message || '').toString().slice(0, 200));
+      if (err.statusCode === 404 || err.statusCode === 410) { await s.ref.delete().catch(() => {}); tolte++; break; }
+      console.log('Invio non riuscito', err.statusCode || '', (err.body || err.message || '').toString().slice(0, 200));
     }
   }
 }
