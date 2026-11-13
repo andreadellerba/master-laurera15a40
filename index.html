@@ -8063,6 +8063,9 @@ function _sxFacts(id){
     blow:w.filter(m=>GF(m)-GA(m)>=6).length,close:close.length,closeW:close.filter(m=>R(m)==='w').length,cur,cr,bestS,e3,sd,maxG:Math.max(...gfs),
     late:ps.filter(m=>(m.ora||'')>='21').length/n,early:ps.filter(m=>m.ora&&m.ora<'12').length/n,opps:opps.length,vic,vicW:vic?V[vic].w:0,
     bd:bd!=null?DW[bd]:null,bh,above,gap,mostPg:rl.slice().sort((a,b)=>(+b.pg||0)-(+a.pg||0)).slice(0,3).some(x=>x.id===id),
+    gfA:avg(ps.map(GF)),gaA:avg(ps.map(GA)),dayConc:bd!=null&&w.length?dc[bd]/w.length:0,
+    maxVsId:opps.slice().sort((a,b)=>V[b].n-V[a].n)[0]??null,maxVs:opps.length?Math.max(...opps.map(x=>V[x].n)):0,
+    lastDays:Math.floor((Date.now()-new Date(ps[n-1].data+'T12:00:00').getTime())/864e5),
     champ:(typeof alboData!=='undefined'?alboData:[]).some(a=>String(a.vincitore||'').toUpperCase().split('/').some(v=>v.trim()===nome))};
 }
 const _SX_TYPES=[
@@ -8087,6 +8090,13 @@ const _SX_TYPES=[
   ['matt',f=>f.early>=.5,'☀️','IL MATTINIERO',f=>`Il campo di mattina è casa tua: sveglia presto e racchetta pronta.`],
   ['equi',f=>f.marg<=2.5,'🎪',"L'EQUILIBRISTA",f=>`Scarto medio di ${f.marg.toFixed(1)} game: le tue partite si decidono sempre sul filo.`],
   ['orologio',f=>f.n>=3&&f.sd<1.5,'⏱️',"L'OROLOGIO",f=>`Fai quasi sempre gli stessi game, partita dopo partita: costante come un metronomo.`],
+  ['razzo',f=>f.e3>60&&f.n>=3,'🚀','IL RAZZO',f=>`Nelle ultime partite la tua forma è schizzata in alto di ${Math.round(f.e3)} punti: chi ti incontra adesso trova la versione migliore di te.`],
+  ['bomb',f=>f.gfA>=9&&f.n>=2,'💣','IL BOMBARDIERE',f=>`Fai ${f.gfA.toFixed(1)} game a partita: quando sei in giornata il tabellone gira solo dalla tua parte.`],
+  ['sara',f=>f.gaA<=4&&f.n>=3,'🥅','LA SARACINESCA',f=>`Concedi appena ${f.gaA.toFixed(1)} game a partita: passare dalla tua metà campo è un'impresa.`],
+  ['spec',f=>f.w>=3&&f.dayConc>=.67&&f.bd,'📆','LO SPECIALISTA @DAY@',f=>`La maggior parte delle tue vittorie arriva di ${f.bd}: quel giorno diventi un altro giocatore.`],
+  ['rival',f=>f.maxVs>=2,'🔁','IL RIVALE STORICO',f=>`Hai già affrontato ${esc(dispName(_sxP(f.maxVsId).nome))} ${f.maxVs} volte: la vostra è la sfida infinita del circolo.`],
+  ['altal',f=>f.n>=4&&f.sd>=3,'🎢',"L'ALTALENA",f=>`Un giorno fai ${f.maxG} game, un altro molti meno: con te non si sa mai cosa aspettarsi, ed è il bello.`],
+  ['talento',f=>f.n<=3&&f.n>=2&&f.wr>=.66,'✨','IL TALENTO',f=>`Poche partite ma già ${f.w} ${f.w===1?'vittoria':'vittorie'}: il circolo ha un nuovo nome da tenere d'occhio.`],
   ['social',f=>f.opps>=5,'🤝','IL GIRAMONDO',f=>`Hai già sfidato ${f.opps} soci diversi: con te ogni partita è un incontro nuovo.`],
   ['guerr',f=>f.l>f.w,'⚔️','IL GUERRIERO',f=>`Le sconfitte non ti fermano: torni in campo ogni volta con più voglia di prima.`],
   ['tutto',f=>true,'🎾','IL TUTTOCAMPISTA',f=>`Un po' di tutto, niente di troppo: un giocatore completo, difficile da leggere.`]];
@@ -8119,7 +8129,11 @@ function _sxType(id){
   if(f.close>=2&&t[0]!=='cuore')T.push(`Nelle partite punto a punto il tuo bilancio è ${f.closeW}-${f.close-f.closeW}.`);
   if(f.opps>=4&&t[0]!=='social')T.push(`Hai già affrontato ${f.opps} avversari diversi.`);
   if(f.d>=1&&t[0]!=='muro')T.push(`${f.d===1?'Un pareggio':f.d+' pareggi'} in carriera: sai tenere testa a chiunque.`);
-  if(T.length)d+=' '+pick(T,5);
+  if(f.maxVs>=2&&t[0]!=='rival')T.push(`La tua sfida più giocata è contro ${esc(dispName(_sxP(f.maxVsId).nome))}: ${f.maxVs} partite.`);
+  if(f.lastDays>=10)T.push(`Non giochi da ${f.lastDays} giorni: il campo ti aspetta.`);
+  if(T.length){const a=pick(T,5);d+=' '+a;const rest=T.filter(x=>x!==a);if(rest.length)d+=' '+pick(rest,8);}
+  // numeri del tuo gioco in una frase
+  d+=` In media fai ${f.gfA.toFixed(1)} game e ne concedi ${f.gaA.toFixed(1)} a partita${f.close?`, e ${f.close===1?'una partita è finita':f.close+' partite sono finite'} con un game o meno di scarto`:''}.`;
   // consiglio, solo per chi deve risalire
   let tip='';
   if(f.tier==='media'||f.tier==='bassa'){const P=[];
@@ -8135,8 +8149,9 @@ function _sxType(id){
   let tt=t[3];
   if(_sxF(id)){   // giocatrice: titolo e frasi al femminile
     tt=_SX_FEM[tt]||tt;
-    d=d.replace('sei tu quello da battere','sei tu quella da battere').replace('Primo nella classifica','Prima nella classifica').replace('un giocatore completo','una giocatrice completa');
+    d=d.replace('sei tu quello da battere','sei tu quella da battere').replace('Primo nella classifica','Prima nella classifica').replace('un giocatore completo','una giocatrice completa').replace('un altro giocatore',"un'altra giocatrice");
   }
+  if(tt.includes('@DAY@'))tt=tt.replace('@DAY@',f.bd==='domenica'?'DELLA DOMENICA':'DEL '+String(f.bd||'').toUpperCase());
   return{em:t[2],t:tt,d,tip,f,tot:f.tot,marg:f.marg,dr:Math.round(f.d/f.n*100)};
 }
 // i numeri sotto "Che giocatore sei": cose che raccontano come giochi, confrontate con la media del circolo
@@ -8152,7 +8167,7 @@ function _sxTypeChips(f){
   return`<div class="sx-chips sx-chips6">${C.map(([v,l,c,s])=>`<div class="sx-chip"><b style="color:${c}">${v}</b><span>${l}</span>${s?`<small>${s}</small>`:''}</div>`).join('')}</div>${gd.length?`<div class="sx-gold">${gd.map(x=>`<span>${x}</span>`).join('')}</div>`:''}`;
 }
 const _sxF=id=>{const p=_sxP(id);return!!(p&&typeof isDonna==='function'&&isDonna(p));};
-const _SX_FEM={'IL CAMPIONE IN CARICA':'LA CAMPIONESSA IN CARICA','IL RE DEL CIRCOLO':'LA REGINA DEL CIRCOLO','IL PREDATORE':'LA PREDATRICE','IL CANNIBALE':'LA CANNIBALE',
+const _SX_FEM={'IL BOMBARDIERE':'LA BOMBARDIERA','IL RIVALE STORICO':'LA RIVALE STORICA','LO SPECIALISTA @DAY@':'LA SPECIALISTA @DAY@','IL CAMPIONE IN CARICA':'LA CAMPIONESSA IN CARICA','IL RE DEL CIRCOLO':'LA REGINA DEL CIRCOLO','IL PREDATORE':'LA PREDATRICE','IL CANNIBALE':'LA CANNIBALE',
   'IL CECCHINO':'LA TIRATRICE SCELTA','IL SOGNATORE':'LA SOGNATRICE','IL LOTTATORE':'LA LOTTATRICE','IL MARATONETA':'LA MARATONETA','IL NOTTAMBULO':'LA NOTTAMBULA',
   'IL MATTINIERO':'LA MATTINIERA','IL GIRAMONDO':'LA GIRAMONDO','IL GUERRIERO':'LA GUERRIERA','IL TUTTOCAMPISTA':'LA TUTTOCAMPISTA'};
 
@@ -8175,6 +8190,26 @@ function _sxHtml(id){
   h+=_sxSec('📋 RIEPILOGO',`<div class="profile-stats-row">${tile('Partite',+p.pg||0,'#e8ff00')+tile('Vittorie',st[0]||0,'#22c55e')+tile('Pareggi',st[1]||0,'#f59e0b')+tile('Sconfitte',st[2]||0,'#ef4444')+tile('Game',+p.gv||0,'#ff4fb8')+tile('Media game',(+p.mg||0).toFixed(2),'#22b8f0')}</div>`);
   if(n){const R=[['GAME',_sxRankIn(id,x=>+_sxP(x).gv||0),'#e8ff00'],['PUNTI',_sxRankIn(id,x=>puntiOf(_sxP(x))),'#4ade80'],['MEDIA',_sxRankIn(id,x=>+_sxP(x).mg||0),'#22b8f0'],['FORZA',_sxRankIn(id,_sxE),'#ff4fb8']];
     h+=_sxSec('📊 DOVE SEI IN OGNI CLASSIFICA',`<div class="sx-card">${R.map(([l,r,c],i)=>r?`<div class="sx-rank"><span>${l}</span><b style="color:${c}">${r.pos}°</b><div><div class="sx-bar"><i style="--w:${r.better}%;--c:${c};animation-delay:${(i*.1).toFixed(1)}s"></i></div><small>meglio del ${r.better}% dei soci</small></div></div>`:'').join('')}</div>`);}
+  // faccia a faccia con un socio a scelta
+  { const others=players.filter(x=>!x.archiviato&&x.id!==id).sort(bySurname),V0=_sxVs(id);
+    const riv=Object.keys(V0).map(Number).sort((a,b)=>V0[b].n-V0[a].n)[0],rl=rankListGv(),ri=rl.findIndex(x=>x.id===id),abv=ri>0?rl[ri-1].id:null,bel=ri>=0&&ri<rl.length-1?rl[ri+1].id:null;
+    const sug=[[riv,'IL TUO RIVALE'],[abv,'TI STA SOPRA'],[bel,'TI STA SOTTO']].filter(([x])=>x!=null&&_sxP(x));
+    h+=_sxSec('⚔️ FACCIA A FACCIA',`<div class="sx-card"><div class="sx-vsrow"><select id="sx-vs-sel" aria-label="Scegli un avversario">${others.map(x=>`<option value="${x.id}">${esc(dispName(x.nome))}</option>`).join('')}</select><button type="button" class="ob-go sx-vs-go" onclick="openVersus(${id},+document.getElementById('sx-vs-sel').value)">Sfida</button></div>
+      ${sug.length?`<div class="sx-sug">${sug.map(([x,l])=>`<button type="button" onclick="openVersus(${id},${x})">${_sxAv(x)}<span><small>${l}</small><b>${_sxNm(x)}</b></span></button>`).join('')}</div>`:''}</div>`);
+  }
+  // tu contro tre soci a caso
+  h+=_sxSec('🎲 TU CONTRO…',`<div class="sx-card" id="sx-cmp">${_sxCmpHtml(id)}</div>`);
+  // le tue percentuali
+  if(n){const gf=ps.reduce((s,m)=>s+_sxGF(m,id),0),ga=ps.reduce((s,m)=>s+_sxGA(m,id),0),cl=ps.filter(m=>Math.abs(_sxGF(m,id)-_sxGA(m,id))<=1).length,net=ps.filter(m=>_resFor(m,id)==='w'&&_sxGF(m,id)-_sxGA(m,id)>=4).length;
+    const wk=Math.max(1,(Date.now()-new Date(ps[0].data+'T12:00:00').getTime())/6048e5),ld=Math.floor((Date.now()-new Date(ps[n-1].data+'T12:00:00').getTime())/864e5);
+    const P2=[[_sxPct(gf,gf+ga)+'%','GAME VINTI SUL TOTALE','#e8ff00'],[(ga/n).toFixed(1),'GAME SUBITI A PARTITA','#ef4444'],[_sxPct(cl,n)+'%','PARTITE PUNTO A PUNTO','#38bdf8'],[_sxPct(net,n)+'%','VITTORIE NETTE (4+ GAME)','#22c55e'],[(n/wk).toFixed(1),'PARTITE A SETTIMANA','#a78bfa'],[ld===0?'OGGI':ld+' gg','DALL\'ULTIMA PARTITA','#ff8a00']];
+    h+=_sxSec('📐 LE TUE PERCENTUALI',`<div class="sx-card"><div class="sx-chips sx-chips6">${P2.map(([v,l,c])=>`<div class="sx-chip"><b style="color:${c}">${v}</b><span>${l}</span></div>`).join('')}</div></div>`);
+    // il gemello: il socio con i numeri più simili ai tuoi
+    const A=_sxAct().map(x=>x.id).filter(x=>x!==id&&playedOf(x).length),vec=x=>{const q=_sxP(x),pg=+q.pg||1,w=+normStorico(q.storico).split('-')[0]||0;return[(+q.mg||0)/12,w/pg,(_sxE(x)-1300)/500,Math.min(1,pg/10)];},me=vec(id);
+    const tw=A.map(x=>({x,d:vec(x).reduce((s,v,i)=>s+(v-me[i])**2,0)})).sort((a,b)=>a.d-b.d)[0];
+    if(tw){const q=_sxP(tw.x),sim=Math.max(50,Math.round(100-Math.sqrt(tw.d)*120));
+      h+=_sxSec('👯 IL TUO GEMELLO',`<div class="sx-card"><div class="sx-row" onclick="openVersus(${id},${tw.x})" style="cursor:pointer">${_sxAv(tw.x)}<div class="t"><small style="color:#2dd4bf">SIMILE AL ${sim}%</small><b>${_sxNm(tw.x)}</b><em>Media ${(+q.mg||0).toFixed(2)} · Elo ${Math.round(_sxE(tw.x))} · ${+q.pg||0} partite: giocate quasi allo stesso modo. Tocca per il Faccia a faccia.</em></div></div></div>`);}
+  }
   // 20 · prossime partite con pronostico
   h+=_sxSec('📅 LE TUE PROSSIME PARTITE',nx.length?`<div class="sx-card">${nx.map(m=>{const o=_sxOpp(m,id),pw=Math.round(_sxPW(id,o)*100),c=pw>=50?'#22c55e':'#ef4444';return`<div class="sx-row" onclick="openMatchView(${m.id})" style="cursor:pointer">${_sxAv(o)}<div class="t"><b>contro ${_sxNm(o)}</b><em>${_sxDL(m.data)}${m.ora?' · ore '+esc(m.ora):''}</em><div class="sx-bar" style="margin-top:6px"><i style="--w:${pw}%;--c:${c}"></i></div></div><span class="v" style="color:${c}">${pw}%</span></div>`;}).join('')}<div class="sx-note" style="font-size:11.5px;color:rgba(255,255,255,.5)">Probabilità di vittoria calcolata dalla forma dei due</div></div>`:`<div class="sx-card sx-empty">Nessuna partita in programma.</div>`);
   if(!n)return h+`<div class="sx-card sx-empty" style="margin-top:16px"><b>ANCORA NIENTE DA CONTARE</b>Le statistiche si riempiono dalla prima partita giocata.</div>`;
@@ -8241,6 +8276,15 @@ function _sxHtml(id){
   TL.sort((a,b)=>(a.m.data+(a.m.ora||'')).localeCompare(b.m.data+(b.m.ora||'')));
   h+=_sxSec('✨ I MOMENTI DELLA TUA STAGIONE',`<div class="sx-card"><div class="sx-tl">${TL.map(x=>`<div><span>${x.e}</span><b>${x.t}</b><em>${_sxDL(x.m.data)} · contro ${_sxNm(_sxOpp(x.m,id))} · ${_sxGF(x.m,id)}-${_sxGA(x.m,id)}</em></div>`).join('')}</div></div>`);
   return h;
+}
+// "Tu contro…": tre soci a caso confrontati su game, media ed Elo (chi è avanti in giallo)
+function _sxCmpHtml(id){
+  const A=_sxAct().map(x=>x.id).filter(x=>x!==id);if(!A.length)return'<div class="sx-empty">Ancora nessuno da confrontare.</div>';
+  const pick=A.slice().sort(()=>Math.random()-.5).slice(0,3),me=_sxP(id);
+  const vals=x=>{const q=_sxP(x);return[+q.gv||0,+q.mg||0,Math.round(_sxE(x)),puntiOf(q)];},L=['GAME','MEDIA','ELO','PUNTI'],mv=vals(id);
+  return pick.map(x=>{const v=vals(x);let wins=0;const cells=L.map((l,i)=>{const a=mv[i],b=v[i],w=a>b;if(w)wins++;const f=z=>i===1?z.toFixed(2):z;return`<div class="sx-cc"><span>${l}</span><b class="${a>b?'up':a<b?'dn':''}">${f(a)}</b><i>${f(b)}</i></div>`;}).join('');
+    return`<div class="sx-cmp-r"><div class="sx-row" onclick="openVersus(${id},${x})" style="cursor:pointer">${_sxAv(x)}<div class="t"><small style="color:${wins>=3?'#22c55e':wins<=1?'#ef4444':'#38bdf8'}">${wins>=3?'SEI AVANTI TU':wins<=1?'TI STA DAVANTI':'TESTA A TESTA'} · ${wins}-${4-wins}</small><b>${_sxNm(x)}</b></div></div><div class="sx-cgrid">${cells}</div></div>`;}).join('')
+    +`<button type="button" class="sx-reroll" onclick="document.getElementById('sx-cmp').innerHTML=_sxCmpHtml(${id})">🔀 Altri tre</button>`;
 }
 function sxRiv(id,o){const V=_sxVs(id)[o],el=document.getElementById('sx-rv');if(!V||!el)return;
   el.innerHTML=`<b>${_sxNm(o)}</b> · ${V.n} ${V.n===1?'partita':'partite'} · <span style="color:#22c55e">${V.w}V</span> <span style="color:#38bdf8">${V.d}P</span> <span style="color:#ef4444">${V.l}S</span> · game ${V.gf}-${V.ga}`;}
@@ -8414,10 +8458,12 @@ html body:not(.light) #ris-list .cmc.ris-c.motw:is(.z.z.z.z,*){border-color:#ffd
 .rs-day .rs-pdf{position:static!important;transform:none!important;flex-shrink:0}
 /* Classifiche: il pulsante PDF al posto di A–Z (solo admin) */
 .rk-seg .rk-pdf{color:var(--accent)!important}
-/* telefono: niente titoli grandi in cima alle pagine (resta solo LISTA GIOCATORI in Home) */
-@media(max-width:640px){
+/* niente titoli grandi in cima alle pagine, su telefono e PC (resta solo LISTA GIOCATORI in Home) */
+@media all{
   html body :is(#page-calendario,#page-risultati,#page-statistiche,#page-classifiche,#page-albo,#page-tornei,#page-fanta,#page-classifiche-torneo) :is(.pg-title.pg-big,.cal-title-big,.cal-titlebox){display:none!important}
   html body #page-risultati .ris-hd{display:none!important}
+  html body #page-classifiche .wrap>div:first-child{justify-content:center!important}
+  html body #page-albo .pg-hd{justify-content:flex-end!important}
 }
 /* PC: giocatore della settimana più grande e centrato accanto ai 12 record */
 @media(min-width:641px){
@@ -8433,6 +8479,24 @@ html body:not(.light) #ris-list .cmc.ris-c.motw:is(.z.z.z.z,*){border-color:#ffd
 html body .rk-row .rk-elo{align-self:stretch;display:flex!important;align-items:center;justify-content:center}
 @media(max-width:640px){html body .rk-row .rk-elo:not(.k){display:none!important}}
 html body .rk-row .rk-elo b{font-size:24px!important;text-shadow:0 0 12px rgba(255,45,61,.55)}
+/* Statistiche: faccia a faccia, tu contro…, gemello */
+.sx-vsrow{display:flex;gap:8px}
+.sx-vsrow select{flex:1;min-width:0;background:#0d2366;color:#fff;border:1px solid rgba(126,224,255,.45);border-radius:12px;padding:0 10px;height:44px;font:700 14px "DM Sans",sans-serif}
+.sx-vs-go{width:auto!important;height:44px!important;padding:0 20px!important;font-size:15px!important}
+.sx-sug{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px}
+.sx-sug button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px;border-radius:12px;border:1px solid rgba(126,224,255,.35);background:rgba(0,0,0,.2);color:#fff;cursor:pointer;min-width:0;font-family:inherit}
+.sx-sug .mk-av{width:38px;height:38px;font-size:14px}
+.sx-sug span{display:flex;flex-direction:column;align-items:center;min-width:0;max-width:100%}
+.sx-sug small{font:800 8.5px "DM Sans",sans-serif;letter-spacing:.8px;color:var(--accent);white-space:nowrap}
+.sx-sug b{font-family:"Anton",sans-serif;font-weight:400;font-size:13px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.sx-cmp-r+.sx-cmp-r{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(126,224,255,.2)}
+.sx-cgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:6px}
+.sx-cc{text-align:center;padding:5px 2px;border-radius:10px;background:rgba(0,0,0,.22)}
+.sx-cc span{display:block;font:800 8.5px "DM Sans",sans-serif;letter-spacing:.8px;color:rgba(255,255,255,.55)}
+.sx-cc b{display:block;font-family:"Anton",sans-serif;font-weight:400;font-size:17px;line-height:1.1;color:#fff}
+.sx-cc b.up{color:var(--accent)}.sx-cc b.dn{color:#ef4444}
+.sx-cc i{display:block;font:700 10.5px "DM Sans",sans-serif;font-style:normal;color:rgba(255,255,255,.55)}
+.sx-reroll{display:block;margin:12px auto 0;height:36px;padding:0 16px;border-radius:999px;border:1px solid rgba(126,224,255,.45);background:rgba(0,0,0,.25);color:#fff;font:800 13px "DM Sans",sans-serif;cursor:pointer}
 /* chi ha messo le reazioni (solo admin) */
 .rea-bar .rb{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 #rea-who{position:fixed;z-index:6300;display:none;min-width:160px;max-width:min(280px,calc(100vw - 16px));padding:10px 12px;border-radius:14px;background:#0d2366;border:1.5px solid rgba(126,224,255,.75);box-shadow:0 0 16px rgba(126,224,255,.4),0 14px 34px rgba(0,0,0,.6);font:600 13px "DM Sans",sans-serif;color:#fff;pointer-events:none}
