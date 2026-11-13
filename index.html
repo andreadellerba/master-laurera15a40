@@ -7385,15 +7385,15 @@ function rankAnim(prev,sortKey){
 // ═══ 2. REAZIONI AI RISULTATI (condivise tra tutti, una per tipo per dispositivo) ═══
 // Barra delle reazioni sotto ogni risultato (Risultati, Calendario, scheda partita): le faccine già usate
 // con il conteggio, toccandole aggiungi o togli la tua; il pulsante "+" apre tutte le faccine.
-const REA=[['f','🔥'],['c','👏'],['h','😍'],['p','💪'],['w','🤯'],['l','😂'],['t','🎾'],['k','🏆']];
+const REA=[['f','🔥'],['c','👏'],['h','😍'],['p','💪'],['w','🤯'],['l','😂']];   // tolte 🎾 e 🏆 per farle stare tutte su una riga
 let _rea={};
 const _reaCol=()=>_db.collection('clubs').doc('laurera15a40').collection('reazioni');
 function _reaMine(){try{return JSON.parse(localStorage.getItem('laurera_rea')||'{}')||{};}catch(e){return{};}}
 function _reaSetMine(o){try{localStorage.setItem('laurera_rea',JSON.stringify(o));}catch(e){}}
 const _reaAddSvg='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5a8.5 8.5 0 1 1-8-8.48"/><path d="M8.5 14.5s1.3 1.8 3.5 1.8 3.5-1.8 3.5-1.8"/><path d="M9 9.5h.01M15 9.5h.01"/><path d="M19 2.5v5M16.5 5h5"/></svg>';
 function reaHtml(mid){const c=_rea[mid]||{},mine=_reaMine()[mid]||[];
-  const used=REA.filter(([k])=>(+c[k]||0)>0).sort((a,b)=>(+c[b[0]]||0)-(+c[a[0]]||0));
-  return`<div class="rea-bar" data-mid="${mid}" onclick="event.stopPropagation()">${used.map(([k,e])=>`<button type="button" class="rb${mine.includes(k)?' on':''}" data-k="${k}" onclick="reaTap(${mid},'${k}',this)" aria-label="Reagisci con ${e}"><em>${e}</em>${+c[k]}</button>`).join('')}<button type="button" class="rb rb-add" onclick="reaPick(${mid},this)" aria-label="Aggiungi una reazione">${_reaAddSvg}${used.length?'':'Reagisci'}</button></div>`;}
+  const used=REA;   // tutte le faccine sempre visibili, ognuna col suo numero
+  return`<div class="rea-bar" data-mid="${mid}" onclick="event.stopPropagation()">${used.map(([k,e])=>`<button type="button" class="rb${mine.includes(k)?' on':''}${+c[k]?'':' zero'}" data-k="${k}" onclick="reaTap(${mid},'${k}',this)" aria-label="Reagisci con ${e}"><em>${e}</em>${+c[k]||0}</button>`).join('')}</div>`;}
 const reaChip=reaHtml;
 function _reaToggleMine(mid,k,add){const o=_reaMine(),a=(o[mid]||[]).filter(x=>x!==k);if(add)a.push(k);if(a.length)o[mid]=a;else delete o[mid];_reaSetMine(o);}
 function reaTap(mid,k,btn){
@@ -8468,7 +8468,7 @@ html body:not(.light) .ticker-tape{border:0!important}
 /* RISULTATI su telefono come il Calendario: niente barra verde, reazioni sotto il secondo nome */
 #ris-list .cmc.ris-c{margin-bottom:10px}
 #ris-list .cmc.ris-c::before{display:none!important}
-#ris-list .cmc.ris-c .rea-bar{grid-column:2 / -1;grid-row:3;justify-content:flex-start;margin-top:4px;padding-top:0;border-top:0}
+#ris-list .cmc.ris-c .rea-bar{grid-column:1 / -1;grid-row:3;margin-top:4px;padding-top:0;border-top:0}
 #ris-list .cmc.ris-c .mk-st .cmc-edit{display:none}
 html body:not(.light) #ris-list .cmc.ris-c.motw:is(.z.z.z.z,*){border-color:#ffd23f!important;box-shadow:0 0 16px rgba(255,210,63,.45),inset 0 0 18px rgba(255,210,63,.12)!important}
 /* PC: logo intero in orizzontale, menu al centro con tutto lo spazio, ticker come seconda riga della stessa barra */
@@ -8607,7 +8607,10 @@ html body:not(.light) header.header .hdr:is(.z.z.z.z,*){max-width:none!important
 html body:not(.light) header.header .hdr .ticker-tape:is(.z.z.z.z,*){border-radius:0!important;border-top:1px solid rgba(126,224,255,.18)!important;background:transparent!important}
 @media(max-width:640px){
   html body:not(.light) header.header .hdr .ticker-tape:is(.z.z.z.z,*){margin:8px calc(-1 * max(14px,env(safe-area-inset-left,0px))) 0!important;width:auto!important}
-  html body:not(.light) header.header .hdr .hdr-info,html body:not(.light) header.header .hdr .hdr-players-mobile{top:calc(24px + env(safe-area-inset-top,0px))!important;transform:translateY(-50%)!important}
+  html body:not(.light) header.header .hdr .hdr-info,html body:not(.light) header.header .hdr .hdr-players-mobile{top:calc(29px + env(safe-area-inset-top,0px))!important;transform:translateY(-50%)!important}
+  html body:not(.light) header.header .hdr :is(.hdr-players-mobile,#admin-lock-btn,#settings-gear-btn){background:none!important;border:0!important;box-shadow:none!important;padding:0 4px!important;width:auto!important;height:auto!important}
+  html body:not(.light) header.header .hdr .hdr-players-mobile{font-size:14px!important}
+  html body:not(.light) header.header .hdr #admin-lock-btn svg{width:20px;height:20px}
   html body:not(.light) header.header .hdr .logo-img{margin:2px auto!important}
 }
 @media(min-width:641px){
@@ -8617,7 +8620,8 @@ html body:not(.light) header.header .hdr .ticker-tape:is(.z.z.z.z,*){border-radi
 }
 /* menu in basso: pillola flottante, voce attiva sempre giallo fluo e icone tutte dello stesso colore */
 html body:not(.light) .tabs-mobile2 .tbtn{--tc:var(--accent)!important;color:rgba(255,255,255,.72)!important}
-html body:not(.light) .tabs-mobile2 .tbtn.active{background:var(--accent)!important;color:#111!important;box-shadow:0 0 16px rgba(232,255,0,.45)!important}
+html body:not(.light) .tabs-mobile2 .tbtn.active:is(.z.z.z.z,*){background:var(--accent)!important;color:#111!important;box-shadow:0 0 16px rgba(232,255,0,.45)!important;border-radius:999px!important}
+html body:not(.light) .tabs-mobile2 .tbtn.active::before{border-radius:999px!important}
 html body:not(.light) .tabs-mobile2 .tbar:is(.z.z.z.z,*){border:0!important;box-shadow:0 10px 26px rgba(0,0,0,.45)!important;border-radius:999px!important;background:#0d2366!important}
 /* menu PC: voci bianche, quella attiva con la sottolineatura gialla */
 html body:not(.light) .hdr .tab svg{color:currentColor!important}
@@ -8649,6 +8653,57 @@ html body:not(.light) .cards-grid{row-gap:16px!important}
 html body:not(.light) .page.active>.wrap,html body:not(.light) #page-players{padding-top:12px}
 html body:not(.light) .profile-h2h-btn{border:0!important;background:var(--accent)!important;color:#111!important;box-shadow:0 5px 0 #8a9900!important}
 html body:not(.light) .ph-band{border:0!important}
+</style>
+<script>
+// Calendario su telefono: si cambia settimana con lo swipe (a sinistra la successiva, a destra la precedente)
+(function(){let x0=null,y0=0,t0=0;
+  const pg=()=>document.getElementById('page-calendario');
+  document.addEventListener('touchstart',e=>{const p=pg();if(!p||!p.classList.contains('active')||!p.contains(e.target)||e.target.closest('.modal-bg,.mv-bg,input,select,textarea,.rea-bar'))return;
+    x0=e.touches[0].clientX;y0=e.touches[0].clientY;t0=Date.now();},{passive:true});
+  document.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
+    if(Math.abs(dx)<60||Math.abs(dx)<Math.abs(dy)*1.5||Date.now()-t0>700)return;
+    const s=document.getElementById('cal-strip'),l=document.getElementById('cal-list'),dir=dx<0?1:-1;
+    if(dir>0)calNext();else calPrev();
+    [s,l].forEach(el=>{if(el&&el.animate&&!_reduceMotion())el.animate([{transform:`translateX(${dir*40}px)`,opacity:.2},{transform:'none',opacity:1}],{duration:260,easing:'ease-out'});});
+  },{passive:true});
+})();
+</script>
+<style>
+@media(max-width:640px){
+  html body #page-calendario .cal-nav .cal-nbtn,html body #page-calendario .cal-nav .cal-wlbl{display:none!important}
+  html body.viewer #page-calendario .cal-nav{display:none!important}
+  html body #page-calendario .cal-nav{justify-content:center}
+  #cal-strip,#cal-list{touch-action:pan-y}
+}
+</style>
+<style>
+/* reazioni: tutte e sei sempre visibili, su una riga, quelle ancora a zero più tenui */
+html body .rea-bar{flex-wrap:nowrap!important;justify-content:flex-start!important;gap:5px!important}
+html body .mv .rea-bar{justify-content:center!important}
+html body .rea-bar .rb{flex:0 0 auto;padding:0 9px!important;height:30px!important}
+html body .rea-bar .rb.zero{opacity:.5}
+html body .rea-bar .rb.zero.on,html body .rea-bar .rb.zero:hover{opacity:1}
+@media(max-width:640px){html body .cmc .rea-bar .rb{flex:1 1 0;min-width:0;justify-content:center;padding:0 4px!important}}
+/* PC: giocatore della settimana alto quanto le schede dei record, senza spazi vuoti; menu al centro */
+@media(min-width:641px){
+  html body .hl:is(.z.z.z.z,*){align-items:center!important}
+  html body .hl .hf-feat:is(.z.z.z,*){padding:0!important;gap:6px!important;min-height:0!important}
+  html body .hl .hf-ph:is(.z.z.z,*){width:96px!important;height:96px!important;font-size:34px!important}
+  html body .hl .hf-k:is(.z.z.z,*){font-size:12px!important}
+  html body .hl .hf-nm:is(.z.z.z,*){font-size:36px!important;margin-top:2px!important}
+  html body .hl .hf-sub:is(.z.z.z,*){font-size:12.5px!important;margin-top:3px!important;gap:1px!important}
+  html body .hl .hf-chips:is(.z.z.z,*){margin-top:5px!important}
+  html body header.header .hdr .tabs:is(.z.z.z.z,*){justify-self:stretch!important;display:flex;justify-content:center}
+  html body header.header .hdr .tabs-inner{justify-content:center!important;margin:0 auto}
+  html body header.header .hdr:is(.z.z.z.z.z.z,*){grid-template-columns:1fr auto 1fr!important}
+  @media(max-width:1250px){html body:not(.viewer) header.header .hdr:is(.z.z.z.z.z.z.z,*){grid-template-columns:auto minmax(0,1fr) auto!important}}
+  @media(max-width:960px){html body header.header .hdr:is(.z.z.z.z.z.z.z.z,*){grid-template-columns:auto minmax(0,1fr) auto!important}}
+  @media(max-width:1250px){html body:not(.viewer) header.header .hdr .tabs-inner .tab:is(.z.z.z.z,*){font-size:14px!important;padding-left:5px!important;padding-right:5px!important}html body:not(.viewer) header.header .hdr .tabs-inner{gap:0!important}html body:not(.viewer) header.header .hdr .logo-img:is(.z.z.z.z,*){height:34px!important}}
+  @media(max-width:960px){html body:not(.viewer) header.header .hdr .tabs-inner .tab:is(.z.z.z.z.z,*),html body:not(.viewer) header.header .hdr .tabs-inner .tab:is(.z.z.z.z.z,*) span{font-size:11px!important;padding-left:2px!important;padding-right:2px!important;letter-spacing:0!important}html body:not(.viewer) header.header .hdr .logo-img:is(.z.z.z.z.z,*){height:24px!important;max-width:110px!important}}
+  html body header.header .hdr .logo-img:is(.z.z.z,*){justify-self:start}
+  html body header.header .hdr .hdr-info:is(.z.z.z,*){justify-self:end}
+  html body header.header .hdr .tabs:is(.z.z.z.z.z,*){justify-self:center!important}
+}
 </style>
 <script>window.matchMedia("(max-width:640px)").addEventListener("change",()=>{if(typeof currentTab!=="undefined"&&currentTab==="risultati")renderRisultati();});
 function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>
