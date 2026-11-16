@@ -4061,14 +4061,14 @@ function cmcHtml(m){
   const admin=!m.risultato
     ?`<button class="add-res-btn" onclick="event.stopPropagation();openCalModalRes(${m.id})"><span class="add-res-full">+ Risultato</span><span class="add-res-short">+</span></button>`:'';
   return`<div class="cmc mk ${m.risultato?'cd':live?'cs live':'cs'}${!m.risultato&&m.data===today?' oggi':''}" style="--mc:${col}" onclick="cmcClick(${m.id})">
-    <div class="mk-time"><b>${esc(m.ora||'—')}</b>${!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`}${typeof cmBadge==="function"?cmBadge(m):""}</div>
+    <div class="mk-time"><b>${esc(m.ora||'—')}</b>${!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`}</div>
     <div class="mk-pl">${av(p1)}${nm(n1,win1,win2)}</div>
     <div class="mk-c${m.risultato?" played":""}">${m.risultato?"":`<b>${esc(m.ora||"—")}</b>`}${m.risultato?`<span class="mk-c-sc ${!win1&&!win2?'d':''}"><i class="${win1?'w':win2?'l':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</i><u>-</u><i class="${win2?'w':win1?'l':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</i></span><small>${m.ora?esc(m.ora)+" · ":""}${esc(tag)}</small>`:(!m.risultato&&m.data===today&&matchTs(m)>Date.now()?`<small class="cdn" data-at="${matchTs(m)}">${cdText(matchTs(m))}</small>`:`<small>${esc(tag)}</small>`)}</div>
     ${m.risultato?`<span class="mk-score${!win1&&!win2?' draw':''}"><b class="${win1?'w':''}">${hasG?g1:esc(String(m.risultato).split(/[-–]/)[0]||'')}</b><b class="${win2?'w':''}">${hasG?g2:esc(String(m.risultato).split(/[-–]/)[1]||'')}</b></span>`:'<span class="mk-vs">VS</span>'}
     <div class="mk-pl rt">${nm(n2,win2,win1)}${av(p2)}</div>
     <div class="mk-st">${typeof wxChip==="function"?wxChip(m):""}${admin}<div class="cmc-edit" onclick="event.stopPropagation();openCalModal(${m.id})">✏️</div></div>
     ${m.risultato&&typeof reaHtml==='function'?reaHtml(m.id):''}
-    ${m.risultato&&typeof cmCardHtml==='function'?cmCardHtml(m.id):''}
+
   </div>`;
 }
 // ═══ CAL MODAL ═══
@@ -4109,7 +4109,12 @@ function fillCalTorneoSelect(){
     tornei.map(t=>`<option value="${t.id}">${esc(t.nome)}</option>`).join('');
   if(calActiveTorneoId)sel.value=calActiveTorneoId;
 }
-function openCalModal(id){if(_checkViewer())return;editSchedId=id?+id:null;const rb=document.getElementById('mc-res-block'),rt=document.getElementById('mc-res-toggle'),drb=document.getElementById('mc-del-res-btn');if(editSchedId){const m=sched.find(x=>x.id===editSchedId);if(!m)return;if(m.torneoId)calActiveTorneoId=m.torneoId;fillCalSelects();document.getElementById('mc-title').textContent='Modifica Incontro';document.getElementById('mc-titolo').value=m.titolo||'';fillCalTorneoSelect();const _ts=document.getElementById('mc-torneo-id');if(_ts)_ts.value=m.torneoId||'';updateCalStatsVisibility();document.getElementById('mc-p1').value=m.p1Id||'';document.getElementById('mc-p2').value=m.p2Id||'';document.getElementById('mc-data').value=m.data||'';document.getElementById('mc-ora').value=m.ora||'10:00';document.getElementById('mc-note').value=m.note||'';document.getElementById('mc-del-btn').style.display='';drb.style.display=m.risultato?'':'none';if(m.risultato){rb.style.display='';rt.textContent='– Nascondi';document.getElementById('mc-winner').innerHTML=buildWinOpts(m.p1Id,m.p2Id);document.getElementById('mc-winner').value=m.winnerId||'';document.getElementById('mc-risultato').value=m.risultato||'';document.getElementById('mc-gv1').value=m.gv1||0;document.getElementById('mc-gv2').value=m.gv2||0;const _ct=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;document.getElementById('mc-gv1-lbl').textContent='Game vinti '+mcGvLabelName(_ct,m.p1Id);document.getElementById('mc-gv2-lbl').textContent='Game vinti '+mcGvLabelName(_ct,m.p2Id);calAutoMedia();}else{rb.style.display='none';rt.textContent='+ Risultato';}}else{fillCalTorneoSelect();fillCalSelects();document.getElementById('mc-title').textContent='Nuovo Incontro';['mc-titolo','mc-risultato','mc-note'].forEach(x=>document.getElementById(x).value='');document.getElementById('mc-p1').value='';document.getElementById('mc-p2').value='';document.getElementById('mc-data').value=calSelDate;document.getElementById('mc-ora').value='10:00';document.getElementById('mc-del-btn').style.display='none';drb.style.display='none';rb.style.display='none';rt.textContent='+ Risultato';document.getElementById('mc-winner').innerHTML='<option value="">—</option>';['mc-risultato','mc-gv1','mc-gv2','mc-mg1','mc-mg2'].forEach(x=>document.getElementById(x).value='');if(calActiveTorneoId){const _ts=document.getElementById('mc-torneo-id');if(_ts)_ts.value=calActiveTorneoId;}updateCalStatsVisibility();}document.getElementById('modal-cal').classList.add('open');}
+function openCalModal(id){if(_checkViewer())return;editSchedId=id?+id:null;const rb=document.getElementById('mc-res-block'),rt=document.getElementById('mc-res-toggle'),drb=document.getElementById('mc-del-res-btn');if(editSchedId){const m=sched.find(x=>x.id===editSchedId);if(!m)return;if(m.torneoId)calActiveTorneoId=m.torneoId;fillCalSelects();document.getElementById('mc-title').textContent='Modifica Incontro';document.getElementById('mc-titolo').value=m.titolo||'';fillCalTorneoSelect();const _ts=document.getElementById('mc-torneo-id');if(_ts)_ts.value=m.torneoId||'';updateCalStatsVisibility();document.getElementById('mc-p1').value=m.p1Id||'';document.getElementById('mc-p2').value=m.p2Id||'';document.getElementById('mc-data').value=m.data||'';document.getElementById('mc-ora').value=m.ora||'10:00';document.getElementById('mc-note').value=m.note||'';document.getElementById('mc-del-btn').style.display='';drb.style.display=m.risultato?'':'none';if(m.risultato){rb.style.display='';rt.textContent='– Nascondi';document.getElementById('mc-winner').innerHTML=buildWinOpts(m.p1Id,m.p2Id);document.getElementById('mc-winner').value=m.winnerId||'';document.getElementById('mc-risultato').value=m.risultato||'';document.getElementById('mc-gv1').value=m.gv1||0;document.getElementById('mc-gv2').value=m.gv2||0;const _ct=m.torneoId?tornei.find(x=>x.id===m.torneoId):null;document.getElementById('mc-gv1-lbl').textContent='Game vinti '+mcGvLabelName(_ct,m.p1Id);document.getElementById('mc-gv2-lbl').textContent='Game vinti '+mcGvLabelName(_ct,m.p2Id);calAutoMedia();}else{rb.style.display='none';rt.textContent='+ Risultato';}}else{fillCalTorneoSelect();fillCalSelects();document.getElementById('mc-title').textContent='Nuovo Incontro';['mc-titolo','mc-risultato','mc-note'].forEach(x=>document.getElementById(x).value='');document.getElementById('mc-p1').value='';document.getElementById('mc-p2').value='';document.getElementById('mc-data').value=calSelDate;document.getElementById('mc-ora').value='10:00';document.getElementById('mc-del-btn').style.display='none';drb.style.display='none';rb.style.display='none';rt.textContent='+ Risultato';document.getElementById('mc-winner').innerHTML='<option value="">—</option>';['mc-risultato','mc-gv1','mc-gv2','mc-mg1','mc-mg2'].forEach(x=>document.getElementById(x).value='');if(calActiveTorneoId){const _ts=document.getElementById('mc-torneo-id');if(_ts)_ts.value=calActiveTorneoId;}else{const _ts=document.getElementById('mc-torneo-id'),_td=_torneoPredef();if(_ts&&_td)_ts.value=_td.id;}updateCalStatsVisibility();}document.getElementById('modal-cal').classList.add('open');}
+// torneo già scelto per le partite nuove: quello in corso del Laurera (se ce ne sono più di uno, quello dell'ultima partita)
+function _torneoPredef(){const A=tornei.filter(t=>t.attivo!==false);if(!A.length)return null;
+  const L=A.filter(t=>/laurera/i.test(t.nome||'')),C=L.length?L:A;if(C.length===1)return C[0];
+  const last=sched.filter(m=>m.torneoId&&C.some(t=>t.id===m.torneoId)).sort((a,b)=>(b.data||'').localeCompare(a.data||''))[0];
+  return last?C.find(t=>t.id===last.torneoId):C[C.length-1];}
 function openCalModalRes(id){openCalModal(id);setTimeout(()=>{const rb=document.getElementById('mc-res-block');if(rb&&rb.style.display==='none')toggleResBlock();},50);}
 function toggleResBlock(){const rb=document.getElementById('mc-res-block'),btn=document.getElementById('mc-res-toggle');const open=rb.style.display==='none';rb.style.display=open?'':'none';btn.textContent=open?'– Nascondi':'+ Risultato';if(open){const p1=+document.getElementById('mc-p1').value,p2=+document.getElementById('mc-p2').value;document.getElementById('mc-winner').innerHTML=buildWinOpts(p1,p2);const _tId=+(document.getElementById('mc-torneo-id')?.value)||null;const _ct=_tId?tornei.find(x=>x.id===_tId):null;document.getElementById('mc-gv1-lbl').textContent='Game vinti '+mcGvLabelName(_ct,p1);document.getElementById('mc-gv2-lbl').textContent='Game vinti '+mcGvLabelName(_ct,p2);}}
 function buildWinOpts(p1Id,p2Id){
@@ -4347,7 +4352,7 @@ function renderRisultati(){
       <div class="rs-side ${cL}">${av(L)}${nm(teamOf(m,L),draw?'PAREGGIO':(wIsP1?'VINCE':'PERDE'))}</div>
       <div class="rs-score"><span class="${draw?'dr':(wIsP1?'win':'')}">${sL}</span>${sR!==''?`<span class="${draw?'dr':(wIsP1?'':'win')}">${sR}</span>`:''}</div>
       <div class="rs-side ${cR} rt">${nm(teamOf(m,R),draw?'PAREGGIO':(wIsP1?'PERDE':'VINCE'))}${av(R)}</div>
-      ${m.ora?`<div class="rs-time">${esc(m.ora)}</div>`:''}${rc}${typeof cmCardHtml==='function'?cmCardHtml(m.id):''}
+      ${m.ora?`<div class="rs-time">${esc(m.ora)}</div>`:''}${rc}
     </div>`;
   };
   const days={};done.forEach(m=>{(days[m.data]=days[m.data]||[]).push(m);});
@@ -8883,32 +8888,9 @@ document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closes
   }catch(e){}};}
 </script>
 <style>
-/* ═══ COMMENTI ALLE PARTITE ═══ */
+/* scheda partita: se è più alta dello schermo scorre al suo interno */
 #mv-bg .mv{max-height:calc(100dvh - 32px - var(--sat) - env(safe-area-inset-bottom,0px));overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
 #mv-bg .mv::-webkit-scrollbar{display:none}
-.mv-cm{margin:14px 0 14px;text-align:left}
-.mv-cm-h{display:flex;align-items:center;justify-content:center;gap:8px;font:800 11px "DM Sans",sans-serif;letter-spacing:1.2px;color:rgba(255,255,255,.75);margin-bottom:8px}
-.mv-cm-h span{background:rgba(232,255,0,.16);color:var(--accent);border-radius:999px;padding:2px 8px;font-size:11px}
-.mv-cm-l{display:flex;flex-direction:column;gap:8px;max-height:230px;overflow-y:auto;overscroll-behavior:contain;padding:2px 2px 4px;scrollbar-width:thin}
-.mv-cm-0{font:600 13px "DM Sans",sans-serif;color:rgba(255,255,255,.55);text-align:center;padding:4px 0 2px}
-.cm-it{display:flex;align-items:flex-start;gap:8px;animation:cmIn .3s ease-out both}
-@keyframes cmIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.cm-it .mk-av{width:30px;height:30px;flex-shrink:0;font-size:11px}
-.cm-b{flex:1;min-width:0;background:rgba(0,0,0,.32);border-radius:4px 16px 16px 16px;padding:7px 11px 8px}
-.cm-it.me .cm-b{background:rgba(232,255,0,.12)}
-.cm-hd{display:flex;align-items:center;gap:6px;font:800 11.5px "DM Sans",sans-serif;line-height:1.2}
-.cm-hd b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.cm-hd span{color:rgba(255,255,255,.5);font-weight:700;white-space:nowrap}
-.cm-del{margin-left:auto;border:0;background:none;color:#fca5a5;font-size:13px;cursor:pointer;padding:0 0 0 6px;line-height:1}
-.cm-t{font:500 14px/1.35 "DM Sans",sans-serif;color:#fff;margin-top:2px;overflow-wrap:anywhere;white-space:pre-wrap}
-.mv-cm-f{display:flex;gap:8px;margin-top:10px}
-.mv-cm-f input{flex:1;min-width:0;height:42px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.35);color:#fff;padding:0 16px;font:500 16px "DM Sans",sans-serif;outline:none}
-.mv-cm-f input:focus{border-color:var(--accent)}
-.mv-cm-f button{height:42px;padding:0 18px;border-radius:999px;border:0;background:var(--accent);color:#0b1640;font:800 14px "DM Sans",sans-serif;cursor:pointer;flex-shrink:0}
-.mv-cm-f button:disabled{opacity:.5}
-.mv-cm-who{display:block;margin:10px auto 0;height:40px;padding:0 18px;border-radius:999px;border:1px dashed rgba(232,255,0,.6);background:rgba(232,255,0,.08);color:var(--accent);font:800 13px "DM Sans",sans-serif;cursor:pointer}
-.mk-time .mk-cm{display:block;font:800 10px "DM Sans",sans-serif;color:#fff;margin-top:2px;letter-spacing:0}
-.mk-time .mk-cm:empty{display:none}
 /* ═══ COMPLIMENTI E ADESIVI ═══ */
 .kd-card{background:#0f2770;border-radius:22px;padding:14px 12px 12px;box-shadow:0 6px 16px rgba(0,0,0,.28);margin-bottom:14px}
 .kd-tot{text-align:center;font:800 12px "DM Sans",sans-serif;color:rgba(255,255,255,.7);margin-bottom:10px}
@@ -8930,58 +8912,11 @@ document.addEventListener('click',e=>{const el=e.target.closest&&e.target.closes
 .kd-l em{font-style:normal;font-size:17px}.kd-l small{color:rgba(255,255,255,.5);font:700 11.5px "DM Sans",sans-serif}
 </style>
 <script>
-// ═══ COMMENTI ALLE PARTITE ═══
-// clubs/laurera15a40/commenti/{id}: {mid, testo, nome, pid, t}. Chiunque legge; si scrive col nome scelto in "Chi sei?"; solo l'admin cancella.
-const _cmCol=()=>_db.collection('clubs').doc('laurera15a40').collection('commenti');
-let _cm={};
-function _cmMine(){try{return JSON.parse(localStorage.getItem('laurera_cm_mine')||'[]');}catch(e){return[];}}
-// chi sono io per commentare/mandare complimenti: il giocatore scelto in "Chi sei?", oppure "Admin"
+// ═══ CHI SONO IO (per i complimenti): il giocatore scelto in "Chi sei?", oppure "Admin" ═══
 function socialMe(){const me=+localStorage.getItem('laurera_me'),p=players.find(x=>x.id===me);
   if(p)return{nome:String(p.nome).slice(0,40),pid:p.id,p};if(!_checkViewer())return{nome:'Admin',pid:null,p:null};return null;}
 function agoText(ms){if(!ms)return'ora';const s=(Date.now()-ms)/1000;if(s<60)return'ora';if(s<3600)return Math.floor(s/60)+' min fa';if(s<86400)return Math.floor(s/3600)+' h fa';
   const d=Math.floor(s/86400);if(d===1)return'ieri';if(d<7)return d+' giorni fa';return new Date(ms).toLocaleDateString('it-IT',{day:'numeric',month:'short'});}
-function cmBadge(m){if(m.risultato)return"";const n=(_cm[String(m.id)]||[]).length;return`<small class="mk-cm" data-cm="${m.id}">${n?'💬 '+n:''}</small>`;}
-function _cmItem(c){const p=c.pid!=null?players.find(x=>x.id===c.pid):null,name=p?dispName(p.nome):(c.nome||'Socio'),mine=_cmMine().includes(c.id);
-  return`<div class="cm-it${mine?' me':''}"><div class="mk-av">${p?avHtmlBig(p):'<span>🎾</span>'}</div><div class="cm-b"><div class="cm-hd"><b>${esc(name)}</b><span>· ${esc(agoText(c.t))}</span>${!_checkViewer()?`<button type="button" class="cm-del" onclick="cmDel('${esc(c.id)}')" aria-label="Cancella commento">🗑</button>`:''}</div><div class="cm-t">${esc(c.testo)}</div></div></div>`;}
-function _cmList(mid){const L=_cm[String(mid)]||[];return L.length?L.map(_cmItem).join(''):'<div class="mv-cm-0">Ancora nessun commento: scrivi il primo!</div>';}
-function cmSecHtml(mid){const L=_cm[String(mid)]||[],me=socialMe();
-  return`<div class="mv-cm" data-mid="${mid}"><div class="mv-cm-h">💬 COMMENTI${L.length?`<span>${L.length}</span>`:''}</div><div class="mv-cm-l">${_cmList(mid)}</div>
-    ${me?`<form class="mv-cm-f" onsubmit="event.preventDefault();cmSend(${mid},this)"><input type="text" maxlength="200" placeholder="Scrivi un commento…" aria-label="Scrivi un commento" enterkeyhint="send"><button type="submit">Invia</button></form>`
-       :`<button type="button" class="mv-cm-who" onclick="closeMatchView();obShow(3)">✋ Scegli chi sei per commentare</button>`}</div>`;}
-function cmRefresh(){
-  document.querySelectorAll('.mk-cm[data-cm]').forEach(el=>{const n=(_cm[el.dataset.cm]||[]).length;el.textContent=n?'💬 '+n:'';});
-  document.querySelectorAll('.mv-cm[data-mid]').forEach(el=>{const mid=el.dataset.mid,L=_cm[mid]||[],l=el.querySelector('.mv-cm-l'),h=el.querySelector('.mv-cm-h');
-    const atEnd=l.scrollHeight-l.scrollTop-l.clientHeight<30;l.innerHTML=_cmList(mid);if(atEnd)l.scrollTop=l.scrollHeight;
-    h.innerHTML='💬 COMMENTI'+(L.length?`<span>${L.length}</span>`:'');});
-}
-let _cmLast=0;
-function cmSend(mid,form){const inp=form.querySelector('input'),btn=form.querySelector('button'),testo=inp.value.replace(/\s+/g,' ').trim().slice(0,200),me=socialMe();
-  if(!testo||!me)return;if(Date.now()-_cmLast<10000){toast('Aspetta qualche secondo prima del prossimo commento');return;}
-  btn.disabled=true;_cmLast=Date.now();
-  _cmCol().add({mid:String(mid),testo,nome:me.nome,pid:me.pid,t:firebase.firestore.FieldValue.serverTimestamp()}).then(ref=>{
-    const a=_cmMine();a.push(ref.id);try{localStorage.setItem('laurera_cm_mine',JSON.stringify(a.slice(-300)));}catch(e){}
-    inp.value='';btn.disabled=false;cmRefresh();const l=form.parentNode.querySelector('.mv-cm-l');if(l)l.scrollTop=l.scrollHeight;
-    try{if(navigator.vibrate)navigator.vibrate(12);}catch(e){}
-  }).catch(()=>{btn.disabled=false;_cmLast=0;toast('Commento non inviato, riprova più tardi');});}
-function cmDel(id){if(_checkViewer()||!confirm('Cancellare questo commento?'))return;
-  _cmCol().doc(id).delete().then(()=>{Object.keys(_cmMid).forEach(k=>{_cmMid[k]=_cmMid[k].filter(c=>c.id!==id);});_cmMerge();toast('Commento cancellato');}).catch(()=>toast('Non sono riuscito a cancellarlo'));}
-// Per restare nei limiti gratuiti di Firebase: all'apertura si leggono solo i commenti delle ultime 3 settimane;
-// quelli più vecchi si leggono solo aprendo una partita vecchia (e solo di quella partita).
-const _CM_GIORNI=21;let _cmWin={},_cmMid={};
-const _cmDoc=d=>{const x=d.data({serverTimestamps:'estimate'});if(!x||!x.mid||!x.testo)return null;
-  return{id:d.id,mid:String(x.mid),testo:String(x.testo),nome:x.nome,pid:x.pid??null,t:x.t&&x.t.toMillis?x.t.toMillis():Date.now()};};
-function _cmMerge(){const o={},add=(k,L)=>{const m=o[k]=o[k]||new Map();L.forEach(c=>m.set(c.id,c));};
-  Object.entries(_cmMid).forEach(([k,L])=>add(k,L));Object.entries(_cmWin).forEach(([k,L])=>add(k,L));
-  const r={};Object.entries(o).forEach(([k,m])=>{r[k]=[...m.values()].sort((a,b)=>a.t-b.t);});_cm=r;cmRefresh();}
-function cmLoadMatch(mid){mid=String(mid);_cmCol().where('mid','==',mid).get().then(s=>{const L=[];s.forEach(d=>{const c=_cmDoc(d);if(c)L.push(c);});_cmMid[mid]=L;_cmMerge();}).catch(()=>{});}
-try{_cmCol().where('t','>=',firebase.firestore.Timestamp.fromMillis(Date.now()-_CM_GIORNI*86400e3)).onSnapshot(s=>{const o={};
-  s.forEach(d=>{const c=_cmDoc(d);if(c)(o[c.mid]=o[c.mid]||[]).push(c);});_cmWin=o;_cmMerge();},()=>{});}catch(e){}
-// la sezione commenti va nella scheda della partita, sopra i bottoni
-{const _omv2=openMatchView;openMatchView=function(id){_omv2.apply(this,arguments);try{const bg=document.getElementById('mv-bg'),m=sched.find(x=>x.id===id);if(!bg||!m)return;
-  if(m.data&&new Date(m.data+'T12:00:00').getTime()<Date.now()-(_CM_GIORNI-4)*86400e3)cmLoadMatch(m.id);   // partita vecchia: si leggono anche i suoi commenti vecchi
-  const b=bg.querySelector('.mv-btns');if(b)b.insertAdjacentHTML('beforebegin',cmSecHtml(m.id));else bg.querySelector('.mv').insertAdjacentHTML('beforeend',cmSecHtml(m.id));
-  const l=bg.querySelector('.mv-cm-l');if(l)l.scrollTop=l.scrollHeight;}catch(e){console.error(e);}};}
-setInterval(()=>{document.querySelectorAll('.mv-cm .cm-hd span').length&&cmRefresh();},60000);   // "5 min fa" si aggiorna da solo
 
 // ═══ COMPLIMENTI E ADESIVI ═══
 // clubs/laurera15a40/complimenti/{id}: {to, k, da, dpid, t}. Dalla scheda di un giocatore gli mandi un adesivo (uno per tipo al giorno).
@@ -9108,26 +9043,6 @@ apriDaLink();addEventListener('hashchange',()=>apriDaLink());
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.laureraApri)apriDaLink(e.data.laureraApri);});
 </script>
 <style>
-/* ═══ COMMENTI NELLE CARD (sotto le reazioni) ═══ */
-.cmc-cm{grid-column:1/-1;display:flex;flex-direction:column;gap:6px;margin-top:6px;cursor:default;text-align:left;min-width:0}
-#ris-list .cmc.ris-c .cmc-cm{grid-row:4}
-.cmc-cm-l{display:flex;flex-direction:column;gap:5px;min-width:0}
-.cmc-cm-l:empty{display:none}
-.cc-it{display:flex;align-items:flex-start;gap:7px;min-width:0}
-.cc-av{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#1e1f23;border:1.5px solid var(--accent);font:400 10px "Bebas Neue",sans-serif;color:#fff}
-.cc-av img{width:100%;height:100%;object-fit:cover}
-.cc-b{flex:1;min-width:0;font:500 13px/1.35 "DM Sans",sans-serif;color:#fff;overflow-wrap:anywhere;padding-top:3px}
-.cc-b b{font-weight:800;margin-right:5px;white-space:nowrap}
-.cc-b small{color:rgba(255,255,255,.45);font:700 11px "DM Sans",sans-serif;white-space:nowrap}
-.cmc-cm-more{align-self:flex-start;border:0;background:none;color:rgba(255,255,255,.6);font:700 12px "DM Sans",sans-serif;padding:0;cursor:pointer}
-.cmc-cm-f{display:flex;align-items:center;gap:6px;height:36px;border-radius:999px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.14);padding:0 4px 0 14px;width:100%;box-sizing:border-box;margin:0}
-.cmc-cm-f input{flex:1;min-width:0;height:100%;border:0;background:none;color:#fff;font:500 16px "DM Sans",sans-serif;outline:none;padding:0}
-.cmc-cm-f input::placeholder{color:rgba(255,255,255,.45)}
-.cmc-cm-f:focus-within{border-color:var(--accent)}
-.cmc-cm-f button[type=submit],.cmc-cm-f .go{width:28px;height:28px;border-radius:50%;border:0;background:var(--accent);color:#0b1640;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;padding:0}
-.cmc-cm-f svg{width:14px;height:14px}
-.cmc-cm-f button[type=submit]:disabled{opacity:.5}
-button.cmc-cm-f.who{cursor:pointer;justify-content:space-between;color:rgba(255,255,255,.45);font:500 14px "DM Sans",sans-serif}
 /* ═══ CALENDARIO ADMIN: meteo, "+" e matita affiancati sulla stessa riga ═══ */
 @media(max-width:640px){
   html body .cmc.mk .mk-st:is(.z.z.z,*){flex-direction:row!important;align-items:center!important;gap:6px!important;flex-wrap:nowrap!important}
@@ -9136,26 +9051,6 @@ button.cmc-cm-f.who{cursor:pointer;justify-content:space-between;color:rgba(255,
   html body.viewer .cmc.mk.cd .mk-st,#ris-list .cmc.ris-c .mk-st{display:none!important}
 }
 </style>
-<script>
-// ═══ COMMENTI NELLE CARD: sotto le reazioni gli ultimi commenti e la riga per scriverne uno ═══
-const _cmSendSvg='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6l-.01 6.53L15 12 3.39 13.87z"/></svg>';
-function _cmCardList(mid){const L=_cm[String(mid)]||[];if(!L.length)return'';const sh=L.slice(-3),more=L.length-sh.length;
-  return(more>0?`<button type="button" class="cmc-cm-more" onclick="openMatchView(${mid})">Vedi tutti i ${L.length} commenti</button>`:'')+sh.map(c=>{
-    const p=c.pid!=null?players.find(x=>x.id===c.pid):null,name=p?dispName(p.nome):(c.nome||'Socio');
-    return`<div class="cc-it"><div class="cc-av">${p?avHtmlBig(p):'🎾'}</div><div class="cc-b"><b>${esc(name)}</b>${esc(c.testo)} <small>· ${esc(agoText(c.t))}</small></div></div>`;}).join('');}
-function cmCardHtml(mid){const me=socialMe();
-  return`<div class="cmc-cm" data-mid="${mid}" onclick="event.stopPropagation()"><div class="cmc-cm-l">${_cmCardList(mid)}</div>
-    ${me?`<form class="cmc-cm-f" onsubmit="event.preventDefault();cmSend(${mid},this)"><input type="text" maxlength="200" placeholder="Scrivi un commento…" enterkeyhint="send" aria-label="Scrivi un commento"><button type="submit" aria-label="Invia">${_cmSendSvg}</button></form>`
-       :`<button type="button" class="cmc-cm-f who" onclick="cmChiSei(${mid})"><span>Scrivi un commento…</span><span class="go">${_cmSendSvg}</span></button>`}</div>`;}
-// chi non ha ancora scelto il proprio nome: prima "Chi sei?", poi torna sulla partita con la riga pronta
-function cmChiSei(mid){window._cmPending={mid,tab:typeof currentTab!=='undefined'?currentTab:'risultati'};closeMatchView();obShow(3);}
-{const _sc=sxClaim;sxClaim=function(id){const pend=window._cmPending;window._cmPending=null;
-  if(pend)_sxLS('laurera_stats_news','1');   // niente giro delle Statistiche: torna subito al commento
-  _sc.apply(this,arguments);
-  if(pend)setTimeout(()=>{switchTab(pend.tab);setTimeout(()=>{const el=document.querySelector(`.cmc-cm[data-mid="${pend.mid}"] input`);if(el){el.scrollIntoView({block:'center'});el.focus();}toast('Ora puoi commentare');},450);},60);};}
-// aggiorna anche le card quando arrivano commenti nuovi
-{const _cr=cmRefresh;cmRefresh=function(){_cr.apply(this,arguments);document.querySelectorAll('.cmc-cm[data-mid]').forEach(el=>{const l=el.querySelector('.cmc-cm-l');if(l)l.innerHTML=_cmCardList(el.dataset.mid);});};}
-</script>
 <script>window.matchMedia("(max-width:640px)").addEventListener("change",()=>{if(typeof currentTab!=="undefined"&&currentTab==="risultati")renderRisultati();});
 function toggleList(){const g=document.getElementById("cards-grid"),b=document.getElementById("hf-tog");if(!g||!b)return;const open=g.classList.toggle("lst-closed")===false;b.setAttribute("aria-expanded",open);if(open){if(typeof countUp==="function")countUp(g);if(typeof fitK4==="function")requestAnimationFrame(fitK4);}}</script>
 </body>

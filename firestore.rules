@@ -98,20 +98,6 @@ service cloud.firestore {
                     && request.resource.data.nome is string && request.resource.data.nome.size() <= 40;
     }
 
-    // Commenti alle partite: chiunque li legge; senza login si può solo aggiungerne uno nuovo
-    // (testo fino a 200 caratteri, firmato col nome scelto in "Chi sei?"). Solo l'admin li cancella, nessuno li modifica.
-    match /clubs/{clubId}/commenti/{cid} {
-      allow read: if true;
-      allow delete: if request.auth != null;
-      allow create: if request.resource.data.keys().hasOnly(['mid', 'testo', 'nome', 'pid', 't'])
-                    && request.resource.data.keys().hasAll(['mid', 'testo', 'nome', 't'])
-                    && request.resource.data.mid is string && request.resource.data.mid.size() >= 1 && request.resource.data.mid.size() <= 20
-                    && request.resource.data.testo is string && request.resource.data.testo.size() >= 1 && request.resource.data.testo.size() <= 200
-                    && request.resource.data.nome is string && request.resource.data.nome.size() >= 1 && request.resource.data.nome.size() <= 40
-                    && (request.resource.data.get('pid', null) == null || request.resource.data.pid is int || request.resource.data.pid is float)
-                    && request.resource.data.t == request.time;
-    }
-
     // Complimenti e adesivi: chiunque li legge; senza login si può solo mandarne uno nuovo
     // (uno dei 6 adesivi, mai a se stessi). Solo l'admin li cancella, nessuno li modifica.
     match /clubs/{clubId}/complimenti/{cid} {
