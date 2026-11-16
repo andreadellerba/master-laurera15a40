@@ -4303,18 +4303,20 @@ function exportCalendarPDF(){
   const _side=(m,pid,w)=>pdfSide(_gids(m,pid),_gtn(m,pid),w);
   const fmtD2=s=>new Date(s+'T12:00:00').toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const byDate={};filtered.forEach(m=>{(byDate[m.data]=byDate[m.data]||[]).push(m);});
-  const cols=ris?5:2;
+  const cols=ris?5:3;
+  // calendario: meteo previsto all'ora della partita, tutto a destra (emoticon e temperatura; vuoto oltre i 16 giorni di previsione)
+  const wxCell=m=>{const w=typeof wxFor==='function'?wxFor(m):null;if(!w)return'';return `<span class="wi">${_wxIco(w.wc,+String(m.ora||'20').slice(0,2)>=18)}</span> ${w.t}°`;};
   const rows=Object.keys(byDate).sort().map(date=>`<tr class="pdf-day"><td colspan="${cols}">${fmtD2(date)}</td></tr>`+byDate[date].map(m=>{
     const draw=!m.winnerId||m.winnerId==='draw',w1=!draw&&+m.winnerId===m.p1Id,w2=!draw&&+m.winnerId===m.p2Id;
     const b=w=>ris?(w?800:500):700;
     return `<tr><td class="o">${m.ora||'—'}</td><td class="pn">${_side(m,m.p1Id,b(w1))}<span class="vs">vs</span>${_side(m,m.p2Id,b(w2))}</td>`
-      +(ris?`<td class="r">${esc(m.risultato)}</td><td class="sp"></td><td class="w">${draw?'-':'🏆 '+_side(m,m.winnerId)}</td>`:'')+'</tr>';
+      +(ris?`<td class="r">${esc(m.risultato)}</td><td class="sp"></td><td class="w">${draw?'-':'🏆 '+_side(m,m.winnerId)}</td>`:`<td class="wx">${wxCell(m)}</td>`)+'</tr>';
   }).join('')).join('');
   const hasDbl=filtered.some(m=>_gids(m,m.p1Id).length>1||_gids(m,m.p2Id).length>1);
   const css=`td,th{white-space:nowrap}table.fit td,table.fit th{padding-left:var(--px,12px);padding-right:var(--px,12px)}table.fit td{font-size:var(--fs,13px)}table.fit tr.pdf-day td{font-size:17px}td.o{color:#b8860b;font-weight:600;width:1%}td.vs,th.vs{color:#888888;text-align:center;width:1%;padding-left:4px;padding-right:4px}
     .r{text-align:center!important}td.r{font-weight:700;color:#15803d}td.w{color:#b8860b;font-weight:700}td.sp,th.sp{width:1%;padding:0}.x{display:inline-block;color:#b91c1c;font-weight:900}
     tr.pdf-day td{background:#ffffff!important;font-family:"Bebas Neue",Arial,sans-serif;font-size:17px;letter-spacing:1px;color:#111111;text-transform:capitalize;border-bottom:0;padding:16px 8px 6px;text-align:center}
-    table.fit td.o{padding-right:4px}table.fit td.pn{text-align:left;padding-left:4px}td.r,td.w{text-align:left!important}td.r,td.w{width:1%}span.vs{color:#888888;margin:0 .5em;vertical-align:middle}.dbl span.vs+.pl .avs{width:auto}`;
+    table.fit td.wx{width:1%;text-align:right;font-weight:700;color:#333333;padding-left:10px}td.wx .wi{font-size:1.3em;vertical-align:-2px}table.fit td.o{padding-right:4px}table.fit td.pn{text-align:left;padding-left:4px}td.r,td.w{text-align:left!important}td.r,td.w{width:1%}span.vs{color:#888888;margin:0 .5em;vertical-align:middle}.dbl span.vs+.pl .avs{width:auto}`;
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${ris?'Risultati':'Calendario'}</title>${pdfFontsLink()}<style>${pdfDarkStyle()}${css}</style></head><body>${pdfHeaderHtml(ris?'RISULTATI':'CALENDARIO PARTITE',filtered.length+(ris?' partite giocate':' partite da giocare'))}<div style="padding:0 24px"><table class="fit${hasDbl?' dbl':''}"><tbody>${rows}</tbody></table></div>${pdfFooterHtml()}${pdfFitScript()}</body></html>`;
   pdfOpenAndPrint(html,()=>{document.getElementById('modal-exp-cal').classList.remove('open');});
 }
